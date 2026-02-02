@@ -2717,5 +2717,45 @@ module.exports = {
 
   async getSystemDependencies({ homey }) {
     return homey.app.crossSystemAIOrchestrationHub.getSystemDependencies();
+  },
+  
+  // Additional AI endpoints for Flow actions and settings UI
+  async retrainAllModels({ homey }) {
+    try {
+      const models = ['energy-usage', 'presence-pattern', 'device-failure', 'comfort-preferences'];
+      const results = {};
+      
+      for (const modelId of models) {
+        try {
+          await homey.app.advancedAIPredictionEngine.trainModel(modelId, null);
+          results[modelId] = { success: true, message: 'Training initiated' };
+        } catch (error) {
+          results[modelId] = { success: false, error: error.message };
+        }
+      }
+      
+      return { success: true, results, message: 'All models retraining initiated' };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  },
+  
+  async clearTrainingData({ homey }) {
+    try {
+      // Clear training data from settings
+      await homey.settings.set('predictionTrainingData', {});
+      
+      // Reset model statistics
+      const stats = {
+        models: {},
+        recentPredictions: [],
+        accuracyHistory: []
+      };
+      await homey.settings.set('predictionStatistics', stats);
+      
+      return { success: true, message: 'Training data cleared successfully' };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 };

@@ -582,6 +582,88 @@ class SmartHomeProApp extends Homey.App {
     startRoutine.registerArgumentAutocompleteListener('routine',
       async (query) => this.autocompleteRoutines(query)
     );
+    
+    // WAVE 9 AI PREDICTION & ORCHESTRATION FLOW CARDS
+    
+    // AI Prediction Conditions
+    const predictionConfidence = this.homey.flow.getConditionCard('prediction-confidence-above');
+    predictionConfidence.registerRunListener(async (args) => {
+      const stats = await this.advancedAIPredictionEngine.getPredictionStatistics();
+      const modelConfidence = stats.currentPredictions?.[args.model]?.confidence || 0;
+      return modelConfidence >= (args.threshold / 100);
+    });
+    
+    const modelAccuracy = this.homey.flow.getConditionCard('model-accuracy-above');
+    modelAccuracy.registerRunListener(async (args) => {
+      const stats = await this.advancedAIPredictionEngine.getPredictionStatistics();
+      const accuracy = stats.models?.[args.model]?.accuracy || 0;
+      return accuracy >= (args.accuracy / 100);
+    });
+    
+    const orchestrationActive = this.homey.flow.getConditionCard('orchestration-active');
+    orchestrationActive.registerRunListener(async () => {
+      const stats = await this.crossSystemAIOrchestrationHub.getOrchestrationStatistics();
+      return stats.totalOrchestrations > 0 && stats.successRate > 0;
+    });
+    
+    // AI Prediction Actions
+    const trainModel = this.homey.flow.getActionCard('train-ai-model');
+    trainModel.registerRunListener(async (args) => {
+      try {
+        await this.advancedAIPredictionEngine.trainModel(args.model, null);
+        await this.homey.notifications.createNotification({
+          excerpt: `AI model ${args.model} training started`
+        });
+      } catch (error) {
+        this.error('Error training model:', error);
+        throw new Error(`Failed to train model: ${error.message}`);
+      }
+    });
+    
+    const executeOrchestration = this.homey.flow.getActionCard('execute-orchestration');
+    executeOrchestration.registerRunListener(async (args) => {
+      try {
+        const result = await this.crossSystemAIOrchestrationHub.orchestrateAction(args.trigger, {
+          manual: true,
+          timestamp: Date.now()
+        });
+        await this.homey.notifications.createNotification({
+          excerpt: `Orchestration ${args.trigger} executed successfully`
+        });
+      } catch (error) {
+        this.error('Error executing orchestration:', error);
+        throw new Error(`Failed to execute orchestration: ${error.message}`);
+      }
+    });
+    
+    const setOrchestrationMode = this.homey.flow.getActionCard('set-orchestration-mode');
+    setOrchestrationMode.registerRunListener(async (args) => {
+      try {
+        this.crossSystemAIOrchestrationHub.settings.conflictResolutionMode = args.mode;
+        await this.homey.settings.set('orchestrationMode', args.mode);
+        await this.homey.notifications.createNotification({
+          excerpt: `Orchestration mode set to ${args.mode}`
+        });
+      } catch (error) {
+        this.error('Error setting orchestration mode:', error);
+        throw new Error(`Failed to set orchestration mode: ${error.message}`);
+      }
+    });
+    
+    const enableAutoPredictions = this.homey.flow.getActionCard('enable-auto-predictions');
+    enableAutoPredictions.registerRunListener(async (args) => {
+      try {
+        const enabled = args.enabled === 'true';
+        this.advancedAIPredictionEngine.settings.autoActOnPredictions = enabled;
+        await this.homey.settings.set('autoActOnPredictions', enabled);
+        await this.homey.notifications.createNotification({
+          excerpt: `Automatic predictions ${enabled ? 'enabled' : 'disabled'}`
+        });
+      } catch (error) {
+        this.error('Error toggling auto predictions:', error);
+        throw new Error(`Failed to toggle auto predictions: ${error.message}`);
+      }
+    });
   }
 
   // ============================================
