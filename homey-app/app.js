@@ -73,6 +73,9 @@ const AdvancedAirQualityVentilationControlSystem = require('./lib/AdvancedAirQua
 const HomeAccessibilityElderlyCareSystem = require('./lib/HomeAccessibilityElderlyCareSystem');
 const AdvancedPackageDeliveryManagementSystem = require('./lib/AdvancedPackageDeliveryManagementSystem');
 const SmartHomeInsuranceRiskAssessmentSystem = require('./lib/SmartHomeInsuranceRiskAssessmentSystem');
+// Ninth wave of autonomous features - AI & Advanced Integration
+const AdvancedAIPredictionEngine = require('./lib/AdvancedAIPredictionEngine');
+const CrossSystemAIOrchestrationHub = require('./lib/CrossSystemAIOrchestrationHub');
 // System optimizer
 const { SystemOptimizer, optimizeSystem } = require('./lib/utils/SystemOptimizer');
 
@@ -205,6 +208,10 @@ class SmartHomeProApp extends Homey.App {
     this.advancedPackageDeliveryManagementSystem = new AdvancedPackageDeliveryManagementSystem();
     this.smartHomeInsuranceRiskAssessmentSystem = new SmartHomeInsuranceRiskAssessmentSystem();
     
+    // Ninth wave of autonomous features - AI & Advanced Integration
+    this.advancedAIPredictionEngine = new AdvancedAIPredictionEngine();
+    this.crossSystemAIOrchestrationHub = new CrossSystemAIOrchestrationHub();
+    
     // Initialize system optimizer
     this.systemOptimizer = new SystemOptimizer();
     
@@ -284,7 +291,9 @@ class SmartHomeProApp extends Homey.App {
       this.advancedAirQualityVentilationControlSystem.initialize(),
       this.homeAccessibilityElderlyCareSystem.initialize(),
       this.advancedPackageDeliveryManagementSystem.initialize(),
-      this.smartHomeInsuranceRiskAssessmentSystem.initialize()
+      this.smartHomeInsuranceRiskAssessmentSystem.initialize(),
+      this.advancedAIPredictionEngine.initialize(),
+      this.crossSystemAIOrchestrationHub.initialize()
     ]);
   }
 

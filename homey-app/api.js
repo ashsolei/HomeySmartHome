@@ -2624,5 +2624,98 @@ module.exports = {
     return homey.app.smartHomeInsuranceRiskAssessmentSystem.getMaintenanceRecords(
       query.limit ? parseInt(query.limit) : 50
     );
+  },
+
+  // =========================
+  // WAVE 9: AI & Advanced Integration
+  // =========================
+
+  // Advanced AI Prediction Engine
+  async getPredictionModels({ homey }) {
+    return homey.app.advancedAIPredictionEngine.getPredictionModels();
+  },
+
+  async getPredictionStats({ homey }) {
+    return homey.app.advancedAIPredictionEngine.getPredictionStatistics();
+  },
+
+  async predictEnergyUsage({ homey, query }) {
+    return await homey.app.advancedAIPredictionEngine.predictEnergyUsage(
+      query.hours ? parseInt(query.hours) : 1
+    );
+  },
+
+  async predictPresence({ homey, body }) {
+    return await homey.app.advancedAIPredictionEngine.predictPresence(
+      body.date ? new Date(body.date) : new Date()
+    );
+  },
+
+  async predictDeviceFailure({ homey, params, body }) {
+    return await homey.app.advancedAIPredictionEngine.predictDeviceFailure(
+      params.deviceId,
+      body.deviceType
+    );
+  },
+
+  async predictComfort({ homey, body }) {
+    return await homey.app.advancedAIPredictionEngine.predictComfortPreferences(body.context);
+  },
+
+  async trainPredictionModel({ homey, params, body }) {
+    return await homey.app.advancedAIPredictionEngine.trainModel(
+      params.modelId,
+      body.trainingData
+    );
+  },
+
+  async getRecentPredictions({ homey, query }) {
+    return homey.app.advancedAIPredictionEngine.getRecentPredictions(
+      query.limit ? parseInt(query.limit) : 20
+    );
+  },
+
+  async getAccuracyMetrics({ homey }) {
+    return homey.app.advancedAIPredictionEngine.getAccuracyMetrics();
+  },
+
+  // Cross-System AI Orchestration Hub
+  async getOrchestrationStats({ homey }) {
+    return homey.app.crossSystemAIOrchestrationHub.getOrchestrationStatistics();
+  },
+
+  async getRegisteredSystems({ homey }) {
+    return homey.app.crossSystemAIOrchestrationHub.getRegisteredSystems();
+  },
+
+  async orchestrateAction({ homey, body }) {
+    return await homey.app.crossSystemAIOrchestrationHub.orchestrateAction(
+      body.trigger,
+      body.context
+    );
+  },
+
+  async resolveSystemConflict({ homey, body }) {
+    return await homey.app.crossSystemAIOrchestrationHub.resolveConflict(body.conflict);
+  },
+
+  async getOrchestrationRules({ homey }) {
+    return homey.app.crossSystemAIOrchestrationHub.getOrchestrationRules();
+  },
+
+  async getRecentOrchestrations({ homey, query }) {
+    return homey.app.crossSystemAIOrchestrationHub.getRecentOrchestrations(
+      query.limit ? parseInt(query.limit) : 20
+    );
+  },
+
+  async getConflictHistory({ homey, query }) {
+    return homey.app.crossSystemAIOrchestrationHub.getConflictHistory(
+      query.limit ? parseInt(query.limit) : 50
+    );
+  },
+
+  async getSystemDependencies({ homey }) {
+    return homey.app.crossSystemAIOrchestrationHub.getSystemDependencies();
   }
 };
