@@ -295,6 +295,83 @@ class SmartHomeProApp extends Homey.App {
       this.advancedAIPredictionEngine.initialize(),
       this.crossSystemAIOrchestrationHub.initialize()
     ]);
+    
+    // Setup Wave 9 AI event listeners
+    this.setupAIEventListeners();
+  }
+  
+  setupAIEventListeners() {
+    // AI Prediction Engine events
+    this.advancedAIPredictionEngine.on('notification', async (data) => {
+      this.log('[AI Prediction]', data.message);
+      
+      // Trigger Flow cards based on prediction type
+      if (data.type === 'high-energy-predicted') {
+        await this.homey.flow.getTriggerCard('ai-prediction-high-energy').trigger({
+          predicted_consumption: data.value || 0,
+          confidence: data.confidence || 0,
+          hours_ahead: data.hoursAhead || 1
+        }).catch(err => this.error('Error triggering high-energy flow:', err));
+        
+        // Send notification to user
+        await this.homey.notifications.createNotification({
+          excerpt: data.message
+        }).catch(err => this.error('Error sending notification:', err));
+      }
+      
+      if (data.type === 'device-failure-predicted') {
+        await this.homey.flow.getTriggerCard('ai-device-failure-predicted').trigger({
+          device: data.device || 'Unknown',
+          urgency: data.urgency || 'low',
+          days_until_failure: data.daysUntilFailure || 0,
+          probability: data.probability || 0
+        }).catch(err => this.error('Error triggering device-failure flow:', err));
+        
+        await this.homey.notifications.createNotification({
+          excerpt: data.message
+        }).catch(err => this.error('Error sending notification:', err));
+      }
+      
+      if (data.type === 'arrival-predicted') {
+        await this.homey.flow.getTriggerCard('ai-presence-predicted').trigger({
+          predicted_time: data.time || 'Unknown',
+          confidence: data.confidence || 0
+        }).catch(err => this.error('Error triggering presence flow:', err));
+      }
+    });
+    
+    // Cross-System AI Orchestration Hub events
+    this.crossSystemAIOrchestrationHub.on('notification', async (data) => {
+      this.log('[AI Orchestration]', data.message);
+      
+      if (data.type === 'orchestration-executed') {
+        await this.homey.flow.getTriggerCard('orchestration-executed').trigger({
+          rule_name: data.rule || 'Unknown',
+          actions_count: data.actionsCount || 0,
+          energy_saved: data.energySaved || 0
+        }).catch(err => this.error('Error triggering orchestration flow:', err));
+        
+        // Send notification for significant orchestrations
+        if (data.energySaved > 10) {
+          await this.homey.notifications.createNotification({
+            excerpt: `AI orchestration saved ${data.energySaved} SEK in energy costs`
+          }).catch(err => this.error('Error sending notification:', err));
+        }
+      }
+      
+      if (data.type === 'conflict-detected') {
+        await this.homey.flow.getTriggerCard('orchestration-conflict').trigger({
+          systems: data.systems || 'Unknown',
+          resolution: data.resolution || 'user-preference'
+        }).catch(err => this.error('Error triggering conflict flow:', err));
+        
+        await this.homey.notifications.createNotification({
+          excerpt: data.message
+        }).catch(err => this.error('Error sending notification:', err));
+      }
+    });
+    
+    this.log('AI event listeners configured successfully');
   }
 
   async loadSavedData() {

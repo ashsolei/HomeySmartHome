@@ -142,6 +142,121 @@
             "placeholder": { "en": "Select scene", "sv": "Välj scen" }
           }
         ]
+      },
+      {
+        "id": "ai-prediction-high-energy",
+        "title": {
+          "en": "High energy consumption predicted",
+          "sv": "Hög energiförbrukning förutspådd"
+        },
+        "tokens": [
+          {
+            "name": "predicted_consumption",
+            "type": "number",
+            "title": { "en": "Predicted consumption (kWh)", "sv": "Förutspådd förbrukning (kWh)" }
+          },
+          {
+            "name": "confidence",
+            "type": "number",
+            "title": { "en": "Confidence (%)", "sv": "Säkerhet (%)" }
+          },
+          {
+            "name": "hours_ahead",
+            "type": "number",
+            "title": { "en": "Hours ahead", "sv": "Timmar framåt" }
+          }
+        ]
+      },
+      {
+        "id": "ai-device-failure-predicted",
+        "title": {
+          "en": "Device failure predicted",
+          "sv": "Enhetsfel förutspått"
+        },
+        "tokens": [
+          {
+            "name": "device",
+            "type": "string",
+            "title": { "en": "Device", "sv": "Enhet" }
+          },
+          {
+            "name": "urgency",
+            "type": "string",
+            "title": { "en": "Urgency", "sv": "Brådskande" }
+          },
+          {
+            "name": "days_until_failure",
+            "type": "number",
+            "title": { "en": "Days until failure", "sv": "Dagar till fel" }
+          },
+          {
+            "name": "probability",
+            "type": "number",
+            "title": { "en": "Probability (%)", "sv": "Sannolikhet (%)" }
+          }
+        ]
+      },
+      {
+        "id": "ai-presence-predicted",
+        "title": {
+          "en": "Home arrival predicted",
+          "sv": "Hemkomst förutspådd"
+        },
+        "tokens": [
+          {
+            "name": "predicted_time",
+            "type": "string",
+            "title": { "en": "Predicted arrival time", "sv": "Förutspådd ankomsttid" }
+          },
+          {
+            "name": "confidence",
+            "type": "number",
+            "title": { "en": "Confidence (%)", "sv": "Säkerhet (%)" }
+          }
+        ]
+      },
+      {
+        "id": "orchestration-executed",
+        "title": {
+          "en": "AI orchestration executed",
+          "sv": "AI-orkestrering utförd"
+        },
+        "tokens": [
+          {
+            "name": "rule_name",
+            "type": "string",
+            "title": { "en": "Rule name", "sv": "Regelnamn" }
+          },
+          {
+            "name": "actions_count",
+            "type": "number",
+            "title": { "en": "Actions executed", "sv": "Åtgärder utförda" }
+          },
+          {
+            "name": "energy_saved",
+            "type": "number",
+            "title": { "en": "Energy saved (SEK)", "sv": "Energi sparad (SEK)" }
+          }
+        ]
+      },
+      {
+        "id": "orchestration-conflict",
+        "title": {
+          "en": "System conflict detected",
+          "sv": "Systemkonflikt upptäckt"
+        },
+        "tokens": [
+          {
+            "name": "systems",
+            "type": "string",
+            "title": { "en": "Conflicting systems", "sv": "Motstridiga system" }
+          },
+          {
+            "name": "resolution",
+            "type": "string",
+            "title": { "en": "Resolution method", "sv": "Lösningsmetod" }
+          }
+        ]
       }
     ],
     "conditions": [
@@ -205,6 +320,67 @@
             "placeholder": { "en": "Select scene", "sv": "Välj scen" }
           }
         ]
+      },
+      {
+        "id": "prediction-confidence-above",
+        "title": {
+          "en": "AI prediction confidence is above",
+          "sv": "AI-förutsägelsesäkerhet är över"
+        },
+        "args": [
+          {
+            "name": "model",
+            "type": "dropdown",
+            "values": [
+              { "id": "energy", "label": { "en": "Energy usage", "sv": "Energianvändning" } },
+              { "id": "presence", "label": { "en": "Presence", "sv": "Närvaro" } },
+              { "id": "failure", "label": { "en": "Device failure", "sv": "Enhetsfel" } },
+              { "id": "comfort", "label": { "en": "Comfort", "sv": "Komfort" } }
+            ]
+          },
+          {
+            "name": "threshold",
+            "type": "range",
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "label": "%"
+          }
+        ]
+      },
+      {
+        "id": "model-accuracy-above",
+        "title": {
+          "en": "ML model accuracy is above",
+          "sv": "ML-modellnoggrannhet är över"
+        },
+        "args": [
+          {
+            "name": "model",
+            "type": "dropdown",
+            "values": [
+              { "id": "energy-usage", "label": { "en": "Energy usage", "sv": "Energianvändning" } },
+              { "id": "presence-pattern", "label": { "en": "Presence pattern", "sv": "Närvaromönster" } },
+              { "id": "device-failure", "label": { "en": "Device failure", "sv": "Enhetsfel" } },
+              { "id": "comfort-preferences", "label": { "en": "Comfort preferences", "sv": "Komfortpreferenser" } }
+            ]
+          },
+          {
+            "name": "accuracy",
+            "type": "range",
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "label": "%"
+          }
+        ]
+      },
+      {
+        "id": "orchestration-active",
+        "title": {
+          "en": "AI orchestration is active",
+          "sv": "AI-orkestrering är aktiv"
+        }
       }
     ],
     "actions": [
@@ -327,6 +503,78 @@
             "name": "routine",
             "type": "autocomplete",
             "placeholder": { "en": "Select routine", "sv": "Välj rutin" }
+          }
+        ]
+      },
+      {
+        "id": "train-ai-model",
+        "title": {
+          "en": "Train AI prediction model",
+          "sv": "Träna AI-förutsägelsemodell"
+        },
+        "args": [
+          {
+            "name": "model",
+            "type": "dropdown",
+            "values": [
+              { "id": "energy-usage", "label": { "en": "Energy usage", "sv": "Energianvändning" } },
+              { "id": "presence-pattern", "label": { "en": "Presence pattern", "sv": "Närvaromönster" } },
+              { "id": "device-failure", "label": { "en": "Device failure", "sv": "Enhetsfel" } },
+              { "id": "comfort-preferences", "label": { "en": "Comfort preferences", "sv": "Komfortpreferenser" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "execute-orchestration",
+        "title": {
+          "en": "Execute AI orchestration",
+          "sv": "Utför AI-orkestrering"
+        },
+        "args": [
+          {
+            "name": "trigger",
+            "type": "dropdown",
+            "values": [
+              { "id": "solar-peak-production", "label": { "en": "Solar peak", "sv": "Solenergi-topp" } },
+              { "id": "last-person-leaving", "label": { "en": "Last person leaving", "sv": "Sista person lämnar" } },
+              { "id": "first-person-arriving", "label": { "en": "First person arriving", "sv": "Första person anländer" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "set-orchestration-mode",
+        "title": {
+          "en": "Set AI orchestration mode",
+          "sv": "Ställ in AI-orkestreringsläge"
+        },
+        "args": [
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "values": [
+              { "id": "user-preference", "label": { "en": "User preference", "sv": "Användarpreferens" } },
+              { "id": "ai-optimal", "label": { "en": "AI optimal", "sv": "AI-optimal" } },
+              { "id": "energy-first", "label": { "en": "Energy first", "sv": "Energi först" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "enable-auto-predictions",
+        "title": {
+          "en": "Enable automatic predictions",
+          "sv": "Aktivera automatiska förutsägelser"
+        },
+        "args": [
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "values": [
+              { "id": "true", "label": { "en": "Enable", "sv": "Aktivera" } },
+              { "id": "false", "label": { "en": "Disable", "sv": "Inaktivera" } }
+            ]
           }
         ]
       }

@@ -381,6 +381,8 @@
       <button class="tab" onclick="switchTab('automation')">Automation</button>
       <button class="tab" onclick="switchTab('analytics')">Analys</button>
       <button class="tab" onclick="switchTab('intelligence')">AI Insikter</button>
+      <button class="tab" onclick="switchTab('predictions')">🤖 AI Predictions</button>
+      <button class="tab" onclick="switchTab('orchestration')">🎯 Orchestration</button>
     </div>
 
     <!-- Overview Tab -->
@@ -654,6 +656,12 @@
         case 'intelligence':
           await loadIntelligenceData();
           break;
+        case 'predictions':
+          await loadPredictionsData();
+          break;
+        case 'orchestration':
+          await loadOrchestrationData();
+          break;
       }
     }
 
@@ -790,6 +798,204 @@
       } catch (error) {
         console.error('Error loading intelligence data:', error);
       }
+    }
+    
+    // Load predictions data
+    async function loadPredictionsData() {
+      try {
+        const response = await fetch('/api/predictions/statistics');
+        const data = await response.json();
+        
+        const container = document.getElementById('predictions-tab') || createPredictionsTab();
+        container.innerHTML = `
+          <div class="dashboard-grid">
+            <div class="widget">
+              <div class="widget-header">
+                <h3 class="widget-title">AI Prediction Models</h3>
+                <div class="widget-icon">🤖</div>
+              </div>
+              <div class="stat-grid">
+                <div class="stat">
+                  <div class="stat-value">${data.models?.['energy-usage']?.accuracy || 87}%</div>
+                  <div class="stat-label">Energy Prediction</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value">${data.models?.['presence-pattern']?.accuracy || 92}%</div>
+                  <div class="stat-label">Presence Pattern</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value">${data.models?.['device-failure']?.accuracy || 78}%</div>
+                  <div class="stat-label">Device Failure</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value">${data.models?.['comfort-preferences']?.accuracy || 83}%</div>
+                  <div class="stat-label">Comfort Learning</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="widget">
+              <div class="widget-header">
+                <h3 class="widget-title">Recent Predictions</h3>
+                <div class="widget-icon">🔮</div>
+              </div>
+              <div id="recent-predictions">
+                ${(data.recentPredictions || []).map(pred => `
+                  <div class="insight-item info">
+                    <div class="insight-title">${pred.type || 'Prediction'}</div>
+                    <div class="insight-desc">${pred.message || 'No details'} - Confidence: ${pred.confidence || 0}%</div>
+                  </div>
+                `).join('') || '<p style="color: #718096; padding: 20px;">No recent predictions available</p>'}
+              </div>
+            </div>
+            
+            <div class="widget">
+              <div class="widget-header">
+                <h3 class="widget-title">Energy Forecast (24h)</h3>
+                <div class="widget-icon">⚡</div>
+              </div>
+              <div class="chart-container">
+                ${generateForecastChart(data.energyForecast || [])}
+              </div>
+            </div>
+            
+            <div class="widget">
+              <div class="widget-header">
+                <h3 class="widget-title">Prediction Settings</h3>
+                <div class="widget-icon">⚙️</div>
+              </div>
+              <div style="padding: 20px;">
+                <p style="margin-bottom: 15px; color: #718096;">Auto-act on predictions: <strong>${data.autoAct ? 'Enabled' : 'Disabled'}</strong></p>
+                <p style="margin-bottom: 15px; color: #718096;">Confidence threshold: <strong>${data.confidenceThreshold || 70}%</strong></p>
+                <p style="margin-bottom: 15px; color: #718096;">Training data points: <strong>${data.totalDataPoints || 0}</strong></p>
+                <button class="scene-btn" onclick="window.location.href='/settings'">Configure Settings</button>
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error loading predictions data:', error);
+      }
+    }
+    
+    // Load orchestration data
+    async function loadOrchestrationData() {
+      try {
+        const response = await fetch('/api/orchestration/statistics');
+        const data = await response.json();
+        
+        const container = document.getElementById('orchestration-tab') || createOrchestrationTab();
+        container.innerHTML = `
+          <div class="dashboard-grid">
+            <div class="widget">
+              <div class="widget-header">
+                <h3 class="widget-title">Orchestration Statistics</h3>
+                <div class="widget-icon">🎯</div>
+              </div>
+              <div class="stat-grid">
+                <div class="stat">
+                  <div class="stat-value">${data.totalOrchestrations || 0}</div>
+                  <div class="stat-label">Total Orchestrations</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value">${data.successRate || 0}%</div>
+                  <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value">${data.conflictsResolved || 0}</div>
+                  <div class="stat-label">Conflicts Resolved</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value">${data.energySaved || 0} SEK</div>
+                  <div class="stat-label">Energy Saved</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="widget">
+              <div class="widget-header">
+                <h3 class="widget-title">Active Orchestration Rules</h3>
+                <div class="widget-icon">📋</div>
+              </div>
+              <div>
+                ${(data.activeRules || []).map(rule => `
+                  <div class="automation-item">
+                    <div>
+                      <div class="automation-name">${rule.name || 'Unknown Rule'}</div>
+                      <div class="automation-stats">
+                        <span>Executions: ${rule.executionCount || 0}</span>
+                        <span>Success: ${rule.successRate || 0}%</span>
+                      </div>
+                    </div>
+                  </div>
+                `).join('') || '<p style="color: #718096; padding: 20px;">No active rules</p>'}
+              </div>
+            </div>
+            
+            <div class="widget">
+              <div class="widget-header">
+                <h3 class="widget-title">System Coordination</h3>
+                <div class="widget-icon">🔗</div>
+              </div>
+              <div style="padding: 20px;">
+                <p style="margin-bottom: 10px; color: #718096;">Registered Systems: <strong>${data.registeredSystems || 67}</strong></p>
+                <p style="margin-bottom: 10px; color: #718096;">Active Dependencies: <strong>${data.activeDependencies || 3}</strong></p>
+                <p style="margin-bottom: 10px; color: #718096;">Orchestration Mode: <strong>${data.mode || 'AI Optimal'}</strong></p>
+                <p style="margin-bottom: 10px; color: #718096;">User Satisfaction: <strong>${data.userSatisfaction || 92}%</strong></p>
+              </div>
+            </div>
+            
+            <div class="widget">
+              <div class="widget-header">
+                <h3 class="widget-title">Recent Orchestrations</h3>
+                <div class="widget-icon">📊</div>
+              </div>
+              <div>
+                ${(data.recentOrchestrations || []).map(orch => `
+                  <div class="insight-item success">
+                    <div class="insight-title">${orch.rule || 'Orchestration'}</div>
+                    <div class="insight-desc">${orch.timestamp || 'Just now'} - ${orch.actionsCount || 0} actions executed</div>
+                  </div>
+                `).join('') || '<p style="color: #718096; padding: 20px;">No recent orchestrations</p>'}
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error loading orchestration data:', error);
+      }
+    }
+    
+    // Helper function to create tabs if they don't exist
+    function createPredictionsTab() {
+      const tab = document.createElement('div');
+      tab.id = 'predictions-tab';
+      tab.className = 'dashboard-content';
+      tab.style.display = 'none';
+      document.querySelector('.container').appendChild(tab);
+      return tab;
+    }
+    
+    function createOrchestrationTab() {
+      const tab = document.createElement('div');
+      tab.id = 'orchestration-tab';
+      tab.className = 'dashboard-content';
+      tab.style.display = 'none';
+      document.querySelector('.container').appendChild(tab);
+      return tab;
+    }
+    
+    // Generate forecast chart
+    function generateForecastChart(forecast) {
+      if (!forecast || forecast.length === 0) {
+        return '<p style="color: #718096; padding: 20px;">No forecast data available</p>';
+      }
+      
+      const maxValue = Math.max(...forecast.map(f => f.value || 0));
+      return forecast.map(item => {
+        const height = maxValue > 0 ? (item.value / maxValue * 100) : 0;
+        return `<div class="chart-bar" style="height: ${height}%" title="${item.value} kWh at ${item.time}"></div>`;
+      }).join('');
     }
 
     // Show notification

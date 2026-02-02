@@ -48,7 +48,26 @@
       "behavior": "Behavior Analysis",
       "optimization": "Optimization",
       "next_action": "Next Expected Action",
-      "confidence": "Confidence"
+      "confidence": "Confidence",
+      "ai_predictions": "AI Predictions",
+      "energy_forecast": "Energy Forecast",
+      "presence_prediction": "Presence Prediction",
+      "device_failure": "Device Failure Prediction",
+      "comfort_learning": "Comfort Learning",
+      "model_accuracy": "Model Accuracy",
+      "training_status": "Training Status",
+      "last_trained": "Last Trained",
+      "data_points": "Data Points",
+      "orchestration": "AI Orchestration",
+      "orchestration_mode": "Orchestration Mode",
+      "user_preference": "User Preference",
+      "ai_optimal": "AI Optimal",
+      "energy_first": "Energy First",
+      "active_rules": "Active Rules",
+      "conflicts_resolved": "Conflicts Resolved",
+      "energy_saved": "Energy Saved",
+      "user_satisfaction": "User Satisfaction",
+      "system_coordination": "System Coordination"
     },
     "analytics": {
       "title": "Analytics",
@@ -79,7 +98,15 @@
       "scene_activated": "Scene activated",
       "high_energy": "High energy consumption detected",
       "device_offline": "Device offline",
-      "recommendation": "New recommendation available"
+      "recommendation": "New recommendation available",
+      "high_energy_predicted": "High energy consumption predicted",
+      "device_failure_imminent": "Device failure predicted",
+      "arrival_predicted": "Home arrival predicted",
+      "orchestration_executed": "AI orchestration executed successfully",
+      "conflict_resolved": "System conflict resolved",
+      "model_trained": "AI model training completed",
+      "prediction_confidence_low": "Low prediction confidence - more data needed",
+      "model_retrain_needed": "Model retraining recommended"
     }
   },
   "sv": {
@@ -131,7 +158,26 @@
       "behavior": "Beteendeanalys",
       "optimization": "Optimering",
       "next_action": "Nästa Förväntade Åtgärd",
-      "confidence": "Säkerhet"
+      "confidence": "Säkerhet",
+      "ai_predictions": "AI-förutsägelser",
+      "energy_forecast": "Energiprognos",
+      "presence_prediction": "Närvaroförutsägelse",
+      "device_failure": "Enhetsfel-förutsägelse",
+      "comfort_learning": "Komfortinlärning",
+      "model_accuracy": "Modellnoggrannhet",
+      "training_status": "Träningsstatus",
+      "last_trained": "Senast Tränad",
+      "data_points": "Datapunkter",
+      "orchestration": "AI-orkestrering",
+      "orchestration_mode": "Orkestreringsläge",
+      "user_preference": "Användarpreferens",
+      "ai_optimal": "AI-optimal",
+      "energy_first": "Energi Först",
+      "active_rules": "Aktiva Regler",
+      "conflicts_resolved": "Konflikter Lösta",
+      "energy_saved": "Energi Sparad",
+      "user_satisfaction": "Användarnoydhet",
+      "system_coordination": "Systemkoordinering"
     },
     "analytics": {
       "title": "Analys",
@@ -162,7 +208,15 @@
       "scene_activated": "Scen aktiverad",
       "high_energy": "Hög energiförbrukning upptäckt",
       "device_offline": "Enhet offline",
-      "recommendation": "Ny rekommendation tillgänglig"
+      "recommendation": "Ny rekommendation tillgänglig",
+      "high_energy_predicted": "Hög energiförbrukning förutspådd",
+      "device_failure_imminent": "Enhetsfel förutspått",
+      "arrival_predicted": "Hemkomst förutspådd",
+      "orchestration_executed": "AI-orkestrering utförd framgångsrikt",
+      "conflict_resolved": "Systemkonflikt löst",
+      "model_trained": "AI-modellträning slutförd",
+      "prediction_confidence_low": "Låg förutsägelsesäkerhet - mer data behövs",
+      "model_retrain_needed": "Omträning av modell rekommenderas"
     }
   }
 }
