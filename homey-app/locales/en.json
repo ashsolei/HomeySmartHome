@@ -1,0 +1,169 @@
+{
+  "en": {
+    "settings": {
+      "title": "Settings",
+      "save": "Save",
+      "dashboard": "Dashboard",
+      "automation": "Automation",
+      "intelligence": "Intelligence",
+      "analytics": "Analytics"
+    },
+    "automation": {
+      "title": "Advanced Automation",
+      "create": "Create Automation",
+      "edit": "Edit Automation",
+      "delete": "Delete Automation",
+      "enable": "Enable",
+      "disable": "Disable",
+      "execute": "Execute",
+      "conditions": "Conditions",
+      "actions": "Actions",
+      "triggers": "Triggers",
+      "learning": "Learning Enabled",
+      "predictions": "Predictions",
+      "success_rate": "Success Rate",
+      "executions": "Executions",
+      "last_executed": "Last Executed"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "overview": "Overview",
+      "energy": "Energy",
+      "devices": "Devices",
+      "security": "Security",
+      "climate": "Climate",
+      "scenes": "Scenes",
+      "custom": "Custom Dashboard",
+      "realtime": "Real-time",
+      "history": "History",
+      "statistics": "Statistics"
+    },
+    "intelligence": {
+      "title": "AI Intelligence",
+      "insights": "Insights",
+      "recommendations": "Recommendations",
+      "patterns": "Patterns",
+      "predictions": "Predictions",
+      "learning": "Learning",
+      "behavior": "Behavior Analysis",
+      "optimization": "Optimization",
+      "next_action": "Next Expected Action",
+      "confidence": "Confidence"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "energy": "Energy Analytics",
+      "devices": "Device Analytics",
+      "automation": "Automation Analytics",
+      "presence": "Presence Analytics",
+      "climate": "Climate Analytics",
+      "trends": "Trends",
+      "comparison": "Comparison",
+      "efficiency": "Efficiency",
+      "performance": "Performance",
+      "insights": "Insights"
+    },
+    "widgets": {
+      "status_card": "Status Card",
+      "energy_chart": "Energy Chart",
+      "climate_panel": "Climate Panel",
+      "scene_grid": "Scene Grid",
+      "device_list": "Device List",
+      "ai_insights": "AI Insights",
+      "automation_stats": "Automation Statistics",
+      "trends": "Trends Visualization"
+    },
+    "notifications": {
+      "automation_created": "Automation created successfully",
+      "automation_executed": "Automation executed",
+      "scene_activated": "Scene activated",
+      "high_energy": "High energy consumption detected",
+      "device_offline": "Device offline",
+      "recommendation": "New recommendation available"
+    }
+  },
+  "sv": {
+    "settings": {
+      "title": "Inställningar",
+      "save": "Spara",
+      "dashboard": "Dashboard",
+      "automation": "Automation",
+      "intelligence": "Intelligens",
+      "analytics": "Analys"
+    },
+    "automation": {
+      "title": "Avancerad Automation",
+      "create": "Skapa Automation",
+      "edit": "Redigera Automation",
+      "delete": "Ta bort Automation",
+      "enable": "Aktivera",
+      "disable": "Inaktivera",
+      "execute": "Kör",
+      "conditions": "Villkor",
+      "actions": "Åtgärder",
+      "triggers": "Triggers",
+      "learning": "Inlärning Aktiverad",
+      "predictions": "Förutsägelser",
+      "success_rate": "Framgångsgrad",
+      "executions": "Exekveringar",
+      "last_executed": "Senast Körd"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "overview": "Översikt",
+      "energy": "Energi",
+      "devices": "Enheter",
+      "security": "Säkerhet",
+      "climate": "Klimat",
+      "scenes": "Scener",
+      "custom": "Anpassad Dashboard",
+      "realtime": "Realtid",
+      "history": "Historik",
+      "statistics": "Statistik"
+    },
+    "intelligence": {
+      "title": "AI Intelligens",
+      "insights": "Insikter",
+      "recommendations": "Rekommendationer",
+      "patterns": "Mönster",
+      "predictions": "Förutsägelser",
+      "learning": "Inlärning",
+      "behavior": "Beteendeanalys",
+      "optimization": "Optimering",
+      "next_action": "Nästa Förväntade Åtgärd",
+      "confidence": "Säkerhet"
+    },
+    "analytics": {
+      "title": "Analys",
+      "energy": "Energianalys",
+      "devices": "Enhetsanalys",
+      "automation": "Automationsanalys",
+      "presence": "Närvaroanalys",
+      "climate": "Klimatanalys",
+      "trends": "Trender",
+      "comparison": "Jämförelse",
+      "efficiency": "Effektivitet",
+      "performance": "Prestanda",
+      "insights": "Insikter"
+    },
+    "widgets": {
+      "status_card": "Statuskort",
+      "energy_chart": "Energidiagram",
+      "climate_panel": "Klimatpanel",
+      "scene_grid": "Scener",
+      "device_list": "Enhetslista",
+      "ai_insights": "AI Insikter",
+      "automation_stats": "Automationsstatistik",
+      "trends": "Trendvisualisering"
+    },
+    "notifications": {
+      "automation_created": "Automation skapad",
+      "automation_executed": "Automation körd",
+      "scene_activated": "Scen aktiverad",
+      "high_energy": "Hög energiförbrukning upptäckt",
+      "device_offline": "Enhet offline",
+      "recommendation": "Ny rekommendation tillgänglig"
+    }
+  }
+}
+

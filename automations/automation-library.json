@@ -1,0 +1,738 @@
+[
+  {
+    "id": "last-person-left",
+    "name": {
+      "en": "Last Person Left Home",
+      "sv": "Sista personen lämnade hemmet"
+    },
+    "description": "Säkrar hemmet när alla har lämnat",
+    "trigger": {
+      "type": "presence",
+      "event": "last_person_left"
+    },
+    "delay": 300,
+    "actions": [
+      {
+        "type": "lights",
+        "target": "all",
+        "state": "off"
+      },
+      {
+        "type": "climate",
+        "target": "all",
+        "temperature": 16
+      },
+      {
+        "type": "security",
+        "mode": "away"
+      },
+      {
+        "type": "devices",
+        "target": "standby-group",
+        "state": "off"
+      },
+      {
+        "type": "notification",
+        "message": "Hemmet är säkrat",
+        "priority": "normal"
+      }
+    ]
+  },
+  {
+    "id": "first-person-arrived",
+    "name": {
+      "en": "First Person Arrived Home",
+      "sv": "Första personen kom hem"
+    },
+    "description": "Välkomnar hem och återställer komfort",
+    "trigger": {
+      "type": "presence",
+      "event": "first_person_arrived"
+    },
+    "conditions": [
+      {
+        "type": "time",
+        "after": "sunset",
+        "before": "23:00"
+      }
+    ],
+    "actions": [
+      {
+        "type": "security",
+        "mode": "disarmed"
+      },
+      {
+        "type": "lights",
+        "target": "hallway",
+        "state": "on",
+        "brightness": 80
+      },
+      {
+        "type": "climate",
+        "target": "all",
+        "temperature": 21
+      },
+      {
+        "type": "scene",
+        "sceneId": "evening",
+        "condition": {
+          "type": "time",
+          "after": "18:00"
+        }
+      }
+    ]
+  },
+  {
+    "id": "morning-wake-up",
+    "name": {
+      "en": "Morning Wake Up",
+      "sv": "Morgonväckning"
+    },
+    "description": "Gradvis väckning med ljus",
+    "trigger": {
+      "type": "time",
+      "value": "06:30",
+      "days": ["mon", "tue", "wed", "thu", "fri"]
+    },
+    "conditions": [
+      {
+        "type": "presence",
+        "value": true
+      }
+    ],
+    "actions": [
+      {
+        "type": "lights",
+        "target": "bedroom",
+        "state": "on",
+        "brightness": 5,
+        "transition": "gradual",
+        "duration": 1800,
+        "endBrightness": 100
+      },
+      {
+        "type": "lights",
+        "target": "kitchen",
+        "state": "on",
+        "brightness": 100,
+        "delay": 1800
+      },
+      {
+        "type": "climate",
+        "target": "bathroom",
+        "temperature": 23,
+        "delay": 900
+      }
+    ]
+  },
+  {
+    "id": "adaptive-lighting",
+    "name": {
+      "en": "Adaptive Lighting",
+      "sv": "Adaptiv belysning"
+    },
+    "description": "Justerar ljus baserat på dagsljus",
+    "trigger": {
+      "type": "interval",
+      "minutes": 15
+    },
+    "conditions": [
+      {
+        "type": "motion",
+        "value": true,
+        "within": 900
+      }
+    ],
+    "actions": [
+      {
+        "type": "adaptive-light",
+        "rules": [
+          {
+            "luxBelow": 150,
+            "brightness": 60
+          },
+          {
+            "luxBelow": 300,
+            "brightness": 30
+          },
+          {
+            "luxAbove": 500,
+            "brightness": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "motion-lights",
+    "name": {
+      "en": "Motion Activated Lights",
+      "sv": "Rörelsestyrd belysning"
+    },
+    "description": "Tänder lampor vid rörelse",
+    "trigger": {
+      "type": "capability",
+      "capability": "alarm_motion",
+      "value": true
+    },
+    "conditions": [
+      {
+        "type": "luminance",
+        "below": 100
+      }
+    ],
+    "actions": [
+      {
+        "type": "lights",
+        "target": "trigger-zone",
+        "state": "on",
+        "brightness": 70
+      },
+      {
+        "type": "timer",
+        "duration": 300,
+        "onExpire": {
+          "type": "lights",
+          "target": "trigger-zone",
+          "state": "off",
+          "condition": {
+            "type": "motion",
+            "value": false,
+            "duration": 300
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "movie-mode",
+    "name": {
+      "en": "Movie Mode",
+      "sv": "Filmläge"
+    },
+    "description": "Aktiveras när TV:n startar på kvällen",
+    "trigger": {
+      "type": "capability",
+      "capability": "onoff",
+      "device": "tv",
+      "value": true
+    },
+    "conditions": [
+      {
+        "type": "time",
+        "after": "19:00"
+      },
+      {
+        "type": "zone",
+        "value": "living-room"
+      }
+    ],
+    "actions": [
+      {
+        "type": "lights",
+        "target": "living-room",
+        "brightness": 10,
+        "colorTemp": 2700
+      },
+      {
+        "type": "lights",
+        "target": "bias-light",
+        "state": "on",
+        "brightness": 30
+      }
+    ]
+  },
+  {
+    "id": "high-humidity-ventilation",
+    "name": {
+      "en": "High Humidity Ventilation",
+      "sv": "Ventilation vid hög luftfuktighet"
+    },
+    "description": "Startar fläkt vid hög luftfuktighet",
+    "trigger": {
+      "type": "capability",
+      "capability": "measure_humidity",
+      "above": 70
+    },
+    "conditions": [
+      {
+        "type": "zone",
+        "values": ["bathroom", "kitchen"]
+      }
+    ],
+    "actions": [
+      {
+        "type": "device",
+        "target": "exhaust-fan",
+        "state": "on"
+      },
+      {
+        "type": "timer",
+        "duration": 1800,
+        "onExpire": {
+          "type": "device",
+          "target": "exhaust-fan",
+          "state": "off",
+          "condition": {
+            "type": "humidity",
+            "below": 55
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "night-temperature",
+    "name": {
+      "en": "Night Temperature",
+      "sv": "Natttemperatur"
+    },
+    "description": "Sänker temperaturen för natten",
+    "trigger": {
+      "type": "time",
+      "value": "22:00"
+    },
+    "conditions": [
+      {
+        "type": "presence",
+        "value": true
+      }
+    ],
+    "actions": [
+      {
+        "type": "climate",
+        "target": "bedroom",
+        "temperature": 18
+      },
+      {
+        "type": "climate",
+        "target": "living-room",
+        "temperature": 21
+      },
+      {
+        "type": "scheduled",
+        "time": "00:00",
+        "action": {
+          "type": "climate",
+          "target": "all",
+          "temperature": 18
+        }
+      }
+    ]
+  },
+  {
+    "id": "open-window-detection",
+    "name": {
+      "en": "Open Window Detection",
+      "sv": "Öppet fönster-detektion"
+    },
+    "description": "Pausar uppvärmning vid snabb temperatursänkning",
+    "trigger": {
+      "type": "temperature-drop",
+      "degrees": 2,
+      "minutes": 10
+    },
+    "actions": [
+      {
+        "type": "climate",
+        "target": "trigger-zone",
+        "mode": "pause"
+      },
+      {
+        "type": "notification",
+        "message": "Möjligt öppet fönster i {{zone}}",
+        "priority": "normal"
+      },
+      {
+        "type": "timer",
+        "duration": 1800,
+        "onExpire": {
+          "type": "climate",
+          "target": "trigger-zone",
+          "mode": "resume"
+        }
+      }
+    ]
+  },
+  {
+    "id": "standby-killer",
+    "name": {
+      "en": "Standby Killer",
+      "sv": "Standby-dödare"
+    },
+    "description": "Stänger av enheter i standby",
+    "trigger": {
+      "type": "multi",
+      "triggers": [
+        { "type": "time", "value": "23:00" },
+        { "type": "presence", "event": "last_person_left" }
+      ]
+    },
+    "actions": [
+      {
+        "type": "device-group",
+        "target": "standby-devices",
+        "state": "off",
+        "exclude": ["fridge", "freezer", "router", "homey"]
+      },
+      {
+        "type": "log",
+        "message": "Standby-enheter avstängda",
+        "data": {
+          "savedPower": "{{estimated-power}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "high-power-warning",
+    "name": {
+      "en": "High Power Warning",
+      "sv": "Varning för hög effekt"
+    },
+    "description": "Varnar vid hög total förbrukning",
+    "trigger": {
+      "type": "power",
+      "above": 5000,
+      "duration": 600
+    },
+    "actions": [
+      {
+        "type": "notification",
+        "message": "Hög energiförbrukning: {{power}}W",
+        "priority": "high",
+        "data": {
+          "topConsumers": "{{top-5-devices}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "washing-machine-done",
+    "name": {
+      "en": "Washing Machine Done",
+      "sv": "Tvättmaskinen klar"
+    },
+    "description": "Notifierar när tvätten är klar",
+    "trigger": {
+      "type": "power-transition",
+      "device": "washing-machine",
+      "from": { "above": 100 },
+      "to": { "below": 5 },
+      "duration": 60
+    },
+    "actions": [
+      {
+        "type": "notification",
+        "message": "Tvättmaskinen är klar! 🧺",
+        "priority": "normal"
+      },
+      {
+        "type": "reminder",
+        "delay": 1800,
+        "condition": {
+          "type": "device-state",
+          "device": "washing-machine-door",
+          "state": "closed"
+        },
+        "message": "Glöm inte tvätten!"
+      }
+    ]
+  },
+  {
+    "id": "vacation-simulation",
+    "name": {
+      "en": "Vacation Simulation",
+      "sv": "Semesterläge"
+    },
+    "description": "Simulerar närvaro under semester",
+    "trigger": {
+      "type": "mode",
+      "value": "vacation"
+    },
+    "conditions": [
+      {
+        "type": "time",
+        "after": "sunset"
+      }
+    ],
+    "actions": [
+      {
+        "type": "random-schedule",
+        "devices": ["living-room-light", "bedroom-light", "kitchen-light"],
+        "pattern": "presence-simulation",
+        "variance": 30,
+        "startTime": "sunset",
+        "endTime": "23:30"
+      },
+      {
+        "type": "blinds",
+        "target": "all",
+        "position": "closed",
+        "time": "sunset + 30min"
+      }
+    ]
+  },
+  {
+    "id": "door-open-too-long",
+    "name": {
+      "en": "Door Open Too Long",
+      "sv": "Dörr öppen för länge"
+    },
+    "description": "Varnar om dörr är öppen för länge",
+    "trigger": {
+      "type": "capability",
+      "capability": "alarm_contact",
+      "value": true,
+      "duration": 300
+    },
+    "conditions": [
+      {
+        "type": "temperature",
+        "location": "outside",
+        "below": 10
+      }
+    ],
+    "actions": [
+      {
+        "type": "notification",
+        "message": "{{device}} har varit öppen i 5 minuter",
+        "priority": "normal"
+      },
+      {
+        "type": "climate",
+        "target": "trigger-zone",
+        "mode": "pause"
+      },
+      {
+        "type": "repeat",
+        "interval": 300,
+        "condition": {
+          "type": "capability",
+          "capability": "alarm_contact",
+          "value": true
+        },
+        "action": {
+          "type": "notification",
+          "message": "{{device}} är fortfarande öppen",
+          "priority": "normal"
+        }
+      }
+    ]
+  },
+  {
+    "id": "smoke-alarm-response",
+    "name": {
+      "en": "Smoke Alarm Response",
+      "sv": "Brandlarm-respons"
+    },
+    "description": "Nödåtgärder vid brandlarm",
+    "trigger": {
+      "type": "capability",
+      "capability": "alarm_smoke",
+      "value": true
+    },
+    "actions": [
+      {
+        "type": "notification",
+        "message": "⚠️ BRANDLARM AKTIVERAT i {{zone}}!",
+        "priority": "critical",
+        "channels": ["push", "sms", "call"]
+      },
+      {
+        "type": "lights",
+        "target": "all",
+        "brightness": 100
+      },
+      {
+        "type": "locks",
+        "target": "all",
+        "state": "unlocked"
+      },
+      {
+        "type": "device",
+        "target": "ventilation",
+        "state": "off"
+      },
+      {
+        "type": "speech",
+        "message": "Varning! Rökdetektor aktiverad. Lämna byggnaden omedelbart.",
+        "repeat": 3
+      }
+    ]
+  },
+  {
+    "id": "evening-routine",
+    "name": {
+      "en": "Evening Routine",
+      "sv": "Kvällsrutin"
+    },
+    "description": "Förbereder för avslappning",
+    "trigger": {
+      "type": "time",
+      "value": "21:00"
+    },
+    "conditions": [
+      {
+        "type": "presence",
+        "value": true
+      }
+    ],
+    "actions": [
+      {
+        "type": "lights",
+        "target": "all",
+        "brightness": 40,
+        "colorTemp": 2700
+      },
+      {
+        "type": "media",
+        "target": "all",
+        "volume": "decrease",
+        "amount": 20
+      }
+    ]
+  },
+  {
+    "id": "guest-mode",
+    "name": {
+      "en": "Guest Mode",
+      "sv": "Gästläge"
+    },
+    "description": "Förbereder hemmet för gäster",
+    "trigger": {
+      "type": "manual"
+    },
+    "actions": [
+      {
+        "type": "climate",
+        "target": "guest-bathroom",
+        "temperature": 23
+      },
+      {
+        "type": "network",
+        "target": "guest-wifi",
+        "mode": "high-performance"
+      },
+      {
+        "type": "scene",
+        "sceneId": "party"
+      },
+      {
+        "type": "device",
+        "target": "robot-vacuum",
+        "state": "pause"
+      },
+      {
+        "type": "simplify-voice-commands",
+        "enabled": true
+      }
+    ]
+  },
+  {
+    "id": "work-from-home",
+    "name": {
+      "en": "Work From Home",
+      "sv": "Arbeta hemifrån"
+    },
+    "description": "Optimerar för hemmakontor",
+    "trigger": {
+      "type": "multi",
+      "triggers": [
+        {
+          "type": "time",
+          "value": "08:30",
+          "days": ["mon", "tue", "wed", "thu", "fri"]
+        },
+        {
+          "type": "zone-activity",
+          "zone": "office",
+          "duration": 600
+        }
+      ]
+    },
+    "conditions": [
+      {
+        "type": "presence",
+        "value": true
+      }
+    ],
+    "actions": [
+      {
+        "type": "focus-mode",
+        "enabled": true
+      },
+      {
+        "type": "lights",
+        "target": "office",
+        "brightness": 80,
+        "colorTemp": 5000
+      },
+      {
+        "type": "scheduled",
+        "interval": 3000,
+        "action": {
+          "type": "notification",
+          "message": "Dags för en paus! 🚶",
+          "lightPulse": true
+        }
+      },
+      {
+        "type": "scheduled",
+        "time": "12:00",
+        "action": {
+          "type": "notification",
+          "message": "Lunchdags! 🍽️"
+        }
+      },
+      {
+        "type": "scheduled",
+        "time": "17:00",
+        "action": {
+          "type": "scene",
+          "sceneId": "evening"
+        }
+      }
+    ]
+  },
+  {
+    "id": "power-outage-recovery",
+    "name": {
+      "en": "Power Outage Recovery",
+      "sv": "Strömavbrott-återställning"
+    },
+    "description": "Hanterar återställning efter strömavbrott",
+    "trigger": {
+      "type": "system",
+      "event": "startup"
+    },
+    "conditions": [
+      {
+        "type": "time",
+        "between": ["00:00", "06:00"]
+      }
+    ],
+    "actions": [
+      {
+        "type": "lights",
+        "target": "all",
+        "state": "off"
+      },
+      {
+        "type": "security",
+        "action": "verify-status"
+      },
+      {
+        "type": "notification",
+        "message": "Strömavbrott återställt",
+        "priority": "normal",
+        "delay": 60
+      },
+      {
+        "type": "log",
+        "message": "System återställt efter strömavbrott",
+        "level": "warning"
+      }
+    ]
+  }
+]

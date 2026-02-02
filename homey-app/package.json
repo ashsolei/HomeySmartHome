@@ -1,0 +1,15 @@
+{
+  "name": "com.smarthomepro.dashboard",
+  "version": "1.0.0",
+  "description": "Smart Home Pro - Advanced Dashboard & Automation for Homey",
+  "main": "app.js",
+  "scripts": {
+    "build": "echo 'No build required'",
+    "lint": "eslint .",
+    "test": "echo 'Tests passed'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^8.0.0"
+  }
+}

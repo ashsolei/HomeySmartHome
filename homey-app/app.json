@@ -1,0 +1,387 @@
+{
+  "id": "com.smarthomepro.dashboard",
+  "version": "1.0.0",
+  "compatibility": ">=8.0.0",
+  "sdk": 3,
+  "platforms": ["local", "cloud"],
+  "name": {
+    "en": "Smart Home Pro",
+    "sv": "Smart Home Pro"
+  },
+  "description": {
+    "en": "Advanced dashboard and automation system for Homey",
+    "sv": "Avancerat dashboard och automationssystem för Homey"
+  },
+  "category": ["tools"],
+  "permissions": [
+    "homey:manager:api",
+    "homey:manager:geolocation",
+    "homey:manager:speech-input",
+    "homey:manager:speech-output",
+    "homey:manager:notifications",
+    "homey:manager:ledring"
+  ],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Smart Home Pro",
+    "email": "info@smarthomepro.com"
+  },
+  "flow": {
+    "triggers": [
+      {
+        "id": "presence-changed",
+        "title": {
+          "en": "Presence changed",
+          "sv": "Närvaro ändrades"
+        },
+        "tokens": [
+          {
+            "name": "zone",
+            "type": "string",
+            "title": { "en": "Zone", "sv": "Zon" }
+          },
+          {
+            "name": "presence",
+            "type": "boolean",
+            "title": { "en": "Presence", "sv": "Närvaro" }
+          }
+        ]
+      },
+      {
+        "id": "energy-threshold-exceeded",
+        "title": {
+          "en": "Energy threshold exceeded",
+          "sv": "Energigräns överskriden"
+        },
+        "tokens": [
+          {
+            "name": "device",
+            "type": "string",
+            "title": { "en": "Device", "sv": "Enhet" }
+          },
+          {
+            "name": "consumption",
+            "type": "number",
+            "title": { "en": "Consumption (W)", "sv": "Förbrukning (W)" }
+          }
+        ]
+      },
+      {
+        "id": "temperature-alert",
+        "title": {
+          "en": "Temperature alert",
+          "sv": "Temperaturvarning"
+        },
+        "args": [
+          {
+            "name": "condition",
+            "type": "dropdown",
+            "values": [
+              { "id": "above", "label": { "en": "Above", "sv": "Över" } },
+              { "id": "below", "label": { "en": "Below", "sv": "Under" } }
+            ]
+          },
+          {
+            "name": "temperature",
+            "type": "number",
+            "min": -40,
+            "max": 60
+          }
+        ],
+        "tokens": [
+          {
+            "name": "zone",
+            "type": "string",
+            "title": { "en": "Zone", "sv": "Zon" }
+          },
+          {
+            "name": "temperature",
+            "type": "number",
+            "title": { "en": "Temperature", "sv": "Temperatur" }
+          }
+        ]
+      },
+      {
+        "id": "security-event",
+        "title": {
+          "en": "Security event detected",
+          "sv": "Säkerhetshändelse upptäckt"
+        },
+        "tokens": [
+          {
+            "name": "eventType",
+            "type": "string",
+            "title": { "en": "Event type", "sv": "Händelsetyp" }
+          },
+          {
+            "name": "device",
+            "type": "string",
+            "title": { "en": "Device", "sv": "Enhet" }
+          },
+          {
+            "name": "zone",
+            "type": "string",
+            "title": { "en": "Zone", "sv": "Zon" }
+          }
+        ]
+      },
+      {
+        "id": "scene-activated",
+        "title": {
+          "en": "Scene activated",
+          "sv": "Scen aktiverad"
+        },
+        "args": [
+          {
+            "name": "scene",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select scene", "sv": "Välj scen" }
+          }
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "id": "is-anyone-home",
+        "title": {
+          "en": "Someone is home",
+          "sv": "Någon är hemma"
+        }
+      },
+      {
+        "id": "is-night-mode",
+        "title": {
+          "en": "Night mode is active",
+          "sv": "Nattläge är aktivt"
+        }
+      },
+      {
+        "id": "is-energy-saving",
+        "title": {
+          "en": "Energy saving mode is active",
+          "sv": "Energisparläge är aktivt"
+        }
+      },
+      {
+        "id": "temperature-in-range",
+        "title": {
+          "en": "Temperature is in range",
+          "sv": "Temperaturen är inom intervall"
+        },
+        "args": [
+          {
+            "name": "zone",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select zone", "sv": "Välj zon" }
+          },
+          {
+            "name": "min",
+            "type": "number",
+            "min": -40,
+            "max": 60
+          },
+          {
+            "name": "max",
+            "type": "number",
+            "min": -40,
+            "max": 60
+          }
+        ]
+      },
+      {
+        "id": "is-scene-active",
+        "title": {
+          "en": "Scene is active",
+          "sv": "Scen är aktiv"
+        },
+        "args": [
+          {
+            "name": "scene",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select scene", "sv": "Välj scen" }
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "activate-scene",
+        "title": {
+          "en": "Activate scene",
+          "sv": "Aktivera scen"
+        },
+        "args": [
+          {
+            "name": "scene",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select scene", "sv": "Välj scen" }
+          }
+        ]
+      },
+      {
+        "id": "set-all-lights",
+        "title": {
+          "en": "Set all lights in zone",
+          "sv": "Ställ in alla lampor i zon"
+        },
+        "args": [
+          {
+            "name": "zone",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select zone", "sv": "Välj zon" }
+          },
+          {
+            "name": "action",
+            "type": "dropdown",
+            "values": [
+              { "id": "on", "label": { "en": "Turn on", "sv": "Tänd" } },
+              { "id": "off", "label": { "en": "Turn off", "sv": "Släck" } },
+              { "id": "dim", "label": { "en": "Dim", "sv": "Dimra" } }
+            ]
+          },
+          {
+            "name": "brightness",
+            "type": "range",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "label": "%"
+          }
+        ]
+      },
+      {
+        "id": "set-climate",
+        "title": {
+          "en": "Set climate in zone",
+          "sv": "Ställ in klimat i zon"
+        },
+        "args": [
+          {
+            "name": "zone",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select zone", "sv": "Välj zon" }
+          },
+          {
+            "name": "temperature",
+            "type": "number",
+            "min": 10,
+            "max": 30
+          }
+        ]
+      },
+      {
+        "id": "send-smart-notification",
+        "title": {
+          "en": "Send smart notification",
+          "sv": "Skicka smart notifikation"
+        },
+        "args": [
+          {
+            "name": "message",
+            "type": "text",
+            "placeholder": { "en": "Message", "sv": "Meddelande" }
+          },
+          {
+            "name": "priority",
+            "type": "dropdown",
+            "values": [
+              { "id": "low", "label": { "en": "Low", "sv": "Låg" } },
+              { "id": "normal", "label": { "en": "Normal", "sv": "Normal" } },
+              { "id": "high", "label": { "en": "High", "sv": "Hög" } },
+              { "id": "critical", "label": { "en": "Critical", "sv": "Kritisk" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "enable-security-mode",
+        "title": {
+          "en": "Set security mode",
+          "sv": "Ställ in säkerhetsläge"
+        },
+        "args": [
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "values": [
+              { "id": "disarmed", "label": { "en": "Disarmed", "sv": "Avlarmat" } },
+              { "id": "home", "label": { "en": "Home", "sv": "Hemma" } },
+              { "id": "away", "label": { "en": "Away", "sv": "Borta" } },
+              { "id": "night", "label": { "en": "Night", "sv": "Natt" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "start-routine",
+        "title": {
+          "en": "Start automation routine",
+          "sv": "Starta automationsrutin"
+        },
+        "args": [
+          {
+            "name": "routine",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select routine", "sv": "Välj rutin" }
+          }
+        ]
+      }
+    ]
+  },
+  "widgets": {
+    "dashboard-widget": {
+      "name": {
+        "en": "Smart Home Dashboard",
+        "sv": "Smart Home Dashboard"
+      },
+      "settings": [
+        {
+          "id": "showEnergy",
+          "type": "checkbox",
+          "label": { "en": "Show energy", "sv": "Visa energi" },
+          "value": true
+        },
+        {
+          "id": "showClimate",
+          "type": "checkbox",
+          "label": { "en": "Show climate", "sv": "Visa klimat" },
+          "value": true
+        },
+        {
+          "id": "showSecurity",
+          "type": "checkbox",
+          "label": { "en": "Show security", "sv": "Visa säkerhet" },
+          "value": true
+        }
+      ],
+      "width": 2,
+      "height": 2
+    }
+  },
+  "api": {
+    "getDashboardData": {
+      "method": "GET",
+      "path": "/dashboard"
+    },
+    "getDevices": {
+      "method": "GET",
+      "path": "/devices"
+    },
+    "getAutomations": {
+      "method": "GET",
+      "path": "/automations"
+    },
+    "executeScene": {
+      "method": "POST",
+      "path": "/scene/:sceneId"
+    },
+    "setDeviceState": {
+      "method": "POST",
+      "path": "/device/:deviceId"
+    }
+  }
+}

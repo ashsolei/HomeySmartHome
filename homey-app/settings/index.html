@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Home Pro - Advanced Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 1.1em;
+    }
+
+    .dashboard-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    .tab:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .tab.active {
+      background: white;
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+    }
+
+    .widget {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+    }
+
+    .widget:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    .widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .widget-title {
+      font-size: 1.3em;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .widget-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5em;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .stat {
+      text-align: center;
+      padding: 15px;
+      background: #f7fafc;
+      border-radius: 10px;
+    }
+
+    .stat-value {
+      font-size: 2em;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 0.9em;
+      color: #718096;
+    }
+
+    .scene-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .scene-btn {
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .scene-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .scene-btn.active {
+      background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    }
+
+    .device-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .device-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 8px;
+      background: #f7fafc;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .device-item:hover {
+      background: #e2e8f0;
+    }
+
+    .device-name {
+      font-weight: 500;
+      color: #2d3748;
+    }
+
+    .device-status {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: 600;
+    }
+
+    .status-online {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    .status-offline {
+      background: #fed7d7;
+      color: #742a2a;
+    }
+
+    .chart-container {
+      height: 200px;
+      background: #f7fafc;
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      gap: 4px;
+    }
+
+    .chart-bar {
+      flex: 1;
+      background: linear-gradient(to top, #667eea, #764ba2);
+      border-radius: 4px 4px 0 0;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .chart-bar:hover {
+      opacity: 0.8;
+      transform: scaleX(1.1);
+    }
+
+    .insight-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .insight-item {
+      padding: 15px;
+      border-left: 4px solid #667eea;
+      background: #f7fafc;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .insight-item.warning {
+      border-left-color: #f6ad55;
+      background: #fffaf0;
+    }
+
+    .insight-item.success {
+      border-left-color: #48bb78;
+      background: #f0fff4;
+    }
+
+    .insight-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #2d3748;
+    }
+
+    .insight-desc {
+      font-size: 0.9em;
+      color: #718096;
+    }
+
+    .automation-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      margin-bottom: 10px;
+      background: #f7fafc;
+      border-radius: 10px;
+    }
+
+    .automation-name {
+      font-weight: 500;
+      color: #2d3748;
+    }
+
+    .automation-stats {
+      display: flex;
+      gap: 15px;
+      font-size: 0.85em;
+      color: #718096;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 26px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e0;
+      transition: .4s;
+      border-radius: 26px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #718096;
+    }
+
+    .spinner {
+      border: 3px solid #e2e8f0;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 1.8em;
+      }
+
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏠 Smart Home Pro</h1>
+      <p>Avancerad automatisering och intelligens</p>
+    </div>
+
+    <div class="dashboard-tabs">
+      <button class="tab active" onclick="switchTab('overview')">Översikt</button>
+      <button class="tab" onclick="switchTab('energy')">Energi</button>
+      <button class="tab" onclick="switchTab('automation')">Automation</button>
+      <button class="tab" onclick="switchTab('analytics')">Analys</button>
+      <button class="tab" onclick="switchTab('intelligence')">AI Insikter</button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="overview-tab" class="dashboard-content">
+      <div class="dashboard-grid">
+        <!-- Status Widget -->
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Hemstatus</h3>
+            <div class="widget-icon">🏡</div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="stat-value" id="temp-value">21.5°</div>
+              <div class="stat-label">Temperatur</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="energy-value">2.4kW</div>
+              <div class="stat-label">Energi</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="devices-value">24</div>
+              <div class="stat-label">Enheter</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="presence-value">Hemma</div>
+              <div class="stat-label">Närvaro</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scenes Widget -->
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Scener</h3>
+            <div class="widget-icon">🎭</div>
+          </div>
+          <div class="scene-grid" id="scenes-container">
+            <button class="scene-btn" onclick="activateScene('morning')">God Morgon</button>
+            <button class="scene-btn" onclick="activateScene('evening')">Kväll</button>
+            <button class="scene-btn active" onclick="activateScene('night')">God Natt</button>
+            <button class="scene-btn" onclick="activateScene('away')">Borta</button>
+          </div>
+        </div>
+
+        <!-- Energy Chart Widget -->
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Energiförbrukning (24h)</h3>
+            <div class="widget-icon">⚡</div>
+          </div>
+          <div class="chart-container" id="energy-chart">
+            <!-- Chart bars will be generated by JS -->
+          </div>
+        </div>
+
+        <!-- Devices Widget -->
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Enheter</h3>
+            <div class="widget-icon">💡</div>
+          </div>
+          <div class="device-list" id="devices-container">
+            <div class="loading">
+              <div class="spinner"></div>
+              Laddar enheter...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Energy Tab -->
+    <div id="energy-tab" class="dashboard-content hidden">
+      <div class="dashboard-grid">
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Realtidsförbrukning</h3>
+            <div class="widget-icon">⚡</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="realtime-energy">2.4kW</div>
+            <div class="stat-label">Aktuell förbrukning</div>
+          </div>
+        </div>
+
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Kostnad</h3>
+            <div class="widget-icon">💰</div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="stat-value">54 kr</div>
+              <div class="stat-label">Idag</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">378 kr</div>
+              <div class="stat-label">Vecka</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Topp Förbrukare</h3>
+            <div class="widget-icon">📊</div>
+          </div>
+          <div id="top-consumers" class="device-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Automation Tab -->
+    <div id="automation-tab" class="dashboard-content hidden">
+      <div class="dashboard-grid">
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Automationer</h3>
+            <div class="widget-icon">🤖</div>
+          </div>
+          <div id="automations-container">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Förutsägelser</h3>
+            <div class="widget-icon">🔮</div>
+          </div>
+          <div id="predictions-container">
+            <div class="insight-item">
+              <div class="insight-title">Nästa förväntade handling</div>
+              <div class="insight-desc">Tänd vardagsrumsljus kl 18:30 (85% säkerhet)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div id="analytics-tab" class="dashboard-content hidden">
+      <div class="dashboard-grid">
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Prestanda</h3>
+            <div class="widget-icon">📈</div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="stat-value">96%</div>
+              <div class="stat-label">Automation Success</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">24/24</div>
+              <div class="stat-label">Enheter Online</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Effektivitet</h3>
+            <div class="widget-icon">⭐</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">92</div>
+            <div class="stat-label">Effektivitetspoäng</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Intelligence Tab -->
+    <div id="intelligence-tab" class="dashboard-content hidden">
+      <div class="dashboard-grid">
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">AI Insikter</h3>
+            <div class="widget-icon">🧠</div>
+          </div>
+          <div class="insight-list" id="ai-insights">
+            <div class="insight-item success">
+              <div class="insight-title">Energibesparing</div>
+              <div class="insight-desc">Du har sparat 15% energi denna månad jämfört med förra månaden!</div>
+            </div>
+            <div class="insight-item warning">
+              <div class="insight-title">Hög förbrukning upptäckt</div>
+              <div class="insight-desc">Värmepumpen förbrukar 20% mer än normalt. Kontrollera inställningarna.</div>
+            </div>
+            <div class="insight-item">
+              <div class="insight-title">Automatiseringsförslag</div>
+              <div class="insight-desc">Skapa en automation för vardagsrumsljus - du justerar dem dagligen kl 18:30.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="widget">
+          <div class="widget-header">
+            <h3 class="widget-title">Rekommendationer</h3>
+            <div class="widget-icon">💡</div>
+          </div>
+          <div id="recommendations-container" class="insight-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Switch between tabs
+    function switchTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.dashboard-content').forEach(tab => {
+        tab.classList.add('hidden');
+      });
+      
+      // Remove active class from all tab buttons
+      document.querySelectorAll('.tab').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Show selected tab
+      document.getElementById(tabName + '-tab').classList.remove('hidden');
+      event.target.classList.add('active');
+      
+      // Load tab data
+      loadTabData(tabName);
+    }
+
+    // Activate scene
+    async function activateScene(sceneId) {
+      try {
+        // Remove active class from all scenes
+        document.querySelectorAll('.scene-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        
+        // Add active to clicked scene
+        event.target.classList.add('active');
+        
+        // Call API to activate scene
+        await fetch('/api/scenes/' + sceneId + '/activate', { method: 'POST' });
+        
+        // Show notification
+        showNotification('Scen aktiverad: ' + event.target.textContent);
+      } catch (error) {
+        console.error('Error activating scene:', error);
+      }
+    }
+
+    // Load tab data
+    async function loadTabData(tabName) {
+      switch(tabName) {
+        case 'overview':
+          await loadOverviewData();
+          break;
+        case 'energy':
+          await loadEnergyData();
+          break;
+        case 'automation':
+          await loadAutomationData();
+          break;
+        case 'analytics':
+          await loadAnalyticsData();
+          break;
+        case 'intelligence':
+          await loadIntelligenceData();
+          break;
+      }
+    }
+
+    // Load overview data
+    async function loadOverviewData() {
+      try {
+        const response = await fetch('/api/dashboard/overview');
+        const data = await response.json();
+        
+        // Update stats
+        document.getElementById('temp-value').textContent = data.temperature + '°';
+        document.getElementById('energy-value').textContent = data.energy + 'kW';
+        document.getElementById('devices-value').textContent = data.devicesOnline;
+        document.getElementById('presence-value').textContent = data.presence ? 'Hemma' : 'Borta';
+        
+        // Update energy chart
+        updateEnergyChart(data.energyHistory);
+        
+        // Update devices list
+        updateDevicesList(data.devices);
+      } catch (error) {
+        console.error('Error loading overview:', error);
+      }
+    }
+
+    // Update energy chart
+    function updateEnergyChart(data) {
+      const container = document.getElementById('energy-chart');
+      container.innerHTML = '';
+      
+      const maxValue = Math.max(...data);
+      data.forEach(value => {
+        const bar = document.createElement('div');
+        bar.className = 'chart-bar';
+        bar.style.height = (value / maxValue * 100) + '%';
+        bar.title = value + ' kWh';
+        container.appendChild(bar);
+      });
+    }
+
+    // Update devices list
+    function updateDevicesList(devices) {
+      const container = document.getElementById('devices-container');
+      container.innerHTML = '';
+      
+      devices.forEach(device => {
+        const item = document.createElement('div');
+        item.className = 'device-item';
+        item.innerHTML = `
+          <span class="device-name">${device.name}</span>
+          <span class="device-status ${device.online ? 'status-online' : 'status-offline'}">
+            ${device.online ? 'Online' : 'Offline'}
+          </span>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // Load energy data
+    async function loadEnergyData() {
+      // Implementation here
+    }
+
+    // Load automation data
+    async function loadAutomationData() {
+      try {
+        const response = await fetch('/api/automations');
+        const data = await response.json();
+        
+        const container = document.getElementById('automations-container');
+        container.innerHTML = '';
+        
+        data.automations.forEach(auto => {
+          const item = document.createElement('div');
+          item.className = 'automation-item';
+          item.innerHTML = `
+            <div>
+              <div class="automation-name">${auto.name}</div>
+              <div class="automation-stats">
+                <span>Exekveringar: ${auto.executions}</span>
+                <span>Framgång: ${auto.successRate}%</span>
+              </div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" ${auto.enabled ? 'checked' : ''} 
+                     onchange="toggleAutomation('${auto.id}', this.checked)">
+              <span class="slider"></span>
+            </label>
+          `;
+          container.appendChild(item);
+        });
+      } catch (error) {
+        console.error('Error loading automations:', error);
+      }
+    }
+
+    // Toggle automation
+    async function toggleAutomation(id, enabled) {
+      try {
+        await fetch(`/api/automations/${id}/toggle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled })
+        });
+      } catch (error) {
+        console.error('Error toggling automation:', error);
+      }
+    }
+
+    // Load analytics data
+    async function loadAnalyticsData() {
+      // Implementation here
+    }
+
+    // Load intelligence data
+    async function loadIntelligenceData() {
+      try {
+        const response = await fetch('/api/intelligence/insights');
+        const data = await response.json();
+        
+        // Update recommendations
+        const container = document.getElementById('recommendations-container');
+        container.innerHTML = '';
+        
+        data.recommendations.forEach(rec => {
+          const item = document.createElement('div');
+          item.className = `insight-item ${rec.type}`;
+          item.innerHTML = `
+            <div class="insight-title">${rec.title}</div>
+            <div class="insight-desc">${rec.description}</div>
+          `;
+          container.appendChild(item);
+        });
+      } catch (error) {
+        console.error('Error loading intelligence data:', error);
+      }
+    }
+
+    // Show notification
+    function showNotification(message) {
+      // Simple notification implementation
+      alert(message);
+    }
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      loadOverviewData();
+      
+      // Refresh data every 30 seconds
+      setInterval(loadOverviewData, 30000);
+    });
+  </script>
+</body>
+</html>

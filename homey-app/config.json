@@ -1,0 +1,83 @@
+{
+  "advancedAutomation": {
+    "enabled": true,
+    "learningEnabled": true,
+    "predictionThreshold": 0.7,
+    "maxExecutionsPerDay": 100,
+    "defaultCooldown": 5,
+    "adaptiveThresholds": true,
+    "contextAwareness": true
+  },
+  "intelligentDashboard": {
+    "enabled": true,
+    "refreshInterval": 30000,
+    "theme": "auto",
+    "defaultLayout": "grid",
+    "realTimeUpdates": true,
+    "widgets": {
+      "statusCard": { "enabled": true },
+      "energyChart": { "enabled": true },
+      "climatePanel": { "enabled": true },
+      "sceneGrid": { "enabled": true },
+      "deviceList": { "enabled": true },
+      "aiInsights": { "enabled": true }
+    }
+  },
+  "intelligence": {
+    "enabled": true,
+    "learningPeriod": 7,
+    "patternRecognition": true,
+    "anomalyDetection": true,
+    "recommendations": {
+      "enabled": true,
+      "maxRecommendations": 10,
+      "minConfidence": 0.6,
+      "categories": ["energy", "comfort", "security", "automation"]
+    },
+    "predictions": {
+      "enabled": true,
+      "nextAction": true,
+      "energy": true,
+      "temperature": true
+    }
+  },
+  "analytics": {
+    "enabled": true,
+    "dataRetention": 90,
+    "metricsInterval": 300000,
+    "benchmarking": true,
+    "comparisons": true,
+    "insights": {
+      "energy": true,
+      "devices": true,
+      "automation": true,
+      "presence": true,
+      "climate": true
+    }
+  },
+  "notifications": {
+    "enabled": true,
+    "highEnergyAlert": true,
+    "deviceOfflineAlert": true,
+    "recommendationAlert": false,
+    "automationFailureAlert": true,
+    "securityAlert": true
+  },
+  "energy": {
+    "pricePerKwh": 1.5,
+    "currency": "SEK",
+    "highConsumptionThreshold": 3000,
+    "tracking": {
+      "perDevice": true,
+      "perZone": true,
+      "realTime": true,
+      "historical": true
+    }
+  },
+  "dataManagement": {
+    "autoCleanup": true,
+    "cleanupInterval": 30,
+    "maxHistoryDays": 90,
+    "compressionEnabled": true
+  }
+}

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Pro Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-home"></i>
+                    <span>Smart Home Pro</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="devices">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Enheter</span>
+                </a>
+                <a href="#" class="nav-item" data-page="scenes">
+                    <i class="fas fa-magic"></i>
+                    <span>Scener</span>
+                </a>
+                <a href="#" class="nav-item" data-page="automations">
+                    <i class="fas fa-robot"></i>
+                    <span>Automationer</span>
+                </a>
+                <a href="#" class="nav-item" data-page="energy">
+                    <i class="fas fa-bolt"></i>
+                    <span>Energi</span>
+                </a>
+                <a href="#" class="nav-item" data-page="security">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Säkerhet</span>
+                </a>
+                <a href="#" class="nav-item" data-page="climate">
+                    <i class="fas fa-thermometer-half"></i>
+                    <span>Klimat</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator online">
+                    <i class="fas fa-circle"></i>
+                    <span>Homey Ansluten</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <button class="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 id="page-title">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="weather-widget">
+                        <i class="fas fa-cloud"></i>
+                        <span class="temp">-2°C</span>
+                    </div>
+                    <div class="time-widget">
+                        <span id="current-time">12:00</span>
+                        <span id="current-date">1 feb 2026</span>
+                    </div>
+                    <div class="user-menu">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page active">
+                <!-- Quick Stats -->
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon energy">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="current-power">847 W</span>
+                            <span class="stat-label">Nuvarande effekt</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon temperature">
+                            <i class="fas fa-thermometer-half"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="avg-temp">21.5°C</span>
+                            <span class="stat-label">Medeltemperatur</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon devices">
+                            <i class="fas fa-plug"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="active-devices">6/9</span>
+                            <span class="stat-label">Aktiva enheter</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon security">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="security-status">Hemma</span>
+                            <span class="stat-label">Säkerhetsläge</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Scenes -->
+                <section class="dashboard-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-magic"></i> Snabbscener</h2>
+                    </div>
+                    <div class="scenes-grid" id="quick-scenes">
+                        <button class="scene-button" data-scene="morning">
+                            <span class="scene-icon">🌅</span>
+                            <span class="scene-name">God Morgon</span>
+                        </button>
+                        <button class="scene-button" data-scene="evening">
+                            <span class="scene-icon">🌆</span>
+                            <span class="scene-name">Kväll</span>
+                        </button>
+                        <button class="scene-button" data-scene="night">
+                            <span class="scene-icon">🌙</span>
+                            <span class="scene-name">God Natt</span>
+                        </button>
+                        <button class="scene-button" data-scene="away">
+                            <span class="scene-icon">🚗</span>
+                            <span class="scene-name">Borta</span>
+                        </button>
+                        <button class="scene-button" data-scene="movie">
+                            <span class="scene-icon">🎬</span>
+                            <span class="scene-name">Filmkväll</span>
+                        </button>
+                        <button class="scene-button" data-scene="party">
+                            <span class="scene-icon">🎉</span>
+                            <span class="scene-name">Fest</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Zones Overview -->
+                <section class="dashboard-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-home"></i> Rum</h2>
+                    </div>
+                    <div class="zones-grid" id="zones-overview">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- Recent Activity -->
+                <section class="dashboard-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-history"></i> Senaste aktivitet</h2>
+                    </div>
+                    <div class="activity-list" id="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon light">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="activity-info">
+                                <span class="activity-text">Vardagsrum Taklampa tändes</span>
+                                <span class="activity-time">för 2 minuter sedan</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon motion">
+                                <i class="fas fa-walking"></i>
+                            </div>
+                            <div class="activity-info">
+                                <span class="activity-text">Rörelse upptäckt i Hallen</span>
+                                <span class="activity-time">för 5 minuter sedan</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon scene">
+                                <i class="fas fa-magic"></i>
+                            </div>
+                            <div class="activity-info">
+                                <span class="activity-text">Scen "Kväll" aktiverades</span>
+                                <span class="activity-time">för 15 minuter sedan</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Devices Page -->
+            <div id="devices-page" class="page">
+                <div class="devices-filters">
+                    <button class="filter-btn active" data-filter="all">Alla</button>
+                    <button class="filter-btn" data-filter="light">Lampor</button>
+                    <button class="filter-btn" data-filter="thermostat">Termostater</button>
+                    <button class="filter-btn" data-filter="sensor">Sensorer</button>
+                    <button class="filter-btn" data-filter="socket">Smart Plugs</button>
+                </div>
+                <div class="devices-grid" id="devices-grid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Scenes Page -->
+            <div id="scenes-page" class="page">
+                <div class="scenes-management">
+                    <button class="btn-primary" id="create-scene-btn">
+                        <i class="fas fa-plus"></i> Skapa ny scen
+                    </button>
+                </div>
+                <div class="scenes-list" id="scenes-list">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Automations Page -->
+            <div id="automations-page" class="page">
+                <div class="automations-management">
+                    <button class="btn-primary" id="create-automation-btn">
+                        <i class="fas fa-plus"></i> Skapa ny automation
+                    </button>
+                </div>
+                <div class="automations-list" id="automations-list">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Energy Page -->
+            <div id="energy-page" class="page">
+                <div class="energy-overview">
+                    <div class="energy-card main">
+                        <h3>Nuvarande förbrukning</h3>
+                        <div class="energy-value">
+                            <span id="energy-current">847</span>
+                            <span class="unit">W</span>
+                        </div>
+                        <div class="energy-trend down">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>12% lägre än igår</span>
+                        </div>
+                    </div>
+                    <div class="energy-card">
+                        <h3>Idag</h3>
+                        <div class="energy-value">
+                            <span>12.4</span>
+                            <span class="unit">kWh</span>
+                        </div>
+                    </div>
+                    <div class="energy-card">
+                        <h3>Denna månad</h3>
+                        <div class="energy-value">
+                            <span>285</span>
+                            <span class="unit">kWh</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="energy-chart-container">
+                    <canvas id="energy-chart"></canvas>
+                </div>
+                <div class="top-consumers">
+                    <h3>Största förbrukare</h3>
+                    <div class="consumer-list" id="consumer-list">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Page -->
+            <div id="security-page" class="page">
+                <div class="security-modes">
+                    <button class="security-mode-btn active" data-mode="disarmed">
+                        <i class="fas fa-unlock"></i>
+                        <span>Avlarmat</span>
+                    </button>
+                    <button class="security-mode-btn" data-mode="home">
+                        <i class="fas fa-home"></i>
+                        <span>Hemma</span>
+                    </button>
+                    <button class="security-mode-btn" data-mode="away">
+                        <i class="fas fa-plane"></i>
+                        <span>Borta</span>
+                    </button>
+                    <button class="security-mode-btn" data-mode="night">
+                        <i class="fas fa-moon"></i>
+                        <span>Natt</span>
+                    </button>
+                </div>
+                <div class="security-sensors" id="security-sensors">
+                    <!-- Populated by JavaScript -->
+                </div>
+                <div class="security-log">
+                    <h3>Säkerhetslogg</h3>
+                    <div class="log-list" id="security-log">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Climate Page -->
+            <div id="climate-page" class="page">
+                <div class="climate-zones" id="climate-zones">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal Title</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Modal content -->
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <button class="btn-secondary modal-cancel">Avbryt</button>
+                <button class="btn-primary modal-confirm">Bekräfta</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Pro - Advanced Analytics</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="advanced-styles.css">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>🏠 Smart Home Pro</h1>
+            </div>
+            
+            <nav class="nav">
+                <a href="index.html" class="nav-item">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item active" data-page="analytics">
+                    <span class="icon">🤖</span>
+                    <span>AI & Analytics</span>
+                </a>
+                <a href="#" class="nav-item" data-page="predictions">
+                    <span class="icon">🔮</span>
+                    <span>Prediktioner</span>
+                </a>
+                <a href="#" class="nav-item" data-page="insights">
+                    <span class="icon">💡</span>
+                    <span>Insikter</span>
+                </a>
+                <a href="#" class="nav-item" data-page="automations">
+                    <span class="icon">⚡</span>
+                    <span>Automationer</span>
+                </a>
+                <a href="#" class="nav-item" data-page="optimization">
+                    <span class="icon">🎯</span>
+                    <span>Optimering</span>
+                </a>
+            </nav>
+
+            <div class="status-indicator online">
+                <span class="indicator-dot"></span>
+                <span>Homey Ansluten</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="page-header">
+                <h2 id="page-title">AI & Analytics</h2>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="refresh-analytics">
+                        <span>🔄</span> Uppdatera
+                    </button>
+                </div>
+            </header>
+
+            <!-- Analytics Page -->
+            <div id="analytics-page" class="page active">
+                <!-- Insights Cards -->
+                <div class="insights-section">
+                    <h3>Intelligenta Insikter</h3>
+                    <div id="insights-cards" class="insights-grid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Energy Analytics -->
+                <div class="analytics-section">
+                    <h3>Energianalys</h3>
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h4>Nuvarande Förbrukning</h4>
+                            <div class="metric-large">
+                                <span id="current-consumption">--</span>
+                                <span class="unit">W</span>
+                            </div>
+                            <div class="metric-trend" id="consumption-trend">
+                                <span class="trend-indicator">--</span>
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <h4>Effektivitetspoäng</h4>
+                            <div class="efficiency-score">
+                                <div class="score-circle" id="efficiency-circle">
+                                    <span id="efficiency-score">--</span>
+                                </div>
+                                <div class="score-rating" id="efficiency-rating">--</div>
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <h4>Månadsförbrukning</h4>
+                            <div class="metric-large">
+                                <span id="monthly-consumption">--</span>
+                                <span class="unit">kWh</span>
+                            </div>
+                            <div class="cost-info">
+                                <span id="monthly-cost">--</span> SEK
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <h4>Prognos Denna Månad</h4>
+                            <div class="metric-large">
+                                <span id="forecast-consumption">--</span>
+                                <span class="unit">kWh</span>
+                            </div>
+                            <div class="forecast-confidence">
+                                Förtroende: <span id="forecast-confidence">--</span>%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Energy Chart -->
+                <div class="chart-section">
+                    <h3>Energiförbrukning & Prognos</h3>
+                    <div class="chart-card">
+                        <canvas id="energyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Peak Hours -->
+                <div class="peak-hours-section">
+                    <h3>Topptimmar</h3>
+                    <div id="peak-hours-list" class="peak-hours-grid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Predictions Page -->
+            <div id="predictions-page" class="page">
+                <div class="predictions-grid">
+                    <div class="prediction-card">
+                        <h3>🔮 Energiprognoser</h3>
+                        <div class="prediction-content">
+                            <div class="prediction-item">
+                                <span class="prediction-label">Nästa timme</span>
+                                <span class="prediction-value" id="pred-next-hour">--</span>
+                                <span class="unit">kWh</span>
+                            </div>
+                            <div class="prediction-item">
+                                <span class="prediction-label">Idag totalt</span>
+                                <span class="prediction-value" id="pred-today">--</span>
+                                <span class="unit">kWh</span>
+                            </div>
+                            <div class="prediction-item">
+                                <span class="prediction-label">Denna månad</span>
+                                <span class="prediction-value" id="pred-month">--</span>
+                                <span class="unit">kWh</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prediction-card">
+                        <h3>🌡️ Klimatprognoser</h3>
+                        <div id="climate-predictions" class="prediction-content">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <div class="prediction-card">
+                        <h3>👥 Närvaroprognoser</h3>
+                        <div id="presence-predictions" class="prediction-content">
+                            <div class="prediction-item">
+                                <span class="prediction-label">Nästa avresa</span>
+                                <span class="prediction-value">08:15</span>
+                                <span class="confidence">85% säker</span>
+                            </div>
+                            <div class="prediction-item">
+                                <span class="prediction-label">Hemkomst</span>
+                                <span class="prediction-value">17:30</span>
+                                <span class="confidence">78% säker</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Anomalies -->
+                <div class="anomalies-section">
+                    <h3>⚠️ Upptäckta Avvikelser</h3>
+                    <div id="anomalies-list" class="anomalies-grid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights Page -->
+            <div id="insights-page" class="page">
+                <div class="insights-detailed">
+                    <div class="insight-category">
+                        <h3>💰 Besparingsmöjligheter</h3>
+                        <div id="savings-opportunities" class="opportunities-list">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <div class="insight-category">
+                        <h3>🤖 Automationsförslag</h3>
+                        <div id="automation-suggestions" class="suggestions-list">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <div class="insight-category">
+                        <h3>🌡️ Komfortoptimering</h3>
+                        <div id="comfort-recommendations" class="recommendations-list">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Automations Page -->
+            <div id="automations-page" class="page">
+                <div class="automations-header">
+                    <button class="btn btn-primary" id="create-automation">
+                        <span>➕</span> Skapa Automation
+                    </button>
+                </div>
+
+                <div class="automations-grid">
+                    <div class="automation-card">
+                        <div class="automation-header">
+                            <h4>Intelligent Morgonrutin</h4>
+                            <div class="automation-status active">Aktiv</div>
+                        </div>
+                        <p class="automation-description">
+                            Adaptiv morgonrutin baserad på dina vanor
+                        </p>
+                        <div class="automation-stats">
+                            <span>📊 Körningar: 45</span>
+                            <span>✅ Framgång: 98%</span>
+                            <span>🤖 AI-driven</span>
+                        </div>
+                        <div class="automation-actions">
+                            <button class="btn-icon" title="Redigera">✏️</button>
+                            <button class="btn-icon" title="Pausa">⏸️</button>
+                            <button class="btn-icon" title="Ta bort">🗑️</button>
+                        </div>
+                    </div>
+
+                    <div class="automation-card">
+                        <div class="automation-header">
+                            <h4>Smart Energibesparing</h4>
+                            <div class="automation-status active">Aktiv</div>
+                        </div>
+                        <p class="automation-description">
+                            Intelligent energibesparing baserad på användningsmönster
+                        </p>
+                        <div class="automation-stats">
+                            <span>📊 Körningar: 128</span>
+                            <span>✅ Framgång: 95%</span>
+                            <span>💰 Besparing: 145 kr/mån</span>
+                        </div>
+                        <div class="automation-actions">
+                            <button class="btn-icon" title="Redigera">✏️</button>
+                            <button class="btn-icon" title="Pausa">⏸️</button>
+                            <button class="btn-icon" title="Ta bort">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optimization Page -->
+            <div id="optimization-page" class="page">
+                <div class="optimization-overview">
+                    <div class="optimization-score-card">
+                        <h3>Övergripande Optimeringspoäng</h3>
+                        <div class="optimization-score-large">
+                            <div class="score-circle-large">
+                                <span id="overall-score">78</span>
+                            </div>
+                            <div class="score-breakdown">
+                                <div class="score-item">
+                                    <span class="score-label">Energi</span>
+                                    <div class="score-bar">
+                                        <div class="score-bar-fill" style="width: 75%"></div>
+                                    </div>
+                                    <span class="score-value">75</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="score-label">Komfort</span>
+                                    <div class="score-bar">
+                                        <div class="score-bar-fill" style="width: 85%"></div>
+                                    </div>
+                                    <span class="score-value">85</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="score-label">Automation</span>
+                                    <div class="score-bar">
+                                        <div class="score-bar-fill" style="width: 72%"></div>
+                                    </div>
+                                    <span class="score-value">72</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="optimization-actions">
+                    <h3>Rekommenderade Åtgärder</h3>
+                    <div id="optimization-recommendations" class="actions-list">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="advanced-app.js"></script>
+</body>
+</html>
