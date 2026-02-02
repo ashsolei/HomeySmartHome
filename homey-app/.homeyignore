@@ -1,0 +1,17 @@
+# Documentation files
+AUTONOMOUS_FEATURES_WAVE*.md
+README.md
+
+# Development files
+examples/
+.vscode/
+.idea/
+*.log
+
+# Test files (if any)
+test/
+tests/
+__tests__/
+
+# Build artifacts
+.homeybuild/

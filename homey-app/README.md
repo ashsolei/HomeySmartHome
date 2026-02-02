@@ -328,7 +328,198 @@ Systemet ger konfidenspoäng för alla förutsägelser:
 3. Interagera mer med dina enheter
 4. Kontrollera att enheter rapporterar korrekt data
 
-## 🔄 Uppdateringar
+## � Hur Kör Jag Miljön?
+
+### Förutsättningar
+
+1. **Homey Pro enheten**
+   - Homey Pro (2016-2019) eller Homey Pro (Early 2023)
+   - Firmware version 8.0.0 eller senare
+   - Aktiv internetanslutning
+
+2. **Utvecklingsverktyg**
+   - Node.js (v14.x, v16.x eller v18.x)
+   - NPM (kommer med Node.js)
+   - [Homey CLI](https://apps.developer.homey.app/the-basics/getting-started)
+
+### Installation av Homey CLI
+
+```bash
+# Installera Homey CLI globalt
+npm install -g homey
+
+# Logga in på ditt Athom-konto
+homey login
+
+# Verifiera installation
+homey --version
+```
+
+### Köra Appen Lokalt (Development Mode)
+
+```bash
+# Navigera till app-mappen
+cd /Users/macbookpro/HomeySmartHome/homey-app
+
+# Installera dependencies (om det finns några)
+npm install
+
+# Kör appen i development mode direkt på din Homey
+homey app run
+
+# Appen startar automatiskt och loggar visas i terminalen
+# Tryck Ctrl+C för att stoppa
+```
+
+### Validera Appen
+
+```bash
+# Kontrollera app.json och övrig konfiguration
+homey app validate
+
+# Bygga appen (skapar .tar.gz för publikation)
+homey app build
+
+# Installera appen permanent på din Homey
+homey app install
+```
+
+### Debugga Appen
+
+```bash
+# Kör med verbose logging
+homey app run --clean
+
+# Visa Homey-loggar i realtid
+homey app log
+
+# Inspektera app-status
+homey app list
+```
+
+### Uppdatera Appen
+
+```bash
+# Efter ändringar i koden
+homey app install
+
+# Eller för utveckling med auto-reload
+homey app run
+```
+
+### Miljövariabler
+
+Skapa `env.json` i root (ingår ej i git):
+```json
+{
+  "NORDPOOL_API_KEY": "your-api-key",
+  "WEATHER_API_KEY": "your-api-key"
+}
+```
+
+### Vanliga Kommandon
+
+| Kommando | Beskrivning |
+|----------|-------------|
+| `homey app run` | Kör app i dev mode |
+| `homey app run --clean` | Kör med clean install |
+| `homey app install` | Installera permanent |
+| `homey app uninstall` | Avinstallera app |
+| `homey app version patch` | Uppdatera version (patch) |
+| `homey app validate` | Validera app-struktur |
+| `homey app build` | Bygg för publicering |
+
+### Testa Appen
+
+#### 1. Via Homey Web App
+- Öppna https://my.homey.app
+- Navigera till "More" → "Apps"
+- Din app visas under "Installed apps"
+- Klicka för att öppna settings
+
+#### 2. Via API
+```bash
+# Testa API endpoints
+curl http://YOUR_HOMEY_IP/api/app/com.smarthomepro.dashboard/dashboard
+
+# Eller via Homey CLI
+homey api GET /dashboard
+```
+
+#### 3. Via Flow Cards
+- Öppna Homey Flow editor
+- Skapa nytt Flow
+- Använd triggers/conditions/actions från "Smart Home Pro"
+- Testa AI-prediktioner och orkestrering
+
+### CI/CD Pipeline
+
+GitHub Actions kör automatiskt vid varje push:
+- Multi-version Node.js testing (14.x, 16.x, 18.x)
+- ESLint code quality checks
+- NPM security audit
+- Snyk vulnerability scanning
+- Automated build verification
+
+### Performance Tips
+
+- Appen använder ~50-100MB RAM på Homey
+- AI-modeller tränas i bakgrunden utan UI-påverkan
+- Cache för API-anrop: 5-10 minuter TTL
+- Monitoring körs var 10-30e minut beroende på system
+- Automatisk garbage collection var 24h
+
+### Felsökning
+
+**Problem: "App won't start"**
+```bash
+homey app run --clean
+homey app log
+```
+
+**Problem: "High memory usage"**
+- Kontrollera AI-modellernas datamängd (Settings → AI Predictions)
+- Rensa träningsdata om >5000 datapunkter
+
+**Problem: "Flow cards not appearing"**
+```bash
+homey app uninstall
+homey app install
+# Starta om Homey via app eller web interface
+```
+
+**Problem: "API endpoints not responding"**
+- Verifiera att appen är installerad: `homey app list`
+- Kontrollera app-loggar: `homey app log`
+- Testa direkt via Homey API explorer
+
+### Utvecklingsguide
+
+1. **Ändra kod** i `lib/`, `app.js`, `api.js`, etc.
+2. **Spara ändringar**
+3. **Kör** `homey app run` (auto-reload aktiv)
+4. **Testa** funktionaliteten via Web App eller API
+5. **Commit** till Git när allt fungerar
+6. **Push** till GitHub för CI/CD
+
+### Production Deployment
+
+När du är redo att publicera:
+```bash
+# Uppdatera version
+homey app version minor
+
+# Validera
+homey app validate
+
+# Bygg
+homey app build
+
+# Publicera till Homey App Store
+homey app publish
+```
+
+## �🔄 Uppdateringar
 
 ### Version 1.0.0 (Aktuell) - Wave 9 Complete
 - ✅ Avancerad Automation Engine
