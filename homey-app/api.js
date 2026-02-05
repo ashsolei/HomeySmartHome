@@ -2757,5 +2757,134 @@ module.exports = {
     } catch (error) {
       return { success: false, error: error.message };
     }
+  },
+  
+  // ============================================
+  // WAVE 10: DEEP LEARNING & NLP ENDPOINTS
+  // ============================================
+  
+  // Deep Learning Vision System
+  async getVisionStatistics({ homey }) {
+    return homey.app.deepLearningVisionSystem.getVisionStatistics();
+  },
+  
+  async getCameraList({ homey }) {
+    const cameras = Array.from(homey.app.deepLearningVisionSystem.cameras.values());
+    return cameras;
+  },
+  
+  async getCameraDetails({ homey, params }) {
+    const { cameraId } = params;
+    const camera = homey.app.deepLearningVisionSystem.cameras.get(cameraId);
+    
+    if (!camera) {
+      throw new Error(`Camera ${cameraId} not found`);
+    }
+    
+    return camera;
+  },
+  
+  async processFrame({ homey, params, body }) {
+    const { cameraId } = params;
+    const { frameData } = body;
+    
+    return homey.app.deepLearningVisionSystem.processFrame(cameraId, frameData);
+  },
+  
+  async getActivityTimeline({ homey, params, query }) {
+    const { cameraId } = params;
+    const hours = query.hours ? parseInt(query.hours) : 24;
+    
+    return homey.app.deepLearningVisionSystem.getActivityTimeline(cameraId, hours);
+  },
+  
+  async getAnomalyReport({ homey, query }) {
+    const days = query.days ? parseInt(query.days) : 7;
+    return homey.app.deepLearningVisionSystem.getAnomalyReport(days);
+  },
+  
+  async getRecognizedFaces({ homey }) {
+    const faces = Array.from(homey.app.deepLearningVisionSystem.recognizedFaces.values());
+    return faces;
+  },
+  
+  async registerPerson({ homey, body }) {
+    const { name, role, imageData } = body;
+    
+    if (!name || !role) {
+      throw new Error('Name and role are required');
+    }
+    
+    return homey.app.deepLearningVisionSystem.registerPerson(name, role, imageData);
+  },
+  
+  async searchPerson({ homey, body }) {
+    const { imageData } = body;
+    
+    if (!imageData) {
+      throw new Error('Image data is required');
+    }
+    
+    return homey.app.deepLearningVisionSystem.searchPerson(imageData);
+  },
+  
+  async getVisionSettings({ homey }) {
+    return homey.app.deepLearningVisionSystem.settings;
+  },
+  
+  async updateVisionSettings({ homey, body }) {
+    const { settings } = body;
+    
+    Object.assign(homey.app.deepLearningVisionSystem.settings, settings);
+    
+    return { success: true, settings: homey.app.deepLearningVisionSystem.settings };
+  },
+  
+  // Natural Language Automation Engine
+  async getNLPStatistics({ homey }) {
+    return homey.app.naturalLanguageAutomationEngine.getNLPStatistics();
+  },
+  
+  async processNLPCommand({ homey, body }) {
+    const { command, userId, context } = body;
+    
+    if (!command) {
+      throw new Error('Command is required');
+    }
+    
+    return homey.app.naturalLanguageAutomationEngine.processCommand(command, userId, context);
+  },
+  
+  async getCommandHistory({ homey, query }) {
+    const limit = query.limit ? parseInt(query.limit) : 50;
+    const history = homey.app.naturalLanguageAutomationEngine.commandHistory;
+    
+    return history.slice(-limit).reverse();
+  },
+  
+  async getNLPAutomations({ homey }) {
+    const automations = Array.from(homey.app.naturalLanguageAutomationEngine.automations.values());
+    return automations;
+  },
+  
+  async getIntents({ homey }) {
+    const intents = Array.from(homey.app.naturalLanguageAutomationEngine.intents.values());
+    return intents;
+  },
+  
+  async getSupportedLanguages({ homey }) {
+    return homey.app.naturalLanguageAutomationEngine.languages;
+  },
+  
+  async getNLPSettings({ homey }) {
+    return homey.app.naturalLanguageAutomationEngine.settings;
+  },
+  
+  async updateNLPSettings({ homey, body }) {
+    const { settings } = body;
+    
+    Object.assign(homey.app.naturalLanguageAutomationEngine.settings, settings);
+    
+    return { success: true, settings: homey.app.naturalLanguageAutomationEngine.settings };
   }
 };

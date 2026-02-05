@@ -257,6 +257,121 @@
             "title": { "en": "Resolution method", "sv": "Lösningsmetod" }
           }
         ]
+      },
+      {
+        "id": "face-detected",
+        "title": {
+          "en": "Face detected on camera",
+          "sv": "Ansikte upptäckt på kamera"
+        },
+        "tokens": [
+          {
+            "name": "camera_name",
+            "type": "string",
+            "title": { "en": "Camera", "sv": "Kamera" }
+          },
+          {
+            "name": "person_name",
+            "type": "string",
+            "title": { "en": "Person", "sv": "Person" }
+          },
+          {
+            "name": "confidence",
+            "type": "number",
+            "title": { "en": "Confidence (%)", "sv": "Säkerhet (%)" }
+          }
+        ]
+      },
+      {
+        "id": "object-detected",
+        "title": {
+          "en": "Object detected on camera",
+          "sv": "Objekt upptäckt på kamera"
+        },
+        "tokens": [
+          {
+            "name": "camera_name",
+            "type": "string",
+            "title": { "en": "Camera", "sv": "Kamera" }
+          },
+          {
+            "name": "object_type",
+            "type": "string",
+            "title": { "en": "Object type", "sv": "Objekttyp" }
+          },
+          {
+            "name": "confidence",
+            "type": "number",
+            "title": { "en": "Confidence (%)", "sv": "Säkerhet (%)" }
+          }
+        ]
+      },
+      {
+        "id": "anomaly-detected",
+        "title": {
+          "en": "Security anomaly detected",
+          "sv": "Säkerhetsavvikelse upptäckt"
+        },
+        "tokens": [
+          {
+            "name": "anomaly_type",
+            "type": "string",
+            "title": { "en": "Anomaly type", "sv": "Avvikelsetyp" }
+          },
+          {
+            "name": "severity",
+            "type": "string",
+            "title": { "en": "Severity", "sv": "Allvarlighetsgrad" }
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "title": { "en": "Description", "sv": "Beskrivning" }
+          }
+        ]
+      },
+      {
+        "id": "nlp-command-processed",
+        "title": {
+          "en": "Natural language command processed",
+          "sv": "Naturligt språkkommando behandlat"
+        },
+        "tokens": [
+          {
+            "name": "command",
+            "type": "string",
+            "title": { "en": "Command", "sv": "Kommando" }
+          },
+          {
+            "name": "intent",
+            "type": "string",
+            "title": { "en": "Intent", "sv": "Avsikt" }
+          },
+          {
+            "name": "confidence",
+            "type": "number",
+            "title": { "en": "Confidence (%)", "sv": "Säkerhet (%)" }
+          }
+        ]
+      },
+      {
+        "id": "nlp-automation-created",
+        "title": {
+          "en": "Automation created via natural language",
+          "sv": "Automation skapad via naturligt språk"
+        },
+        "tokens": [
+          {
+            "name": "automation_name",
+            "type": "string",
+            "title": { "en": "Automation name", "sv": "Automationsnamn" }
+          },
+          {
+            "name": "language",
+            "type": "string",
+            "title": { "en": "Language", "sv": "Språk" }
+          }
+        ]
       }
     ],
     "conditions": [
@@ -381,6 +496,44 @@
           "en": "AI orchestration is active",
           "sv": "AI-orkestrering är aktiv"
         }
+      },
+      {
+        "id": "vision-model-ready",
+        "title": {
+          "en": "Vision AI model is ready",
+          "sv": "Vision AI-modell är redo"
+        }
+      },
+      {
+        "id": "face-recognized",
+        "title": {
+          "en": "Specific person is recognized",
+          "sv": "Specifik person är identifierad"
+        },
+        "args": [
+          {
+            "name": "person_name",
+            "type": "text",
+            "placeholder": { "en": "Person name", "sv": "Personnamn" }
+          }
+        ]
+      },
+      {
+        "id": "nlp-confidence-above",
+        "title": {
+          "en": "NLP command confidence is above",
+          "sv": "NLP-kommandosäkerhet är över"
+        },
+        "args": [
+          {
+            "name": "threshold",
+            "type": "range",
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "label": "%"
+          }
+        ]
       }
     ],
     "actions": [
@@ -574,6 +727,86 @@
             "values": [
               { "id": "true", "label": { "en": "Enable", "sv": "Aktivera" } },
               { "id": "false", "label": { "en": "Disable", "sv": "Inaktivera" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "register-person-face",
+        "title": {
+          "en": "Register person for facial recognition",
+          "sv": "Registrera person för ansiktsigenkänning"
+        },
+        "args": [
+          {
+            "name": "name",
+            "type": "text",
+            "placeholder": { "en": "Person name", "sv": "Personnamn" }
+          },
+          {
+            "name": "role",
+            "type": "dropdown",
+            "values": [
+              { "id": "owner", "label": { "en": "Owner", "sv": "Ägare" } },
+              { "id": "family", "label": { "en": "Family", "sv": "Familj" } },
+              { "id": "visitor", "label": { "en": "Visitor", "sv": "Besökare" } },
+              { "id": "service", "label": { "en": "Service", "sv": "Service" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "process-nlp-command",
+        "title": {
+          "en": "Process natural language command",
+          "sv": "Behandla naturligt språkkommando"
+        },
+        "args": [
+          {
+            "name": "command",
+            "type": "text",
+            "placeholder": { "en": "Enter command", "sv": "Ange kommando" }
+          }
+        ]
+      },
+      {
+        "id": "enable-camera-ai",
+        "title": {
+          "en": "Enable AI for camera",
+          "sv": "Aktivera AI för kamera"
+        },
+        "args": [
+          {
+            "name": "camera",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select camera", "sv": "Välj kamera" }
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "values": [
+              { "id": "true", "label": { "en": "Enable", "sv": "Aktivera" } },
+              { "id": "false", "label": { "en": "Disable", "sv": "Inaktivera" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "set-nlp-language",
+        "title": {
+          "en": "Set NLP default language",
+          "sv": "Ställ in NLP-standardspråk"
+        },
+        "args": [
+          {
+            "name": "language",
+            "type": "dropdown",
+            "values": [
+              { "id": "en", "label": { "en": "English", "sv": "Engelska" } },
+              { "id": "sv", "label": { "en": "Swedish", "sv": "Svenska" } },
+              { "id": "es", "label": { "en": "Spanish", "sv": "Spanska" } },
+              { "id": "de", "label": { "en": "German", "sv": "Tyska" } },
+              { "id": "fr", "label": { "en": "French", "sv": "Franska" } }
             ]
           }
         ]

@@ -76,6 +76,9 @@ const SmartHomeInsuranceRiskAssessmentSystem = require('./lib/SmartHomeInsurance
 // Ninth wave of autonomous features - AI & Advanced Integration
 const AdvancedAIPredictionEngine = require('./lib/AdvancedAIPredictionEngine');
 const CrossSystemAIOrchestrationHub = require('./lib/CrossSystemAIOrchestrationHub');
+// Tenth wave of autonomous features - Deep Learning & NLP
+const DeepLearningVisionSystem = require('./lib/DeepLearningVisionSystem');
+const NaturalLanguageAutomationEngine = require('./lib/NaturalLanguageAutomationEngine');
 // System optimizer
 const { SystemOptimizer, optimizeSystem } = require('./lib/utils/SystemOptimizer');
 
@@ -212,6 +215,10 @@ class SmartHomeProApp extends Homey.App {
     this.advancedAIPredictionEngine = new AdvancedAIPredictionEngine();
     this.crossSystemAIOrchestrationHub = new CrossSystemAIOrchestrationHub();
     
+    // Tenth wave of autonomous features - Deep Learning & NLP
+    this.deepLearningVisionSystem = new DeepLearningVisionSystem();
+    this.naturalLanguageAutomationEngine = new NaturalLanguageAutomationEngine();
+    
     // Initialize system optimizer
     this.systemOptimizer = new SystemOptimizer();
     
@@ -293,11 +300,50 @@ class SmartHomeProApp extends Homey.App {
       this.advancedPackageDeliveryManagementSystem.initialize(),
       this.smartHomeInsuranceRiskAssessmentSystem.initialize(),
       this.advancedAIPredictionEngine.initialize(),
-      this.crossSystemAIOrchestrationHub.initialize()
+      this.crossSystemAIOrchestrationHub.initialize(),
+      this.deepLearningVisionSystem.initialize(),
+      this.naturalLanguageAutomationEngine.initialize()
     ]);
     
     // Setup Wave 9 AI event listeners
     this.setupAIEventListeners();
+    
+    // Setup Wave 10 Deep Learning event listeners
+    this.setupWave10EventListeners();
+  }
+  
+  setupWave10EventListeners() {
+    // Deep Learning Vision System events
+    this.deepLearningVisionSystem.on('face-detected', (data) => {
+      this.log('Face detected:', data);
+      this.advancedNotificationManager.sendNotification({
+        title: 'Face Detected',
+        message: `${data.faces.length} face(s) detected on ${data.cameraId}`,
+        priority: 'medium'
+      });
+    });
+    
+    this.deepLearningVisionSystem.on('critical-anomaly', (anomaly) => {
+      this.log('Critical anomaly detected:', anomaly);
+      this.advancedNotificationManager.sendNotification({
+        title: 'Security Alert',
+        message: anomaly.description,
+        priority: 'critical'
+      });
+    });
+    
+    this.deepLearningVisionSystem.on('notification', (notification) => {
+      this.advancedNotificationManager.sendNotification(notification);
+    });
+    
+    // Natural Language Automation Engine events
+    this.naturalLanguageAutomationEngine.on('command-processed', ({ command, result }) => {
+      this.log('NLP command processed:', command.rawCommand, '→', result.response);
+    });
+    
+    this.naturalLanguageAutomationEngine.on('notification', (notification) => {
+      this.advancedNotificationManager.sendNotification(notification);
+    });
   }
   
   setupAIEventListeners() {
