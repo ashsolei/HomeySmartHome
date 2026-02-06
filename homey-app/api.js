@@ -2886,5 +2886,191 @@ module.exports = {
     Object.assign(homey.app.naturalLanguageAutomationEngine.settings, settings);
     
     return { success: true, settings: homey.app.naturalLanguageAutomationEngine.settings };
+  },
+
+  // ============================================
+  // WAVE 11 - INFRASTRUCTURE & OPTIMIZATION APIs
+  // ============================================
+
+  // --- System Health Dashboard ---
+  async getSystemHealthDashboard({ homey }) {
+    return await homey.app.systemHealthDashboard.getDashboard();
+  },
+
+  async getSystemHealthByName({ homey, params }) {
+    const { name } = params;
+    return await homey.app.systemHealthDashboard.getSystemHealth(name);
+  },
+
+  async getHealthHistory({ homey, query }) {
+    const hours = parseInt(query?.hours) || 24;
+    return await homey.app.systemHealthDashboard.getHealthHistory(hours);
+  },
+
+  async getHealthAlerts({ homey, query }) {
+    const severity = query?.severity || null;
+    return await homey.app.systemHealthDashboard.getAlerts(severity);
+  },
+
+  async resolveHealthAlert({ homey, params }) {
+    const { alertId } = params;
+    return homey.app.systemHealthDashboard.resolveAlert(alertId);
+  },
+
+  async getPerformanceReport({ homey }) {
+    return await homey.app.systemHealthDashboard.getPerformanceReport();
+  },
+
+  async getTopIssues({ homey, query }) {
+    const count = parseInt(query?.count) || 10;
+    return await homey.app.systemHealthDashboard.getTopIssues(count);
+  },
+
+  async runDiagnostics({ homey }) {
+    return await homey.app.systemHealthDashboard.runDiagnostics();
+  },
+
+  // --- Memory Guard System ---
+  async getMemoryReport({ homey }) {
+    return homey.app.memoryGuardSystem.getMemoryReport();
+  },
+
+  async getMemorySnapshot({ homey }) {
+    return homey.app.memoryGuardSystem.getSnapshot();
+  },
+
+  async getIntervalReport({ homey }) {
+    return homey.app.memoryGuardSystem.getIntervalReport();
+  },
+
+  async getActiveIntervals({ homey }) {
+    return homey.app.memoryGuardSystem.getActiveIntervals();
+  },
+
+  async clearIntervalsByOwner({ homey, params }) {
+    const { owner } = params;
+    return homey.app.memoryGuardSystem.clearByOwner(owner);
+  },
+
+  // --- Error Handling Middleware ---
+  async getErrorReport({ homey }) {
+    return homey.app.errorHandlingMiddleware.getErrorReport();
+  },
+
+  async getErrorsBySystem({ homey, params }) {
+    const { systemName } = params;
+    return homey.app.errorHandlingMiddleware.getErrorsBySystem(systemName);
+  },
+
+  async getErrorTrends({ homey, query }) {
+    const hours = parseInt(query?.hours) || 24;
+    return homey.app.errorHandlingMiddleware.getErrorTrends(hours);
+  },
+
+  // --- Centralized Cache Manager ---
+  async getCacheStats({ homey, query }) {
+    const namespace = query?.namespace;
+    if (namespace) {
+      return homey.app.centralizedCacheManager.getStats(namespace);
+    }
+    return homey.app.centralizedCacheManager.getGlobalStats();
+  },
+
+  async clearCacheNamespace({ homey, params }) {
+    const { namespace } = params;
+    homey.app.centralizedCacheManager.clearNamespace(namespace);
+    return { success: true, message: `Cache namespace '${namespace}' cleared` };
+  },
+
+  // --- Unified Event Scheduler ---
+  async getSchedulerStats({ homey }) {
+    return homey.app.unifiedEventScheduler.getStats();
+  },
+
+  async getSchedulerTasks({ homey }) {
+    return homey.app.unifiedEventScheduler.listTasks();
+  },
+
+  async enableSchedulerTask({ homey, params }) {
+    const { taskId } = params;
+    homey.app.unifiedEventScheduler.enableTask(taskId);
+    return { success: true, message: `Task '${taskId}' enabled` };
+  },
+
+  async disableSchedulerTask({ homey, params }) {
+    const { taskId } = params;
+    homey.app.unifiedEventScheduler.disableTask(taskId);
+    return { success: true, message: `Task '${taskId}' disabled` };
+  },
+
+  async runSchedulerTask({ homey, params }) {
+    const { taskId } = params;
+    await homey.app.unifiedEventScheduler.runTaskNow(taskId);
+    return { success: true, message: `Task '${taskId}' executed` };
+  },
+
+  // --- API Authentication Gateway ---
+  async createAuthToken({ homey, body }) {
+    const { userId, role, ttl } = body;
+    const result = homey.app.apiAuthenticationGateway.createToken(userId, role || 'USER', ttl);
+    return { success: true, token: result };
+  },
+
+  async revokeAuthToken({ homey, params }) {
+    const { tokenId } = params;
+    const result = homey.app.apiAuthenticationGateway.revokeToken(tokenId);
+    return { success: result, message: result ? 'Token revoked' : 'Token not found' };
+  },
+
+  async listAuthTokens({ homey }) {
+    return homey.app.apiAuthenticationGateway.listActiveTokens();
+  },
+
+  async getAuditLog({ homey, query }) {
+    const limit = parseInt(query?.limit) || 100;
+    const log = homey.app.apiAuthenticationGateway.getAuditLog();
+    return log.slice(-limit);
+  },
+
+  // --- Infrastructure Overview ---
+  async getInfrastructureOverview({ homey }) {
+    const health = await homey.app.systemHealthDashboard.getDashboard();
+    const memory = homey.app.memoryGuardSystem.getSnapshot();
+    const errors = homey.app.errorHandlingMiddleware.getErrorReport();
+    const cache = homey.app.centralizedCacheManager.getGlobalStats();
+    const scheduler = homey.app.unifiedEventScheduler.getStats();
+    const tokens = homey.app.apiAuthenticationGateway.listActiveTokens();
+
+    return {
+      timestamp: Date.now(),
+      platform: {
+        name: 'Smart Home Pro',
+        version: '11.0.0',
+        wave: 11,
+        totalSystems: health.systemCount || Object.keys(health.systems || {}).length,
+        uptime: process.uptime()
+      },
+      health: {
+        overallScore: health.overallScore,
+        healthySystems: health.healthyCount || 0,
+        degradedSystems: health.degradedCount || 0,
+        unhealthySystems: health.unhealthyCount || 0
+      },
+      memory: memory,
+      errors: {
+        total: errors.totalErrors || 0,
+        critical: errors.criticalCount || 0,
+        recent: (errors.recentErrors || []).length
+      },
+      cache: cache,
+      scheduler: {
+        totalTasks: scheduler.totalTasks || 0,
+        activeTasks: scheduler.activeTasks || 0,
+        totalExecutions: scheduler.totalExecutions || 0
+      },
+      security: {
+        activeTokens: tokens ? tokens.length : 0
+      }
+    };
   }
 };

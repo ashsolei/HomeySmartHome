@@ -372,6 +372,87 @@
             "title": { "en": "Language", "sv": "Språk" }
           }
         ]
+      },
+      {
+        "id": "system-health-alert",
+        "title": {
+          "en": "System health alert triggered",
+          "sv": "Systemhälsovarning utlöst"
+        },
+        "tokens": [
+          {
+            "name": "alert_level",
+            "type": "string",
+            "title": { "en": "Alert level", "sv": "Varningsnivå" }
+          },
+          {
+            "name": "system_name",
+            "type": "string",
+            "title": { "en": "System name", "sv": "Systemnamn" }
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "title": { "en": "Message", "sv": "Meddelande" }
+          }
+        ]
+      },
+      {
+        "id": "memory-pressure-detected",
+        "title": {
+          "en": "Memory pressure detected",
+          "sv": "Minnestryck upptäckt"
+        },
+        "tokens": [
+          {
+            "name": "pressure_level",
+            "type": "string",
+            "title": { "en": "Pressure level", "sv": "Trycknivå" }
+          },
+          {
+            "name": "heap_used_mb",
+            "type": "number",
+            "title": { "en": "Heap used (MB)", "sv": "Heap använt (MB)" }
+          }
+        ]
+      },
+      {
+        "id": "error-storm-detected",
+        "title": {
+          "en": "Error storm detected",
+          "sv": "Felstorm upptäckt"
+        },
+        "tokens": [
+          {
+            "name": "source_system",
+            "type": "string",
+            "title": { "en": "Source system", "sv": "Källsystem" }
+          },
+          {
+            "name": "error_count",
+            "type": "number",
+            "title": { "en": "Error count", "sv": "Antal fel" }
+          }
+        ]
+      },
+      {
+        "id": "security-lockout",
+        "title": {
+          "en": "Security lockout triggered",
+          "sv": "Säkerhetsutelåsning utlöst"
+        },
+        "tokens": [
+          {
+            "name": "ip_address",
+            "type": "string",
+            "title": { "en": "IP address", "sv": "IP-adress" }
+          },
+          {
+            "name": "reason",
+            "type": "string",
+            "title": { "en": "Reason", "sv": "Anledning" }
+          }
+        ]
       }
     ],
     "conditions": [
@@ -523,6 +604,57 @@
         "title": {
           "en": "NLP command confidence is above",
           "sv": "NLP-kommandosäkerhet är över"
+        },
+        "args": [
+          {
+            "name": "threshold",
+            "type": "range",
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "label": "%"
+          }
+        ]
+      },
+      {
+        "id": "system-health-above",
+        "title": {
+          "en": "Platform health score is above",
+          "sv": "Plattformens hälsopoäng är över"
+        },
+        "args": [
+          {
+            "name": "threshold",
+            "type": "range",
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "label": "%"
+          }
+        ]
+      },
+      {
+        "id": "memory-usage-below",
+        "title": {
+          "en": "Memory usage is below threshold",
+          "sv": "Minnesanvändning är under tröskelvärde"
+        },
+        "args": [
+          {
+            "name": "threshold_mb",
+            "type": "range",
+            "min": 50,
+            "max": 500,
+            "step": 10,
+            "label": "MB"
+          }
+        ]
+      },
+      {
+        "id": "cache-hit-rate-above",
+        "title": {
+          "en": "Cache hit rate is above",
+          "sv": "Cache-träffprocent är över"
         },
         "args": [
           {
@@ -810,6 +942,49 @@
             ]
           }
         ]
+      },
+      {
+        "id": "clear-cache-namespace",
+        "title": {
+          "en": "Clear cache namespace",
+          "sv": "Rensa cache-namnrymd"
+        },
+        "args": [
+          {
+            "name": "namespace",
+            "type": "text",
+            "placeholder": { "en": "Namespace name", "sv": "Namnrymdsnamn" }
+          }
+        ]
+      },
+      {
+        "id": "run-diagnostics",
+        "title": {
+          "en": "Run system diagnostics",
+          "sv": "Kör systemdiagnostik"
+        }
+      },
+      {
+        "id": "toggle-scheduler-task",
+        "title": {
+          "en": "Toggle scheduler task",
+          "sv": "Växla schemaläggningsuppgift"
+        },
+        "args": [
+          {
+            "name": "taskId",
+            "type": "text",
+            "placeholder": { "en": "Task ID", "sv": "Uppgifts-ID" }
+          },
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "values": [
+              { "id": "true", "label": { "en": "Enable", "sv": "Aktivera" } },
+              { "id": "false", "label": { "en": "Disable", "sv": "Inaktivera" } }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -863,6 +1038,118 @@
     "setDeviceState": {
       "method": "POST",
       "path": "/device/:deviceId"
+    },
+    "getSystemHealthDashboard": {
+      "method": "GET",
+      "path": "/infrastructure/health"
+    },
+    "getSystemHealthByName": {
+      "method": "GET",
+      "path": "/infrastructure/health/:name"
+    },
+    "getHealthHistory": {
+      "method": "GET",
+      "path": "/infrastructure/health-history"
+    },
+    "getHealthAlerts": {
+      "method": "GET",
+      "path": "/infrastructure/alerts"
+    },
+    "resolveHealthAlert": {
+      "method": "POST",
+      "path": "/infrastructure/alerts/:alertId/resolve"
+    },
+    "getPerformanceReport": {
+      "method": "GET",
+      "path": "/infrastructure/performance"
+    },
+    "getTopIssues": {
+      "method": "GET",
+      "path": "/infrastructure/top-issues"
+    },
+    "runDiagnostics": {
+      "method": "POST",
+      "path": "/infrastructure/diagnostics"
+    },
+    "getMemoryReport": {
+      "method": "GET",
+      "path": "/infrastructure/memory"
+    },
+    "getMemorySnapshot": {
+      "method": "GET",
+      "path": "/infrastructure/memory/snapshot"
+    },
+    "getIntervalReport": {
+      "method": "GET",
+      "path": "/infrastructure/intervals"
+    },
+    "getActiveIntervals": {
+      "method": "GET",
+      "path": "/infrastructure/intervals/active"
+    },
+    "clearIntervalsByOwner": {
+      "method": "DELETE",
+      "path": "/infrastructure/intervals/:owner"
+    },
+    "getErrorReport": {
+      "method": "GET",
+      "path": "/infrastructure/errors"
+    },
+    "getErrorsBySystem": {
+      "method": "GET",
+      "path": "/infrastructure/errors/:systemName"
+    },
+    "getErrorTrends": {
+      "method": "GET",
+      "path": "/infrastructure/errors/trends"
+    },
+    "getCacheStats": {
+      "method": "GET",
+      "path": "/infrastructure/cache"
+    },
+    "clearCacheNamespace": {
+      "method": "DELETE",
+      "path": "/infrastructure/cache/:namespace"
+    },
+    "getSchedulerStats": {
+      "method": "GET",
+      "path": "/infrastructure/scheduler"
+    },
+    "getSchedulerTasks": {
+      "method": "GET",
+      "path": "/infrastructure/scheduler/tasks"
+    },
+    "enableSchedulerTask": {
+      "method": "POST",
+      "path": "/infrastructure/scheduler/:taskId/enable"
+    },
+    "disableSchedulerTask": {
+      "method": "POST",
+      "path": "/infrastructure/scheduler/:taskId/disable"
+    },
+    "runSchedulerTask": {
+      "method": "POST",
+      "path": "/infrastructure/scheduler/:taskId/run"
+    },
+    "createAuthToken": {
+      "method": "POST",
+      "path": "/infrastructure/auth/token"
+    },
+    "revokeAuthToken": {
+      "method": "DELETE",
+      "path": "/infrastructure/auth/token/:tokenId"
+    },
+    "listAuthTokens": {
+      "method": "GET",
+      "path": "/infrastructure/auth/tokens"
+    },
+    "getAuditLog": {
+      "method": "GET",
+      "path": "/infrastructure/auth/audit"
+    },
+    "getInfrastructureOverview": {
+      "method": "GET",
+      "path": "/infrastructure/overview"
     }
   }
 }

@@ -81,6 +81,14 @@ const DeepLearningVisionSystem = require('./lib/DeepLearningVisionSystem');
 const NaturalLanguageAutomationEngine = require('./lib/NaturalLanguageAutomationEngine');
 // System optimizer
 const { SystemOptimizer, optimizeSystem } = require('./lib/utils/SystemOptimizer');
+// Wave 11 - Infrastructure & Optimization Systems
+const { BaseSystem } = require('./lib/utils/BaseSystem');
+const { CentralizedCacheManager, TTL_LEVELS } = require('./lib/utils/CentralizedCacheManager');
+const { UnifiedEventScheduler } = require('./lib/utils/UnifiedEventScheduler');
+const ErrorHandlingMiddleware = require('./lib/ErrorHandlingMiddleware');
+const MemoryGuardSystem = require('./lib/MemoryGuardSystem');
+const APIAuthenticationGateway = require('./lib/APIAuthenticationGateway');
+const SystemHealthDashboard = require('./lib/SystemHealthDashboard');
 
 class SmartHomeProApp extends Homey.App {
   
@@ -222,6 +230,14 @@ class SmartHomeProApp extends Homey.App {
     // Initialize system optimizer
     this.systemOptimizer = new SystemOptimizer();
     
+    // Wave 11 - Infrastructure & Optimization Systems
+    this.centralizedCacheManager = CentralizedCacheManager.getInstance({ maxGlobalSize: 10000 });
+    this.unifiedEventScheduler = UnifiedEventScheduler.getInstance();
+    this.errorHandlingMiddleware = ErrorHandlingMiddleware.getInstance(this.homey);
+    this.memoryGuardSystem = MemoryGuardSystem.getInstance();
+    this.apiAuthenticationGateway = APIAuthenticationGateway.getInstance();
+    this.systemHealthDashboard = new SystemHealthDashboard();
+
     await Promise.all([
       this.deviceManager.initialize(),
       this.sceneManager.initialize(),
@@ -305,13 +321,162 @@ class SmartHomeProApp extends Homey.App {
       this.naturalLanguageAutomationEngine.initialize()
     ]);
     
+    // Wave 11 post-initialization setup
+    await this.initializeWave11Infrastructure();
+    
     // Setup Wave 9 AI event listeners
     this.setupAIEventListeners();
     
     // Setup Wave 10 Deep Learning event listeners
     this.setupWave10EventListeners();
+    
+    // Setup Wave 11 Infrastructure event listeners
+    this.setupWave11EventListeners();
   }
   
+  async initializeWave11Infrastructure() {
+    try {
+      // Initialize the unified event scheduler
+      this.unifiedEventScheduler.start();
+      
+      // Initialize memory guard
+      await this.memoryGuardSystem.initialize();
+      
+      // Initialize the system health dashboard and register all systems
+      await this.systemHealthDashboard.initialize();
+      this.registerAllSystemsForHealthMonitoring();
+      
+      // Register core monitoring tasks with unified scheduler
+      this.registerCoreSchedulerTasks();
+      
+      // Run initial diagnostics
+      const diagnostics = await this.systemHealthDashboard.runDiagnostics();
+      this.log(`Wave 11 Infrastructure initialized - Platform health: ${diagnostics.overallScore || 'OK'}`);
+    } catch (error) {
+      this.error('Wave 11 infrastructure initialization error:', error);
+    }
+  }
+  
+  registerAllSystemsForHealthMonitoring() {
+    const systems = {
+      'AdvancedAutomationEngine': this.advancedAutomationEngine,
+      'IntelligentDashboard': this.intelligentDashboard,
+      'IntelligenceManager': this.intelligenceManager,
+      'AdvancedAnalytics': this.advancedAnalytics,
+      'VoiceControlSystem': this.voiceControlSystem,
+      'GeofencingEngine': this.geofencingEngine,
+      'SceneLearningSystem': this.sceneLearningSystem,
+      'AirQualityManagement': this.airQualityManagementSystem,
+      'SmartWaterManagement': this.smartWaterManagementSystem,
+      'SmartApplianceController': this.smartApplianceController,
+      'EnergyForecastingEngine': this.energyForecastingEngine,
+      'SmartSchedulingSystem': this.smartSchedulingSystem,
+      'MultiUserPreference': this.multiUserPreferenceSystem,
+      'AdvancedSceneTemplate': this.advancedSceneTemplateSystem,
+      'SmartLockManagement': this.smartLockManagementSystem,
+      'SmartWindowManagement': this.smartWindowManagementSystem,
+      'OutdoorLightingScenarios': this.outdoorLightingScenarios,
+      'PoolSpaManagement': this.poolSpaManagementSystem,
+      'AdvancedEnergyTrading': this.advancedEnergyTradingSystem,
+      'WineCellarManagement': this.wineCellarManagementSystem,
+      'MoodActivityDetection': this.moodActivityDetectionSystem,
+      'AmbientIntelligence': this.ambientIntelligenceSystem,
+      'GardenAutomation': this.gardenAutomationSystem,
+      'SmartWasteManagement': this.smartWasteManagementSystem,
+      'AdvancedWakeUpRoutine': this.advancedWakeUpRoutineSystem,
+      'EVChargingOptimization': this.evChargingOptimizationSystem,
+      'HomeGymFitness': this.homeGymFitnessSystem,
+      'WeatherAdaptiveHome': this.weatherAdaptiveHomeSystem,
+      'SmartPetManagement': this.smartPetManagementSystem,
+      'AdvancedSleepOptimization': this.advancedSleepOptimizationSystem,
+      'AdvancedWaterLeakPrevention': this.advancedWaterLeakPreventionSystem,
+      'MailboxPackageTracking': this.mailboxPackageTrackingSystem,
+      'AdvancedAirPurification': this.advancedAirPurificationSystem,
+      'SmartFurnitureControl': this.smartFurnitureControlSystem,
+      'HomeOfficeOptimization': this.homeOfficeOptimizationSystem,
+      'SmartHomeTheater': this.smartHomeTheaterSystem,
+      'AdvancedKitchenAutomation': this.advancedKitchenAutomationSystem,
+      'HomeSpaAndSauna': this.homeSpaAndSaunaSystem,
+      'SmartWardrobeManagement': this.smartWardrobeManagementSystem,
+      'HomeBarManagement': this.homeBarManagementSystem,
+      'AdvancedBabyAndChildCare': this.advancedBabyAndChildCareSystem,
+      'HomeCleaningAutomation': this.homeCleaningAutomationSystem,
+      'SmartGarageManagement': this.smartGarageManagementSystem,
+      'SmartLaundryManagement': this.smartLaundryManagementSystem,
+      'HomeWorkshopSafety': this.homeWorkshopSafetySystem,
+      'AdvancedMusicAudio': this.advancedMusicAudioSystem,
+      'SmartAquariumManagement': this.smartAquariumManagementSystem,
+      'HomeOfficeProductivity': this.homeOfficeProductivityHub,
+      'AdvancedIndoorPlantCare': this.advancedIndoorPlantCareSystem,
+      'SmartPetDoorActivity': this.smartPetDoorActivitySystem,
+      'HomeLibraryManagement': this.homeLibraryManagementSystem,
+      'SolarEnergyOptimization': this.solarEnergyOptimizationSystem,
+      'HomeEmergencyResponse': this.homeEmergencyResponseSystem,
+      'AdvancedHomeNetworkSecurity': this.advancedHomeNetworkSecuritySystem,
+      'SmartIrrigationWaterConservation': this.smartIrrigationWaterConservationSystem,
+      'AdvancedAirQualityVentilation': this.advancedAirQualityVentilationControlSystem,
+      'HomeAccessibilityElderlyCare': this.homeAccessibilityElderlyCareSystem,
+      'AdvancedPackageDelivery': this.advancedPackageDeliveryManagementSystem,
+      'SmartHomeInsuranceRisk': this.smartHomeInsuranceRiskAssessmentSystem,
+      'AdvancedAIPrediction': this.advancedAIPredictionEngine,
+      'CrossSystemAIOrchestration': this.crossSystemAIOrchestrationHub,
+      'DeepLearningVision': this.deepLearningVisionSystem,
+      'NaturalLanguageAutomation': this.naturalLanguageAutomationEngine,
+      'CentralizedCacheManager': this.centralizedCacheManager,
+      'UnifiedEventScheduler': this.unifiedEventScheduler,
+      'ErrorHandlingMiddleware': this.errorHandlingMiddleware,
+      'MemoryGuardSystem': this.memoryGuardSystem,
+      'APIAuthenticationGateway': this.apiAuthenticationGateway
+    };
+    
+    for (const [name, ref] of Object.entries(systems)) {
+      if (ref) {
+        this.systemHealthDashboard.registerSystem(name, ref);
+      }
+    }
+    this.log(`Registered ${Object.keys(systems).length} systems for health monitoring`);
+  }
+  
+  registerCoreSchedulerTasks() {
+    // Memory monitoring - CRITICAL priority
+    this.unifiedEventScheduler.registerTask('memory-monitor', 'CRITICAL', async () => {
+      const report = this.memoryGuardSystem.getMemoryReport();
+      if (report && report.pressureLevel !== 'normal') {
+        this.log(`Memory pressure: ${report.pressureLevel}`);
+      }
+    }, { enabled: true });
+    
+    // Health dashboard polling - HIGH priority
+    this.unifiedEventScheduler.registerTask('health-poll', 'HIGH', async () => {
+      await this.systemHealthDashboard.pollAllSystems();
+    }, { enabled: true });
+    
+    // Error trends analysis - NORMAL priority
+    this.unifiedEventScheduler.registerTask('error-trends', 'NORMAL', async () => {
+      const report = this.errorHandlingMiddleware.getErrorReport();
+      if (report && report.totalErrors > 0) {
+        this.log(`Error report: ${report.totalErrors} total errors, ${report.criticalCount || 0} critical`);
+      }
+    }, { enabled: true });
+    
+    // Cache optimization - LOW priority
+    this.unifiedEventScheduler.registerTask('cache-optimization', 'LOW', async () => {
+      const stats = this.centralizedCacheManager.getGlobalStats();
+      if (stats && stats.hitRate < 50) {
+        this.log(`Cache hit rate low: ${stats.hitRate}%`);
+      }
+    }, { enabled: true });
+    
+    // Token cleanup - BACKGROUND priority
+    this.unifiedEventScheduler.registerTask('auth-cleanup', 'BACKGROUND', async () => {
+      const tokenList = this.apiAuthenticationGateway.listActiveTokens();
+      if (tokenList) {
+        this.log(`Active auth tokens: ${tokenList.length || 0}`);
+      }
+    }, { enabled: true });
+    
+    this.log('Core scheduler tasks registered');
+  }
   setupWave10EventListeners() {
     // Deep Learning Vision System events
     this.deepLearningVisionSystem.on('face-detected', (data) => {
@@ -344,6 +509,97 @@ class SmartHomeProApp extends Homey.App {
     this.naturalLanguageAutomationEngine.on('notification', (notification) => {
       this.advancedNotificationManager.sendNotification(notification);
     });
+  }
+  
+  setupWave11EventListeners() {
+    // Memory Guard events
+    this.memoryGuardSystem.on('memory-warning', (data) => {
+      this.log('[MemoryGuard] WARNING:', data);
+      this.homey.notifications.createNotification({
+        excerpt: `Minnesvarning: ${Math.round(data.heapUsed / 1024 / 1024)}MB heap använt`
+      }).catch(() => {});
+    });
+    
+    this.memoryGuardSystem.on('memory-critical', (data) => {
+      this.error('[MemoryGuard] CRITICAL:', data);
+      this.homey.notifications.createNotification({
+        excerpt: `Kritiskt minnesläge: ${Math.round(data.heapUsed / 1024 / 1024)}MB heap`
+      }).catch(() => {});
+    });
+    
+    this.memoryGuardSystem.on('memory-emergency', (data) => {
+      this.error('[MemoryGuard] EMERGENCY:', data);
+      this.homey.notifications.createNotification({
+        excerpt: 'NÖDSITUATION: Minnet är nästan slut! Icke-kritiska system pausade.'
+      }).catch(() => {});
+    });
+    
+    this.memoryGuardSystem.on('leak-detected', (report) => {
+      this.error('[MemoryGuard] Potential memory leak detected:', report);
+      this.homey.notifications.createNotification({
+        excerpt: `Potentiellt minnesläckage upptäckt: ${report.growthRate || 'unknown'} MB/min`
+      }).catch(() => {});
+    });
+    
+    // Error Handling Middleware events
+    this.errorHandlingMiddleware.on('error-storm', (data) => {
+      this.error('[ErrorHandler] Error storm detected:', data);
+      this.homey.notifications.createNotification({
+        excerpt: `Felstorm upptäckt från ${data.system}: ${data.count} fel på 1 minut`
+      }).catch(() => {});
+    });
+    
+    this.errorHandlingMiddleware.on('circuit-open', (data) => {
+      this.log('[ErrorHandler] Circuit breaker opened:', data);
+    });
+    
+    // System Health Dashboard events
+    this.systemHealthDashboard.on('health-alert', (alert) => {
+      if (alert.level === 'CRITICAL') {
+        this.homey.notifications.createNotification({
+          excerpt: `Systemhälsa: ${alert.message}`
+        }).catch(() => {});
+      }
+    });
+    
+    this.systemHealthDashboard.on('system-degraded', (data) => {
+      this.log(`[HealthDashboard] System degraded: ${data.system || data.name}`);
+    });
+    
+    this.systemHealthDashboard.on('system-recovered', (data) => {
+      this.log(`[HealthDashboard] System recovered: ${data.system || data.name}`);
+    });
+    
+    // API Authentication events
+    this.apiAuthenticationGateway.on('lockout', (data) => {
+      this.error(`[AuthGateway] IP locked out: ${data.ip}`);
+      this.homey.notifications.createNotification({
+        excerpt: `Säkerhetsvarning: IP ${data.ip} har blivit utelåst efter upprepade misslyckade inloggningsförsök`
+      }).catch(() => {});
+    });
+    
+    this.apiAuthenticationGateway.on('suspicious-activity', (data) => {
+      this.error('[AuthGateway] Suspicious activity:', data);
+      this.homey.notifications.createNotification({
+        excerpt: `Misstänkt aktivitet från IP ${data.ip}: ${data.reason || 'multiple failures'}`
+      }).catch(() => {});
+    });
+    
+    // Cache Manager events
+    this.centralizedCacheManager.on('memoryPressure', (data) => {
+      this.log('[CacheManager] Memory pressure:', data);
+    });
+    
+    // Unified Event Scheduler events
+    this.unifiedEventScheduler.on('task-timeout', (data) => {
+      this.log(`[Scheduler] Task timeout: ${data.taskId || data.id}`);
+    });
+    
+    this.unifiedEventScheduler.on('task-failed', (data) => {
+      this.log(`[Scheduler] Task failed: ${data.taskId || data.id}`, data.error?.message);
+    });
+    
+    this.log('Wave 11 event listeners configured successfully');
   }
   
   setupAIEventListeners() {
@@ -710,6 +966,111 @@ class SmartHomeProApp extends Homey.App {
         throw new Error(`Failed to toggle auto predictions: ${error.message}`);
       }
     });
+    
+    // WAVE 11 - INFRASTRUCTURE FLOW CARDS
+    
+    // Triggers
+    this.systemHealthAlertTrigger = this.homey.flow.getTriggerCard('system-health-alert');
+    this.memoryPressureTrigger = this.homey.flow.getTriggerCard('memory-pressure-detected');
+    this.errorStormTrigger = this.homey.flow.getTriggerCard('error-storm-detected');
+    this.securityLockoutTrigger = this.homey.flow.getTriggerCard('security-lockout');
+    
+    // Wire triggers to events
+    this.systemHealthDashboard.on('health-alert', async (alert) => {
+      try {
+        await this.systemHealthAlertTrigger.trigger({
+          alert_level: alert.level,
+          system_name: alert.system || 'Platform',
+          message: alert.message
+        });
+      } catch (err) { this.error('Error triggering health alert flow:', err); }
+    });
+    
+    this.memoryGuardSystem.on('memory-warning', async (data) => {
+      try {
+        await this.memoryPressureTrigger.trigger({
+          pressure_level: 'warning',
+          heap_used_mb: Math.round((data.heapUsed || 0) / 1024 / 1024)
+        });
+      } catch (err) { this.error('Error triggering memory pressure flow:', err); }
+    });
+    
+    this.memoryGuardSystem.on('memory-critical', async (data) => {
+      try {
+        await this.memoryPressureTrigger.trigger({
+          pressure_level: 'critical',
+          heap_used_mb: Math.round((data.heapUsed || 0) / 1024 / 1024)
+        });
+      } catch (err) { this.error('Error triggering memory pressure flow:', err); }
+    });
+    
+    this.errorHandlingMiddleware.on('error-storm', async (data) => {
+      try {
+        await this.errorStormTrigger.trigger({
+          source_system: data.system || 'unknown',
+          error_count: data.count || 0
+        });
+      } catch (err) { this.error('Error triggering error storm flow:', err); }
+    });
+    
+    this.apiAuthenticationGateway.on('lockout', async (data) => {
+      try {
+        await this.securityLockoutTrigger.trigger({
+          ip_address: data.ip || 'unknown',
+          reason: data.reason || 'Too many failed attempts'
+        });
+      } catch (err) { this.error('Error triggering lockout flow:', err); }
+    });
+    
+    // Conditions
+    const systemHealthAbove = this.homey.flow.getConditionCard('system-health-above');
+    systemHealthAbove.registerRunListener(async (args) => {
+      const dashboard = await this.systemHealthDashboard.getDashboard();
+      return (dashboard.overallScore || 0) >= args.threshold;
+    });
+    
+    const memoryUsageBelow = this.homey.flow.getConditionCard('memory-usage-below');
+    memoryUsageBelow.registerRunListener(async (args) => {
+      const snapshot = this.memoryGuardSystem.getSnapshot();
+      const heapMB = (snapshot.heapUsed || 0) / 1024 / 1024;
+      return heapMB < args.threshold_mb;
+    });
+    
+    const cacheHitRateAbove = this.homey.flow.getConditionCard('cache-hit-rate-above');
+    cacheHitRateAbove.registerRunListener(async (args) => {
+      const stats = this.centralizedCacheManager.getGlobalStats();
+      return (stats.hitRate || 0) >= args.threshold;
+    });
+    
+    // Actions
+    const clearCacheNamespace = this.homey.flow.getActionCard('clear-cache-namespace');
+    clearCacheNamespace.registerRunListener(async (args) => {
+      this.centralizedCacheManager.clearNamespace(args.namespace);
+      await this.homey.notifications.createNotification({
+        excerpt: `Cache namespace '${args.namespace}' cleared`
+      });
+    });
+    
+    const runDiagnosticsAction = this.homey.flow.getActionCard('run-diagnostics');
+    runDiagnosticsAction.registerRunListener(async () => {
+      const result = await this.systemHealthDashboard.runDiagnostics();
+      await this.homey.notifications.createNotification({
+        excerpt: `Diagnostics complete: Score ${result.overallScore || 'N/A'}`
+      });
+    });
+    
+    const toggleSchedulerTask = this.homey.flow.getActionCard('toggle-scheduler-task');
+    toggleSchedulerTask.registerRunListener(async (args) => {
+      const enabled = args.enabled === 'true';
+      if (enabled) {
+        this.unifiedEventScheduler.enableTask(args.taskId);
+      } else {
+        this.unifiedEventScheduler.disableTask(args.taskId);
+      }
+      await this.homey.notifications.createNotification({
+        excerpt: `Scheduler task '${args.taskId}' ${enabled ? 'enabled' : 'disabled'}`
+      });
+    });
   }
 
   // ============================================
@@ -850,6 +1211,20 @@ class SmartHomeProApp extends Homey.App {
     if (this.energyInterval) {
       this.homey.clearInterval(this.energyInterval);
     }
+    
+    // Wave 11 graceful shutdown
+    try {
+      if (this.unifiedEventScheduler) await this.unifiedEventScheduler.destroy(5000);
+      if (this.systemHealthDashboard && this.systemHealthDashboard.destroy) this.systemHealthDashboard.destroy();
+      if (this.memoryGuardSystem && this.memoryGuardSystem.destroy) this.memoryGuardSystem.destroy();
+      if (this.centralizedCacheManager && this.centralizedCacheManager.destroy) this.centralizedCacheManager.destroy();
+      if (this.errorHandlingMiddleware && this.errorHandlingMiddleware.destroy) this.errorHandlingMiddleware.destroy();
+      if (this.apiAuthenticationGateway && this.apiAuthenticationGateway.destroy) this.apiAuthenticationGateway.destroy();
+      this.log('Wave 11 infrastructure shut down gracefully');
+    } catch (error) {
+      this.error('Error during Wave 11 shutdown:', error);
+    }
+    
     this.log('Smart Home Pro has been uninitialized');
   }
 }
