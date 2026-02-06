@@ -3072,5 +3072,289 @@ module.exports = {
         activeTokens: tokens ? tokens.length : 0
       }
     };
+  },
+
+  // ============================================
+  // WAVE 12 - NEW FEATURE SYSTEM APIs
+  // ============================================
+
+  // --- Smart Doorbell & Intercom ---
+  async getDoorbellStatus({ homey }) {
+    return homey.app.smartDoorbellIntercomSystem.getStatistics();
+  },
+
+  async getDoorbellHistory({ homey, query }) {
+    const limit = parseInt(query?.limit) || 50;
+    const history = homey.app.smartDoorbellIntercomSystem.ringHistory || [];
+    return history.slice(-limit);
+  },
+
+  async getVisitorLog({ homey, query }) {
+    const limit = parseInt(query?.limit) || 50;
+    if (homey.app.smartDoorbellIntercomSystem.getVisitorHistory) {
+      return homey.app.smartDoorbellIntercomSystem.getVisitorHistory(limit);
+    }
+    return homey.app.smartDoorbellIntercomSystem.visitors || [];
+  },
+
+  async sendDoorbellResponse({ homey, body }) {
+    const { doorbellId, responseId } = body;
+    if (homey.app.smartDoorbellIntercomSystem.sendQuickResponse) {
+      return await homey.app.smartDoorbellIntercomSystem.sendQuickResponse(doorbellId, responseId);
+    }
+    return { success: false, message: 'Quick response not available' };
+  },
+
+  async setDoorbellDND({ homey, body }) {
+    const { enabled, schedule } = body;
+    if (homey.app.smartDoorbellIntercomSystem.setDoNotDisturb) {
+      return homey.app.smartDoorbellIntercomSystem.setDoNotDisturb(enabled, schedule);
+    }
+    return { success: true };
+  },
+
+  // --- Indoor Lighting Scene Engine ---
+  async getLightingScenes({ homey }) {
+    return homey.app.indoorLightingSceneEngine.getStatistics();
+  },
+
+  async activateLightingScene({ homey, params }) {
+    const { sceneId } = params;
+    if (homey.app.indoorLightingSceneEngine.activateScene) {
+      return await homey.app.indoorLightingSceneEngine.activateScene(sceneId);
+    }
+    return { success: false };
+  },
+
+  async createLightingScene({ homey, body }) {
+    if (homey.app.indoorLightingSceneEngine.createScene) {
+      return await homey.app.indoorLightingSceneEngine.createScene(body);
+    }
+    return { success: false };
+  },
+
+  async getLightingPresets({ homey }) {
+    if (homey.app.indoorLightingSceneEngine.presets) {
+      return Array.from(homey.app.indoorLightingSceneEngine.presets.values());
+    }
+    return [];
+  },
+
+  async setCircadianMode({ homey, body }) {
+    const { enabled } = body;
+    if (homey.app.indoorLightingSceneEngine.setCircadianMode) {
+      return homey.app.indoorLightingSceneEngine.setCircadianMode(enabled);
+    }
+    if (homey.app.indoorLightingSceneEngine.startCircadianCycle && enabled) {
+      homey.app.indoorLightingSceneEngine.startCircadianCycle();
+    }
+    return { success: true, circadian: enabled };
+  },
+
+  async getLightingZones({ homey }) {
+    if (homey.app.indoorLightingSceneEngine.zones) {
+      return Array.from(homey.app.indoorLightingSceneEngine.zones.values());
+    }
+    return [];
+  },
+
+  async getLightingEnergyStats({ homey }) {
+    if (homey.app.indoorLightingSceneEngine.getEnergyStats) {
+      return homey.app.indoorLightingSceneEngine.getEnergyStats();
+    }
+    return homey.app.indoorLightingSceneEngine.energyTracking || {};
+  },
+
+  // --- Energy Billing & Analytics ---
+  async getEnergyBillingOverview({ homey }) {
+    return homey.app.energyBillingAnalyticsSystem.getStatistics();
+  },
+
+  async getEnergyBills({ homey, query }) {
+    const type = query?.type || 'electricity';
+    const months = parseInt(query?.months) || 12;
+    if (homey.app.energyBillingAnalyticsSystem.getBillsByType) {
+      return homey.app.energyBillingAnalyticsSystem.getBillsByType(type, months);
+    }
+    return [];
+  },
+
+  async recordEnergyBill({ homey, body }) {
+    if (homey.app.energyBillingAnalyticsSystem.recordBill) {
+      return await homey.app.energyBillingAnalyticsSystem.recordBill(body);
+    }
+    return { success: false };
+  },
+
+  async getEnergyBudget({ homey }) {
+    if (homey.app.energyBillingAnalyticsSystem.evaluateBudget) {
+      return await homey.app.energyBillingAnalyticsSystem.evaluateBudget();
+    }
+    return {};
+  },
+
+  async setEnergyBudget({ homey, body }) {
+    if (homey.app.energyBillingAnalyticsSystem.setBudget) {
+      return homey.app.energyBillingAnalyticsSystem.setBudget(body);
+    }
+    return { success: false };
+  },
+
+  async getEnergyCostForecast({ homey }) {
+    if (homey.app.energyBillingAnalyticsSystem.forecastEndOfMonth) {
+      return await homey.app.energyBillingAnalyticsSystem.forecastEndOfMonth();
+    }
+    return {};
+  },
+
+  async getEnergySavingsRecommendations({ homey }) {
+    if (homey.app.energyBillingAnalyticsSystem.getSavingsRecommendations) {
+      return await homey.app.energyBillingAnalyticsSystem.getSavingsRecommendations();
+    }
+    return [];
+  },
+
+  async getCarbonFootprint({ homey }) {
+    if (homey.app.energyBillingAnalyticsSystem.calculateCarbonFootprint) {
+      return homey.app.energyBillingAnalyticsSystem.calculateCarbonFootprint();
+    }
+    return {};
+  },
+
+  async getApplianceCostRanking({ homey }) {
+    if (homey.app.energyBillingAnalyticsSystem.getApplianceCostRanking) {
+      return await homey.app.energyBillingAnalyticsSystem.getApplianceCostRanking();
+    }
+    return [];
+  },
+
+  // --- Visitor & Guest Management ---
+  async getGuestManagementStatus({ homey }) {
+    return homey.app.visitorGuestManagementSystem.getStatistics();
+  },
+
+  async getGuestProfiles({ homey }) {
+    if (homey.app.visitorGuestManagementSystem.listGuestProfiles) {
+      return homey.app.visitorGuestManagementSystem.listGuestProfiles();
+    }
+    return [];
+  },
+
+  async createGuestProfile({ homey, body }) {
+    if (homey.app.visitorGuestManagementSystem.createGuestProfile) {
+      return await homey.app.visitorGuestManagementSystem.createGuestProfile(body);
+    }
+    return { success: false };
+  },
+
+  async scheduleVisit({ homey, body }) {
+    if (homey.app.visitorGuestManagementSystem.scheduleVisit) {
+      return await homey.app.visitorGuestManagementSystem.scheduleVisit(body);
+    }
+    return { success: false };
+  },
+
+  async getUpcomingVisits({ homey }) {
+    if (homey.app.visitorGuestManagementSystem.getUpcomingVisits) {
+      return homey.app.visitorGuestManagementSystem.getUpcomingVisits();
+    }
+    return [];
+  },
+
+  async generateGuestAccessCode({ homey, body }) {
+    if (homey.app.visitorGuestManagementSystem.generateTemporaryAccessCode) {
+      return await homey.app.visitorGuestManagementSystem.generateTemporaryAccessCode(body);
+    }
+    return { success: false };
+  },
+
+  async getGuestAnalytics({ homey }) {
+    if (homey.app.visitorGuestManagementSystem.getGuestAnalytics) {
+      return homey.app.visitorGuestManagementSystem.getGuestAnalytics();
+    }
+    return {};
+  },
+
+  // --- Room Occupancy & Mapping ---
+  async getRoomOccupancyStatus({ homey }) {
+    return homey.app.roomOccupancyMappingSystem.getStatistics();
+  },
+
+  async getRoomStatus({ homey, params }) {
+    const { roomId } = params;
+    if (homey.app.roomOccupancyMappingSystem.getRoomStatus) {
+      return homey.app.roomOccupancyMappingSystem.getRoomStatus(roomId);
+    }
+    return {};
+  },
+
+  async getAllRoomStatuses({ homey }) {
+    if (homey.app.roomOccupancyMappingSystem.getAllRoomStatuses) {
+      return homey.app.roomOccupancyMappingSystem.getAllRoomStatuses();
+    }
+    return {};
+  },
+
+  async getOccupancyHeatmap({ homey }) {
+    if (homey.app.roomOccupancyMappingSystem.getOccupancyHeatmap) {
+      return homey.app.roomOccupancyMappingSystem.getOccupancyHeatmap();
+    }
+    return {};
+  },
+
+  async getRoomUtilizationReport({ homey }) {
+    if (homey.app.roomOccupancyMappingSystem.getUtilizationReport) {
+      return homey.app.roomOccupancyMappingSystem.getUtilizationReport();
+    }
+    return {};
+  },
+
+  // --- Power Continuity & UPS ---
+  async getPowerStatus({ homey }) {
+    return homey.app.powerContinuityUPSSystem.getStatistics();
+  },
+
+  async getUPSDevices({ homey }) {
+    if (homey.app.powerContinuityUPSSystem.listUPSDevices) {
+      return homey.app.powerContinuityUPSSystem.listUPSDevices();
+    }
+    return [];
+  },
+
+  async getGridStatus({ homey }) {
+    if (homey.app.powerContinuityUPSSystem.getGridStatus) {
+      return homey.app.powerContinuityUPSSystem.getGridStatus();
+    }
+    return { status: 'unknown' };
+  },
+
+  async getPowerEvents({ homey, query }) {
+    const limit = parseInt(query?.limit) || 50;
+    if (homey.app.powerContinuityUPSSystem.getPowerEvents) {
+      return homey.app.powerContinuityUPSSystem.getPowerEvents(limit);
+    }
+    return [];
+  },
+
+  async runUPSSelfTest({ homey, params }) {
+    const { upsId } = params;
+    if (homey.app.powerContinuityUPSSystem.runSelfTest) {
+      return await homey.app.powerContinuityUPSSystem.runSelfTest(upsId);
+    }
+    return { success: false };
+  },
+
+  async getRuntimeEstimates({ homey }) {
+    if (homey.app.powerContinuityUPSSystem.getRuntimeEstimates) {
+      return homey.app.powerContinuityUPSSystem.getRuntimeEstimates();
+    }
+    return {};
+  },
+
+  async getPowerQualitySummary({ homey }) {
+    if (homey.app.powerContinuityUPSSystem.getPowerQualitySummary) {
+      return homey.app.powerContinuityUPSSystem.getPowerQualitySummary();
+    }
+    return {};
   }
 };

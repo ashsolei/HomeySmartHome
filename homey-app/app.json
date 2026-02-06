@@ -453,6 +453,212 @@
             "title": { "en": "Reason", "sv": "Anledning" }
           }
         ]
+      },
+      {
+        "id": "doorbell-ring",
+        "title": {
+          "en": "Doorbell ring detected",
+          "sv": "Dörrklocka ringde"
+        },
+        "tokens": [
+          {
+            "name": "doorbell_name",
+            "type": "string",
+            "title": { "en": "Doorbell name", "sv": "Dörrklocksnamn" }
+          },
+          {
+            "name": "visitor_type",
+            "type": "string",
+            "title": { "en": "Visitor type", "sv": "Besökartyp" }
+          },
+          {
+            "name": "timestamp",
+            "type": "string",
+            "title": { "en": "Timestamp", "sv": "Tidsstämpel" }
+          }
+        ]
+      },
+      {
+        "id": "power-outage-detected",
+        "title": {
+          "en": "Power outage detected",
+          "sv": "Strömavbrott upptäckt"
+        },
+        "tokens": [
+          {
+            "name": "outage_type",
+            "type": "string",
+            "title": { "en": "Outage type", "sv": "Avbrottstyp" }
+          },
+          {
+            "name": "estimated_duration",
+            "type": "string",
+            "title": { "en": "Estimated duration", "sv": "Uppskattad varaktighet" }
+          },
+          {
+            "name": "ups_battery_pct",
+            "type": "number",
+            "title": { "en": "UPS battery (%)", "sv": "UPS-batteri (%)" }
+          }
+        ]
+      },
+      {
+        "id": "guest-arrived",
+        "title": {
+          "en": "Guest arrived",
+          "sv": "Gäst anlände"
+        },
+        "tokens": [
+          {
+            "name": "guest_name",
+            "type": "string",
+            "title": { "en": "Guest name", "sv": "Gästnamn" }
+          },
+          {
+            "name": "access_method",
+            "type": "string",
+            "title": { "en": "Access method", "sv": "Åtkomstmetod" }
+          },
+          {
+            "name": "visit_type",
+            "type": "string",
+            "title": { "en": "Visit type", "sv": "Besökstyp" }
+          }
+        ]
+      },
+      {
+        "id": "guest-departed",
+        "title": {
+          "en": "Guest departed",
+          "sv": "Gäst lämnade"
+        },
+        "tokens": [
+          {
+            "name": "guest_name",
+            "type": "string",
+            "title": { "en": "Guest name", "sv": "Gästnamn" }
+          },
+          {
+            "name": "visit_duration",
+            "type": "string",
+            "title": { "en": "Visit duration", "sv": "Besökslängd" }
+          }
+        ]
+      },
+      {
+        "id": "room-occupancy-changed",
+        "title": {
+          "en": "Room occupancy changed",
+          "sv": "Rumsbeläggning ändrades"
+        },
+        "tokens": [
+          {
+            "name": "room_name",
+            "type": "string",
+            "title": { "en": "Room name", "sv": "Rumsnamn" }
+          },
+          {
+            "name": "occupant_count",
+            "type": "number",
+            "title": { "en": "Occupant count", "sv": "Antal personer" }
+          },
+          {
+            "name": "previous_count",
+            "type": "number",
+            "title": { "en": "Previous count", "sv": "Tidigare antal" }
+          }
+        ]
+      },
+      {
+        "id": "energy-budget-exceeded",
+        "title": {
+          "en": "Energy budget exceeded",
+          "sv": "Energibudget överskriden"
+        },
+        "tokens": [
+          {
+            "name": "budget_name",
+            "type": "string",
+            "title": { "en": "Budget name", "sv": "Budgetnamn" }
+          },
+          {
+            "name": "current_cost",
+            "type": "number",
+            "title": { "en": "Current cost", "sv": "Aktuell kostnad" }
+          },
+          {
+            "name": "budget_limit",
+            "type": "number",
+            "title": { "en": "Budget limit", "sv": "Budgetgräns" }
+          }
+        ]
+      },
+      {
+        "id": "lighting-scene-activated",
+        "title": {
+          "en": "Lighting scene activated",
+          "sv": "Ljusscen aktiverad"
+        },
+        "tokens": [
+          {
+            "name": "scene_name",
+            "type": "string",
+            "title": { "en": "Scene name", "sv": "Scennamn" }
+          },
+          {
+            "name": "room",
+            "type": "string",
+            "title": { "en": "Room", "sv": "Rum" }
+          },
+          {
+            "name": "brightness_pct",
+            "type": "number",
+            "title": { "en": "Brightness (%)", "sv": "Ljusstyrka (%)" }
+          }
+        ]
+      },
+      {
+        "id": "ups-battery-low",
+        "title": {
+          "en": "UPS battery low",
+          "sv": "UPS-batteri lågt"
+        },
+        "tokens": [
+          {
+            "name": "ups_name",
+            "type": "string",
+            "title": { "en": "UPS name", "sv": "UPS-namn" }
+          },
+          {
+            "name": "battery_pct",
+            "type": "number",
+            "title": { "en": "Battery (%)", "sv": "Batteri (%)" }
+          },
+          {
+            "name": "runtime_minutes",
+            "type": "number",
+            "title": { "en": "Runtime (min)", "sv": "Drifttid (min)" }
+          }
+        ]
+      },
+      {
+        "id": "sleep-cycle-detected",
+        "title": {
+          "en": "Sleep cycle detected",
+          "sv": "Sömnfas upptäckt"
+        },
+        "tokens": [
+          {
+            "name": "sleep_phase",
+            "type": "string",
+            "title": { "en": "Sleep phase", "sv": "Sömnfas" }
+          },
+          {
+            "name": "quality_score",
+            "type": "number",
+            "title": { "en": "Quality score", "sv": "Kvalitetspoäng" }
+          }
+        ]
       }
     ],
     "conditions": [
@@ -655,6 +861,79 @@
         "title": {
           "en": "Cache hit rate is above",
           "sv": "Cache-träffprocent är över"
+        },
+        "args": [
+          {
+            "name": "threshold",
+            "type": "range",
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "label": "%"
+          }
+        ]
+      },
+      {
+        "id": "room-is-occupied",
+        "title": {
+          "en": "Room is occupied",
+          "sv": "Rummet är belagt"
+        },
+        "args": [
+          {
+            "name": "room",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select room", "sv": "Välj rum" }
+          }
+        ]
+      },
+      {
+        "id": "power-is-on-battery",
+        "title": {
+          "en": "Power is on battery (UPS)",
+          "sv": "Ström körs på batteri (UPS)"
+        }
+      },
+      {
+        "id": "guest-is-expected",
+        "title": {
+          "en": "A guest is expected",
+          "sv": "En gäst förväntas"
+        }
+      },
+      {
+        "id": "lighting-scene-is-active",
+        "title": {
+          "en": "Lighting scene is active",
+          "sv": "Ljusscen är aktiv"
+        },
+        "args": [
+          {
+            "name": "scene",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select scene", "sv": "Välj scen" }
+          }
+        ]
+      },
+      {
+        "id": "doorbell-dnd-active",
+        "title": {
+          "en": "Doorbell do-not-disturb is active",
+          "sv": "Dörrklocka stör-ej är aktivt"
+        }
+      },
+      {
+        "id": "energy-within-budget",
+        "title": {
+          "en": "Energy usage is within budget",
+          "sv": "Energiförbrukning är inom budget"
+        }
+      },
+      {
+        "id": "ups-battery-above",
+        "title": {
+          "en": "UPS battery level is above",
+          "sv": "UPS-batterinivå är över"
         },
         "args": [
           {
@@ -985,6 +1264,110 @@
             ]
           }
         ]
+      },
+      {
+        "id": "activate-lighting-scene",
+        "title": {
+          "en": "Activate lighting scene",
+          "sv": "Aktivera ljusscen"
+        },
+        "args": [
+          {
+            "name": "scene",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select scene", "sv": "Välj scen" }
+          },
+          {
+            "name": "room",
+            "type": "autocomplete",
+            "placeholder": { "en": "Select room", "sv": "Välj rum" }
+          }
+        ]
+      },
+      {
+        "id": "set-doorbell-dnd",
+        "title": {
+          "en": "Set doorbell do-not-disturb",
+          "sv": "Ställ in dörrklocka stör-ej"
+        },
+        "args": [
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "values": [
+              { "id": "true", "label": { "en": "Enable", "sv": "Aktivera" } },
+              { "id": "false", "label": { "en": "Disable", "sv": "Inaktivera" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "create-guest-access",
+        "title": {
+          "en": "Create guest access",
+          "sv": "Skapa gäståtkomst"
+        },
+        "args": [
+          {
+            "name": "guest_name",
+            "type": "text",
+            "placeholder": { "en": "Guest name", "sv": "Gästnamn" }
+          },
+          {
+            "name": "duration_hours",
+            "type": "number",
+            "min": 1,
+            "max": 720
+          }
+        ]
+      },
+      {
+        "id": "set-energy-budget",
+        "title": {
+          "en": "Set energy budget",
+          "sv": "Ställ in energibudget"
+        },
+        "args": [
+          {
+            "name": "amount",
+            "type": "number",
+            "min": 0,
+            "max": 10000
+          },
+          {
+            "name": "period",
+            "type": "dropdown",
+            "values": [
+              { "id": "daily", "label": { "en": "Daily", "sv": "Daglig" } },
+              { "id": "weekly", "label": { "en": "Weekly", "sv": "Veckovis" } },
+              { "id": "monthly", "label": { "en": "Monthly", "sv": "Månatlig" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "start-ups-self-test",
+        "title": {
+          "en": "Start UPS self-test",
+          "sv": "Starta UPS-självtest"
+        }
+      },
+      {
+        "id": "set-circadian-lighting",
+        "title": {
+          "en": "Set circadian lighting mode",
+          "sv": "Ställ in cirkadiskt ljusläge"
+        },
+        "args": [
+          {
+            "name": "enabled",
+            "type": "dropdown",
+            "values": [
+              { "id": "true", "label": { "en": "Enable", "sv": "Aktivera" } },
+              { "id": "false", "label": { "en": "Disable", "sv": "Inaktivera" } }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -1150,6 +1533,166 @@
     "getInfrastructureOverview": {
       "method": "GET",
       "path": "/infrastructure/overview"
+    },
+    "getDoorbellStatus": {
+      "method": "GET",
+      "path": "/doorbell/status"
+    },
+    "getDoorbellHistory": {
+      "method": "GET",
+      "path": "/doorbell/history"
+    },
+    "getVisitorLog": {
+      "method": "GET",
+      "path": "/doorbell/visitors"
+    },
+    "sendDoorbellResponse": {
+      "method": "POST",
+      "path": "/doorbell/response"
+    },
+    "setDoorbellDND": {
+      "method": "POST",
+      "path": "/doorbell/dnd"
+    },
+    "getLightingScenes": {
+      "method": "GET",
+      "path": "/lighting/scenes"
+    },
+    "activateLightingScene": {
+      "method": "POST",
+      "path": "/lighting/scene/:sceneId"
+    },
+    "createLightingScene": {
+      "method": "POST",
+      "path": "/lighting/scene"
+    },
+    "getLightingPresets": {
+      "method": "GET",
+      "path": "/lighting/presets"
+    },
+    "setCircadianMode": {
+      "method": "POST",
+      "path": "/lighting/circadian"
+    },
+    "getLightingZones": {
+      "method": "GET",
+      "path": "/lighting/zones"
+    },
+    "getLightingEnergyStats": {
+      "method": "GET",
+      "path": "/lighting/energy"
+    },
+    "getEnergyBillingOverview": {
+      "method": "GET",
+      "path": "/billing/overview"
+    },
+    "getEnergyBills": {
+      "method": "GET",
+      "path": "/billing/bills"
+    },
+    "recordEnergyBill": {
+      "method": "POST",
+      "path": "/billing/bill"
+    },
+    "getEnergyBudget": {
+      "method": "GET",
+      "path": "/billing/budget"
+    },
+    "setEnergyBudget": {
+      "method": "POST",
+      "path": "/billing/budget"
+    },
+    "getEnergyCostForecast": {
+      "method": "GET",
+      "path": "/billing/forecast"
+    },
+    "getEnergySavingsRecommendations": {
+      "method": "GET",
+      "path": "/billing/savings"
+    },
+    "getCarbonFootprint": {
+      "method": "GET",
+      "path": "/billing/carbon"
+    },
+    "getApplianceCostRanking": {
+      "method": "GET",
+      "path": "/billing/ranking"
+    },
+    "getGuestManagementStatus": {
+      "method": "GET",
+      "path": "/guests/status"
+    },
+    "getGuestProfiles": {
+      "method": "GET",
+      "path": "/guests/profiles"
+    },
+    "createGuestProfile": {
+      "method": "POST",
+      "path": "/guests/profile"
+    },
+    "scheduleVisit": {
+      "method": "POST",
+      "path": "/guests/visit"
+    },
+    "getUpcomingVisits": {
+      "method": "GET",
+      "path": "/guests/visits"
+    },
+    "generateGuestAccessCode": {
+      "method": "POST",
+      "path": "/guests/access-code"
+    },
+    "getGuestAnalytics": {
+      "method": "GET",
+      "path": "/guests/analytics"
+    },
+    "getRoomOccupancyStatus": {
+      "method": "GET",
+      "path": "/occupancy/status"
+    },
+    "getRoomStatus": {
+      "method": "GET",
+      "path": "/occupancy/room/:roomId"
+    },
+    "getAllRoomStatuses": {
+      "method": "GET",
+      "path": "/occupancy/rooms"
+    },
+    "getOccupancyHeatmap": {
+      "method": "GET",
+      "path": "/occupancy/heatmap"
+    },
+    "getRoomUtilizationReport": {
+      "method": "GET",
+      "path": "/occupancy/utilization"
+    },
+    "getPowerStatus": {
+      "method": "GET",
+      "path": "/power/status"
+    },
+    "getUPSDevices": {
+      "method": "GET",
+      "path": "/power/ups"
+    },
+    "getGridStatus": {
+      "method": "GET",
+      "path": "/power/grid"
+    },
+    "getPowerEvents": {
+      "method": "GET",
+      "path": "/power/events"
+    },
+    "runUPSSelfTest": {
+      "method": "POST",
+      "path": "/power/ups/:upsId/test"
+    },
+    "getRuntimeEstimates": {
+      "method": "GET",
+      "path": "/power/runtime"
+    },
+    "getPowerQualitySummary": {
+      "method": "GET",
+      "path": "/power/quality"
     }
   }
 }

@@ -89,6 +89,13 @@ const ErrorHandlingMiddleware = require('./lib/ErrorHandlingMiddleware');
 const MemoryGuardSystem = require('./lib/MemoryGuardSystem');
 const APIAuthenticationGateway = require('./lib/APIAuthenticationGateway');
 const SystemHealthDashboard = require('./lib/SystemHealthDashboard');
+// Wave 12 - New Feature Systems & Coverage Expansion
+const SmartDoorbellIntercomSystem = require('./lib/SmartDoorbellIntercomSystem');
+const IndoorLightingSceneEngine = require('./lib/IndoorLightingSceneEngine');
+const EnergyBillingAnalyticsSystem = require('./lib/EnergyBillingAnalyticsSystem');
+const VisitorGuestManagementSystem = require('./lib/VisitorGuestManagementSystem');
+const RoomOccupancyMappingSystem = require('./lib/RoomOccupancyMappingSystem');
+const PowerContinuityUPSSystem = require('./lib/PowerContinuityUPSSystem');
 
 class SmartHomeProApp extends Homey.App {
   
@@ -238,6 +245,14 @@ class SmartHomeProApp extends Homey.App {
     this.apiAuthenticationGateway = APIAuthenticationGateway.getInstance();
     this.systemHealthDashboard = new SystemHealthDashboard();
 
+    // Wave 12 - New Feature Systems
+    this.smartDoorbellIntercomSystem = new SmartDoorbellIntercomSystem(this.homey);
+    this.indoorLightingSceneEngine = new IndoorLightingSceneEngine(this.homey);
+    this.energyBillingAnalyticsSystem = new EnergyBillingAnalyticsSystem(this.homey);
+    this.visitorGuestManagementSystem = new VisitorGuestManagementSystem(this.homey);
+    this.roomOccupancyMappingSystem = new RoomOccupancyMappingSystem(this.homey);
+    this.powerContinuityUPSSystem = new PowerContinuityUPSSystem(this.homey);
+
     await Promise.all([
       this.deviceManager.initialize(),
       this.sceneManager.initialize(),
@@ -318,7 +333,14 @@ class SmartHomeProApp extends Homey.App {
       this.advancedAIPredictionEngine.initialize(),
       this.crossSystemAIOrchestrationHub.initialize(),
       this.deepLearningVisionSystem.initialize(),
-      this.naturalLanguageAutomationEngine.initialize()
+      this.naturalLanguageAutomationEngine.initialize(),
+      // Wave 12
+      this.smartDoorbellIntercomSystem.initialize(),
+      this.indoorLightingSceneEngine.initialize(),
+      this.energyBillingAnalyticsSystem.initialize(),
+      this.visitorGuestManagementSystem.initialize(),
+      this.roomOccupancyMappingSystem.initialize(),
+      this.powerContinuityUPSSystem.initialize()
     ]);
     
     // Wave 11 post-initialization setup
@@ -332,6 +354,9 @@ class SmartHomeProApp extends Homey.App {
     
     // Setup Wave 11 Infrastructure event listeners
     this.setupWave11EventListeners();
+    
+    // Setup Wave 12 event listeners
+    this.setupWave12EventListeners();
   }
   
   async initializeWave11Infrastructure() {
@@ -426,7 +451,14 @@ class SmartHomeProApp extends Homey.App {
       'UnifiedEventScheduler': this.unifiedEventScheduler,
       'ErrorHandlingMiddleware': this.errorHandlingMiddleware,
       'MemoryGuardSystem': this.memoryGuardSystem,
-      'APIAuthenticationGateway': this.apiAuthenticationGateway
+      'APIAuthenticationGateway': this.apiAuthenticationGateway,
+      // Wave 12
+      'SmartDoorbellIntercom': this.smartDoorbellIntercomSystem,
+      'IndoorLightingSceneEngine': this.indoorLightingSceneEngine,
+      'EnergyBillingAnalytics': this.energyBillingAnalyticsSystem,
+      'VisitorGuestManagement': this.visitorGuestManagementSystem,
+      'RoomOccupancyMapping': this.roomOccupancyMappingSystem,
+      'PowerContinuityUPS': this.powerContinuityUPSSystem
     };
     
     for (const [name, ref] of Object.entries(systems)) {
@@ -600,6 +632,98 @@ class SmartHomeProApp extends Homey.App {
     });
     
     this.log('Wave 11 event listeners configured successfully');
+  }
+  
+  setupWave12EventListeners() {
+    // Doorbell events
+    if (this.smartDoorbellIntercomSystem.on) {
+      this.smartDoorbellIntercomSystem.on('ring', (data) => {
+        this.log(`[Doorbell] Ring from ${data.doorbellId || 'unknown'}`);
+        this.homey.notifications.createNotification({
+          excerpt: `🔔 Dörrklockan ringer: ${data.doorbellName || data.doorbellId || 'Ytterdörr'}`
+        }).catch(() => {});
+      });
+      
+      this.smartDoorbellIntercomSystem.on('visitor-recognized', (data) => {
+        this.log(`[Doorbell] Visitor recognized: ${data.name || 'unknown'}`);
+      });
+    }
+    
+    // Room occupancy events
+    if (this.roomOccupancyMappingSystem.on) {
+      this.roomOccupancyMappingSystem.on('room_vacant', (data) => {
+        this.log(`[Occupancy] Room vacant: ${data.roomId || data.room}`);
+      });
+      
+      this.roomOccupancyMappingSystem.on('room_occupied', (data) => {
+        this.log(`[Occupancy] Room occupied: ${data.roomId || data.room}`);
+      });
+      
+      this.roomOccupancyMappingSystem.on('sleep_start', (data) => {
+        this.log(`[Occupancy] Sleep detected in: ${data.roomId || data.room}`);
+      });
+    }
+    
+    // Power continuity events
+    if (this.powerContinuityUPSSystem.on) {
+      this.powerContinuityUPSSystem.on('outage-detected', (data) => {
+        this.error('[PowerUPS] Power outage detected!');
+        this.homey.notifications.createNotification({
+          excerpt: '⚡ Strömavbrott upptäckt! UPS-system aktiverat.'
+        }).catch(() => {});
+      });
+      
+      this.powerContinuityUPSSystem.on('power-restored', (data) => {
+        this.log('[PowerUPS] Power restored');
+        this.homey.notifications.createNotification({
+          excerpt: '✅ Strömmen har återställts. System återställs.'
+        }).catch(() => {});
+      });
+      
+      this.powerContinuityUPSSystem.on('battery-low', (data) => {
+        this.error('[PowerUPS] UPS battery low!');
+        this.homey.notifications.createNotification({
+          excerpt: `🔋 UPS-batteri lågt: ${data.level || 'unknown'}%`
+        }).catch(() => {});
+      });
+    }
+    
+    // Visitor management events
+    if (this.visitorGuestManagementSystem.on) {
+      this.visitorGuestManagementSystem.on('guest-arrived', (data) => {
+        this.log(`[Visitors] Guest arrived: ${data.name || 'unknown'}`);
+        this.homey.notifications.createNotification({
+          excerpt: `👋 Gäst har anlänt: ${data.name || 'Okänd besökare'}`
+        }).catch(() => {});
+      });
+      
+      this.visitorGuestManagementSystem.on('guest-departed', (data) => {
+        this.log(`[Visitors] Guest departed: ${data.name || 'unknown'}`);
+      });
+    }
+    
+    // Energy billing events
+    if (this.energyBillingAnalyticsSystem.on) {
+      this.energyBillingAnalyticsSystem.on('budget-exceeded', (data) => {
+        this.log('[EnergyBilling] Budget exceeded');
+        this.homey.notifications.createNotification({
+          excerpt: `💰 Energibudgeten överskriden: ${data.amount || 'N/A'} SEK`
+        }).catch(() => {});
+      });
+      
+      this.energyBillingAnalyticsSystem.on('anomaly-detected', (data) => {
+        this.log('[EnergyBilling] Consumption anomaly:', data);
+      });
+    }
+    
+    // Indoor lighting events
+    if (this.indoorLightingSceneEngine.on) {
+      this.indoorLightingSceneEngine.on('scene-activated', (data) => {
+        this.log(`[Lighting] Scene activated: ${data.sceneName || data.sceneId}`);
+      });
+    }
+    
+    this.log('Wave 12 event listeners configured successfully');
   }
   
   setupAIEventListeners() {
@@ -1223,6 +1347,24 @@ class SmartHomeProApp extends Homey.App {
       this.log('Wave 11 infrastructure shut down gracefully');
     } catch (error) {
       this.error('Error during Wave 11 shutdown:', error);
+    }
+    
+    // Wave 12 graceful shutdown
+    try {
+      const wave12Systems = [
+        this.smartDoorbellIntercomSystem,
+        this.indoorLightingSceneEngine,
+        this.energyBillingAnalyticsSystem,
+        this.visitorGuestManagementSystem,
+        this.roomOccupancyMappingSystem,
+        this.powerContinuityUPSSystem
+      ];
+      for (const system of wave12Systems) {
+        if (system && system.destroy) system.destroy();
+      }
+      this.log('Wave 12 systems shut down gracefully');
+    } catch (error) {
+      this.error('Error during Wave 12 shutdown:', error);
     }
     
     this.log('Smart Home Pro has been uninitialized');
