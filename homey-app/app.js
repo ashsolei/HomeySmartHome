@@ -96,6 +96,13 @@ const EnergyBillingAnalyticsSystem = require('./lib/EnergyBillingAnalyticsSystem
 const VisitorGuestManagementSystem = require('./lib/VisitorGuestManagementSystem');
 const RoomOccupancyMappingSystem = require('./lib/RoomOccupancyMappingSystem');
 const PowerContinuityUPSSystem = require('./lib/PowerContinuityUPSSystem');
+// Wave 13 - Smart Living & Disaster Resilience
+const SmartFoodPantryManagementSystem = require('./lib/SmartFoodPantryManagementSystem');
+const HomeSustainabilityTrackerSystem = require('./lib/HomeSustainabilityTrackerSystem');
+const SmartPerimeterManagementSystem = require('./lib/SmartPerimeterManagementSystem');
+const HomeRoboticsOrchestrationSystem = require('./lib/HomeRoboticsOrchestrationSystem');
+const SmartHomeDigitalTwinSystem = require('./lib/SmartHomeDigitalTwinSystem');
+const SmartDisasterResilienceSystem = require('./lib/SmartDisasterResilienceSystem');
 
 class SmartHomeProApp extends Homey.App {
   
@@ -253,6 +260,14 @@ class SmartHomeProApp extends Homey.App {
     this.roomOccupancyMappingSystem = new RoomOccupancyMappingSystem(this.homey);
     this.powerContinuityUPSSystem = new PowerContinuityUPSSystem(this.homey);
 
+    // Wave 13 - Smart Living & Disaster Resilience
+    this.smartFoodPantryManagementSystem = new SmartFoodPantryManagementSystem(this.homey);
+    this.homeSustainabilityTrackerSystem = new HomeSustainabilityTrackerSystem(this.homey);
+    this.smartPerimeterManagementSystem = new SmartPerimeterManagementSystem(this.homey);
+    this.homeRoboticsOrchestrationSystem = new HomeRoboticsOrchestrationSystem(this.homey);
+    this.smartHomeDigitalTwinSystem = new SmartHomeDigitalTwinSystem(this.homey);
+    this.smartDisasterResilienceSystem = new SmartDisasterResilienceSystem(this.homey);
+
     await Promise.all([
       this.deviceManager.initialize(),
       this.sceneManager.initialize(),
@@ -340,7 +355,14 @@ class SmartHomeProApp extends Homey.App {
       this.energyBillingAnalyticsSystem.initialize(),
       this.visitorGuestManagementSystem.initialize(),
       this.roomOccupancyMappingSystem.initialize(),
-      this.powerContinuityUPSSystem.initialize()
+      this.powerContinuityUPSSystem.initialize(),
+      // Wave 13
+      this.smartFoodPantryManagementSystem.initialize(),
+      this.homeSustainabilityTrackerSystem.initialize(),
+      this.smartPerimeterManagementSystem.initialize(),
+      this.homeRoboticsOrchestrationSystem.initialize(),
+      this.smartHomeDigitalTwinSystem.initialize(),
+      this.smartDisasterResilienceSystem.initialize()
     ]);
     
     // Wave 11 post-initialization setup
@@ -357,6 +379,9 @@ class SmartHomeProApp extends Homey.App {
     
     // Setup Wave 12 event listeners
     this.setupWave12EventListeners();
+
+    // Setup Wave 13 event listeners
+    this.setupWave13EventListeners();
   }
   
   async initializeWave11Infrastructure() {
@@ -458,7 +483,14 @@ class SmartHomeProApp extends Homey.App {
       'EnergyBillingAnalytics': this.energyBillingAnalyticsSystem,
       'VisitorGuestManagement': this.visitorGuestManagementSystem,
       'RoomOccupancyMapping': this.roomOccupancyMappingSystem,
-      'PowerContinuityUPS': this.powerContinuityUPSSystem
+      'PowerContinuityUPS': this.powerContinuityUPSSystem,
+      // Wave 13
+      'SmartFoodPantry': this.smartFoodPantryManagementSystem,
+      'HomeSustainability': this.homeSustainabilityTrackerSystem,
+      'SmartPerimeter': this.smartPerimeterManagementSystem,
+      'HomeRobotics': this.homeRoboticsOrchestrationSystem,
+      'SmartDigitalTwin': this.smartHomeDigitalTwinSystem,
+      'SmartDisasterResilience': this.smartDisasterResilienceSystem
     };
     
     for (const [name, ref] of Object.entries(systems)) {
@@ -634,6 +666,110 @@ class SmartHomeProApp extends Homey.App {
     this.log('Wave 11 event listeners configured successfully');
   }
   
+  setupWave13EventListeners() {
+    // Food pantry events
+    try {
+      this.homey.on('food-expiring-soon', (data) => {
+        this.log(`Food expiring soon: ${data.itemName} expires ${data.expiryDate}`);
+        this.homey.notifications.createNotification({ excerpt: `Food expiring soon: ${data.itemName}` }).catch(() => {});
+      });
+      this.homey.on('grocery-list-generated', (data) => {
+        this.log(`Grocery list generated with ${data.itemCount} items`);
+      });
+      this.homey.on('food-waste-logged', (data) => {
+        this.log(`Food waste logged: ${data.itemName} - ${data.reason}`);
+      });
+    } catch (err) { this.error('Wave 13 food pantry event setup error:', err); }
+
+    // Sustainability events
+    try {
+      this.homey.on('carbon-goal-reached', (data) => {
+        this.log(`Carbon goal reached: ${data.goalName}`);
+        this.homey.notifications.createNotification({ excerpt: `🌱 Sustainability goal reached: ${data.goalName}` }).catch(() => {});
+      });
+      this.homey.on('sustainability-badge-unlocked', (data) => {
+        this.log(`Sustainability badge unlocked: ${data.badge}`);
+      });
+      this.homey.on('energy-efficiency-alert', (data) => {
+        this.log(`Energy efficiency alert: ${data.device} rated ${data.rating}`);
+      });
+    } catch (err) { this.error('Wave 13 sustainability event setup error:', err); }
+
+    // Perimeter events
+    try {
+      this.homey.on('perimeter-intrusion', (data) => {
+        this.log(`Perimeter intrusion detected in zone: ${data.zone}`);
+        this.homey.notifications.createNotification({ excerpt: `⚠️ Perimeter intrusion: ${data.zone}` }).catch(() => {});
+      });
+      this.homey.on('gate-opened', (data) => {
+        this.log(`Gate opened: ${data.entranceId} by ${data.method}`);
+      });
+      this.homey.on('vehicle-detected', (data) => {
+        this.log(`Vehicle detected: ${data.classification} at ${data.entrance}`);
+      });
+      this.homey.on('fence-breach', (data) => {
+        this.log(`Fence breach detected: ${data.section}`);
+      });
+    } catch (err) { this.error('Wave 13 perimeter event setup error:', err); }
+
+    // Robotics events
+    try {
+      this.homey.on('robot-cleaning-started', (data) => {
+        this.log(`Robot ${data.robotName} started cleaning ${data.zone}`);
+      });
+      this.homey.on('robot-cleaning-complete', (data) => {
+        this.log(`Robot ${data.robotName} finished cleaning, coverage: ${data.coverage}%`);
+      });
+      this.homey.on('robot-maintenance-due', (data) => {
+        this.log(`Robot maintenance due: ${data.robotName} - ${data.component}`);
+        this.homey.notifications.createNotification({ excerpt: `🤖 Robot maintenance: ${data.robotName} - ${data.component}` }).catch(() => {});
+      });
+      this.homey.on('robot-error', (data) => {
+        this.log(`Robot error: ${data.robotName} - ${data.error}`);
+      });
+    } catch (err) { this.error('Wave 13 robotics event setup error:', err); }
+
+    // Digital twin events
+    try {
+      this.homey.on('anomaly-detected-room', (data) => {
+        this.log(`Anomaly detected in ${data.roomId}: ${data.sensorType} = ${data.value}`);
+      });
+      this.homey.on('comfort-score-low', (data) => {
+        this.log(`Low comfort score in ${data.roomId}: ${data.score}/100`);
+      });
+      this.homey.on('digital-twin-snapshot', (data) => {
+        this.log(`Digital twin snapshot captured at ${data.timestamp}`);
+      });
+    } catch (err) { this.error('Wave 13 digital twin event setup error:', err); }
+
+    // Disaster resilience events
+    try {
+      this.homey.on('disaster-risk-elevated', (data) => {
+        this.log(`Elevated risk: ${data.hazardType} level ${data.riskLevel}`);
+        this.homey.notifications.createNotification({ excerpt: `🚨 Elevated ${data.hazardType} risk: level ${data.riskLevel}` }).catch(() => {});
+      });
+      this.homey.on('supply-expiring', (data) => {
+        this.log(`Emergency supply expiring: ${data.item} on ${data.expiryDate}`);
+      });
+      this.homey.on('pipe-freeze-warning', (data) => {
+        this.log(`Pipe freeze warning: ${data.pipeId} at ${data.temperature}°C`);
+        this.homey.notifications.createNotification({ excerpt: `🥶 Pipe freeze risk: ${data.pipeId}` }).catch(() => {});
+      });
+      this.homey.on('flood-detected', (data) => {
+        this.log(`Flood detected: sensor ${data.sensorId}`);
+        this.homey.notifications.createNotification({ excerpt: `🌊 Flood detected: ${data.location}` }).catch(() => {});
+      });
+      this.homey.on('evacuation-initiated', (data) => {
+        this.log(`Evacuation initiated: ${data.reason}`);
+      });
+      this.homey.on('drill-completed', (data) => {
+        this.log(`Drill completed: ${data.type}, score: ${data.score}/100`);
+      });
+    } catch (err) { this.error('Wave 13 disaster event setup error:', err); }
+
+    this.log('Wave 13 event listeners configured successfully');
+  }
+
   setupWave12EventListeners() {
     // Doorbell events
     if (this.smartDoorbellIntercomSystem.on) {
@@ -1365,6 +1501,24 @@ class SmartHomeProApp extends Homey.App {
       this.log('Wave 12 systems shut down gracefully');
     } catch (error) {
       this.error('Error during Wave 12 shutdown:', error);
+    }
+
+    // Wave 13 graceful shutdown
+    try {
+      const wave13Systems = [
+        this.smartFoodPantryManagementSystem,
+        this.homeSustainabilityTrackerSystem,
+        this.smartPerimeterManagementSystem,
+        this.homeRoboticsOrchestrationSystem,
+        this.smartHomeDigitalTwinSystem,
+        this.smartDisasterResilienceSystem
+      ];
+      for (const system of wave13Systems) {
+        if (system && system.destroy) system.destroy();
+      }
+      this.log('Wave 13 systems shut down gracefully');
+    } catch (error) {
+      this.error('Error during Wave 13 shutdown:', error);
     }
     
     this.log('Smart Home Pro has been uninitialized');

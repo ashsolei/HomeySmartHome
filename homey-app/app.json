@@ -659,6 +659,125 @@
             "title": { "en": "Quality score", "sv": "Kvalitetspoäng" }
           }
         ]
+      },
+      {
+        "id": "food-expiring-soon",
+        "title": {
+          "en": "Food item expiring soon",
+          "sv": "Matvara går snart ut"
+        },
+        "tokens": [
+          {
+            "name": "item_name",
+            "type": "string",
+            "title": { "en": "Item name", "sv": "Varunamn" }
+          },
+          {
+            "name": "days_remaining",
+            "type": "number",
+            "title": { "en": "Days remaining", "sv": "Dagar kvar" }
+          }
+        ]
+      },
+      {
+        "id": "perimeter-intrusion-detected",
+        "title": {
+          "en": "Perimeter intrusion detected",
+          "sv": "Perimeterintrång upptäckt"
+        },
+        "tokens": [
+          {
+            "name": "zone_name",
+            "type": "string",
+            "title": { "en": "Zone name", "sv": "Zonnamn" }
+          },
+          {
+            "name": "threat_level",
+            "type": "string",
+            "title": { "en": "Threat level", "sv": "Hotnivå" }
+          }
+        ]
+      },
+      {
+        "id": "disaster-risk-elevated",
+        "title": {
+          "en": "Disaster risk elevated",
+          "sv": "Katastrofrisk förhöjd"
+        },
+        "tokens": [
+          {
+            "name": "hazard_type",
+            "type": "string",
+            "title": { "en": "Hazard type", "sv": "Risktyp" }
+          },
+          {
+            "name": "risk_level",
+            "type": "number",
+            "title": { "en": "Risk level", "sv": "Risknivå" }
+          }
+        ]
+      },
+      {
+        "id": "sustainability-goal-reached",
+        "title": {
+          "en": "Sustainability goal reached",
+          "sv": "Hållbarhetsmål uppnått"
+        },
+        "tokens": [
+          {
+            "name": "goal_name",
+            "type": "string",
+            "title": { "en": "Goal name", "sv": "Målnamn" }
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "title": { "en": "Value", "sv": "Värde" }
+          }
+        ]
+      },
+      {
+        "id": "robot-cleaning-complete",
+        "title": {
+          "en": "Robot cleaning complete",
+          "sv": "Robotstädning klar"
+        },
+        "tokens": [
+          {
+            "name": "robot_name",
+            "type": "string",
+            "title": { "en": "Robot name", "sv": "Robotnamn" }
+          },
+          {
+            "name": "coverage_pct",
+            "type": "number",
+            "title": { "en": "Coverage %", "sv": "Täckning %" }
+          }
+        ]
+      },
+      {
+        "id": "digital-twin-anomaly",
+        "title": {
+          "en": "Digital twin anomaly detected",
+          "sv": "Digital tvilling-anomali upptäckt"
+        },
+        "tokens": [
+          {
+            "name": "room_name",
+            "type": "string",
+            "title": { "en": "Room name", "sv": "Rumsnamn" }
+          },
+          {
+            "name": "sensor_type",
+            "type": "string",
+            "title": { "en": "Sensor type", "sv": "Sensortyp" }
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "title": { "en": "Value", "sv": "Värde" }
+          }
+        ]
       }
     ],
     "conditions": [
@@ -945,6 +1064,52 @@
             "label": "%"
           }
         ]
+      },
+      {
+        "id": "perimeter-is-secure",
+        "title": {
+          "en": "Perimeter is secure",
+          "sv": "Perimetern är säker"
+        }
+      },
+      {
+        "id": "disaster-supplies-ready",
+        "title": {
+          "en": "Emergency supplies are ready",
+          "sv": "Nödförråd är redo"
+        }
+      },
+      {
+        "id": "food-item-in-stock",
+        "title": {
+          "en": "Food item is in stock",
+          "sv": "Matvara finns i lager"
+        },
+        "args": [
+          {
+            "name": "item_name",
+            "type": "dropdown",
+            "values": [
+              { "id": "milk", "label": { "en": "Milk", "sv": "Mjölk" } },
+              { "id": "bread", "label": { "en": "Bread", "sv": "Bröd" } },
+              { "id": "eggs", "label": { "en": "Eggs", "sv": "Ägg" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sustainability-on-target",
+        "title": {
+          "en": "Sustainability is on target",
+          "sv": "Hållbarhet på rätt spår"
+        }
+      },
+      {
+        "id": "robot-is-available",
+        "title": {
+          "en": "Robot is available",
+          "sv": "Robot är tillgänglig"
+        }
       }
     ],
     "actions": [
@@ -1368,6 +1533,90 @@
             ]
           }
         ]
+      },
+      {
+        "id": "open-perimeter-gate",
+        "title": {
+          "en": "Open perimeter gate",
+          "sv": "Öppna perimetergrind"
+        },
+        "args": [
+          {
+            "name": "gate_id",
+            "type": "dropdown",
+            "values": [
+              { "id": "main", "label": { "en": "Main gate", "sv": "Huvudgrind" } },
+              { "id": "side", "label": { "en": "Side gate", "sv": "Sidogrind" } },
+              { "id": "back", "label": { "en": "Back gate", "sv": "Bakgrind" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "activate-storm-prep",
+        "title": {
+          "en": "Activate storm preparation",
+          "sv": "Aktivera stormförberedelse"
+        }
+      },
+      {
+        "id": "add-food-item",
+        "title": {
+          "en": "Add food item to pantry",
+          "sv": "Lägg till matvara i skafferi"
+        },
+        "args": [
+          {
+            "name": "item_name",
+            "type": "text",
+            "placeholder": { "en": "Item name", "sv": "Varunamn" }
+          }
+        ]
+      },
+      {
+        "id": "start-robot-cleaning",
+        "title": {
+          "en": "Start robot cleaning",
+          "sv": "Starta robotstädning"
+        },
+        "args": [
+          {
+            "name": "zone",
+            "type": "dropdown",
+            "values": [
+              { "id": "kitchen", "label": { "en": "Kitchen", "sv": "Kök" } },
+              { "id": "living_room", "label": { "en": "Living room", "sv": "Vardagsrum" } },
+              { "id": "bedroom", "label": { "en": "Bedroom", "sv": "Sovrum" } },
+              { "id": "all", "label": { "en": "All zones", "sv": "Alla zoner" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "run-disaster-drill",
+        "title": {
+          "en": "Run disaster drill",
+          "sv": "Kör katastrofövning"
+        },
+        "args": [
+          {
+            "name": "drill_type",
+            "type": "dropdown",
+            "values": [
+              { "id": "fire", "label": { "en": "Fire", "sv": "Brand" } },
+              { "id": "earthquake", "label": { "en": "Earthquake", "sv": "Jordbävning" } },
+              { "id": "flood", "label": { "en": "Flood", "sv": "Översvämning" } },
+              { "id": "power_outage", "label": { "en": "Power outage", "sv": "Strömavbrott" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "capture-digital-twin-snapshot",
+        "title": {
+          "en": "Capture digital twin snapshot",
+          "sv": "Ta digital tvilling-ögonblicksbild"
+        }
       }
     ]
   },
@@ -1693,6 +1942,146 @@
     "getPowerQualitySummary": {
       "method": "GET",
       "path": "/power/quality"
+    },
+    "getFoodInventory": {
+      "method": "GET",
+      "path": "/food/inventory"
+    },
+    "getFoodExpiry": {
+      "method": "GET",
+      "path": "/food/expiry"
+    },
+    "getGroceryList": {
+      "method": "GET",
+      "path": "/food/grocery-list"
+    },
+    "getMealPlan": {
+      "method": "GET",
+      "path": "/food/meal-plan"
+    },
+    "addFoodItem": {
+      "method": "POST",
+      "path": "/food/items"
+    },
+    "getFoodWaste": {
+      "method": "GET",
+      "path": "/food/waste"
+    },
+    "getCarbonFootprint": {
+      "method": "GET",
+      "path": "/sustainability/carbon"
+    },
+    "getWaterUsage": {
+      "method": "GET",
+      "path": "/sustainability/water"
+    },
+    "getSustainabilityGoals": {
+      "method": "GET",
+      "path": "/sustainability/goals"
+    },
+    "getSustainabilityBadges": {
+      "method": "GET",
+      "path": "/sustainability/badges"
+    },
+    "getSustainabilityTips": {
+      "method": "GET",
+      "path": "/sustainability/tips"
+    },
+    "getSustainabilityReport": {
+      "method": "GET",
+      "path": "/sustainability/report"
+    },
+    "getPerimeterStatus": {
+      "method": "GET",
+      "path": "/perimeter/status"
+    },
+    "getPerimeterZones": {
+      "method": "GET",
+      "path": "/perimeter/zones"
+    },
+    "getPerimeterAccessLog": {
+      "method": "GET",
+      "path": "/perimeter/access-log"
+    },
+    "openPerimeterGate": {
+      "method": "POST",
+      "path": "/perimeter/gates/:gateId/open"
+    },
+    "getPerimeterVehicles": {
+      "method": "GET",
+      "path": "/perimeter/vehicles"
+    },
+    "getPerimeterAudit": {
+      "method": "GET",
+      "path": "/perimeter/audit"
+    },
+    "getRoboticsFleet": {
+      "method": "GET",
+      "path": "/robotics/fleet"
+    },
+    "getRoboticsSchedules": {
+      "method": "GET",
+      "path": "/robotics/schedules"
+    },
+    "startRoboticsCleaning": {
+      "method": "POST",
+      "path": "/robotics/cleaning"
+    },
+    "getRoboticsMaintenance": {
+      "method": "GET",
+      "path": "/robotics/maintenance"
+    },
+    "getRoboticsHealth": {
+      "method": "GET",
+      "path": "/robotics/health"
+    },
+    "getDigitalTwinRooms": {
+      "method": "GET",
+      "path": "/twin/rooms"
+    },
+    "getDigitalTwinSensors": {
+      "method": "GET",
+      "path": "/twin/sensors"
+    },
+    "getDigitalTwinEnergyFlow": {
+      "method": "GET",
+      "path": "/twin/energy-flow"
+    },
+    "getDigitalTwinHeatmap": {
+      "method": "GET",
+      "path": "/twin/heatmap"
+    },
+    "getDigitalTwinComfort": {
+      "method": "GET",
+      "path": "/twin/comfort"
+    },
+    "runDigitalTwinWhatIf": {
+      "method": "POST",
+      "path": "/twin/what-if"
+    },
+    "getDisasterRisk": {
+      "method": "GET",
+      "path": "/disaster/risk"
+    },
+    "getDisasterSupplies": {
+      "method": "GET",
+      "path": "/disaster/supplies"
+    },
+    "getDisasterBackupPower": {
+      "method": "GET",
+      "path": "/disaster/backup-power"
+    },
+    "getEvacuationPlan": {
+      "method": "GET",
+      "path": "/disaster/evacuation"
+    },
+    "getDisasterReadiness": {
+      "method": "GET",
+      "path": "/disaster/readiness"
+    },
+    "runDisasterDrill": {
+      "method": "POST",
+      "path": "/disaster/drill"
     }
   }
 }

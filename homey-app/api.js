@@ -3356,5 +3356,262 @@ module.exports = {
       return homey.app.powerContinuityUPSSystem.getPowerQualitySummary();
     }
     return {};
+  },
+
+  // ===== Wave 13: Smart Food Pantry Management System =====
+
+  async getFoodPantryInventory({ homey }) {
+    if (homey.app.smartFoodPantryManagementSystem.getInventory) {
+      return homey.app.smartFoodPantryManagementSystem.getInventory();
+    }
+    return {};
+  },
+
+  async getFoodExpiryAlerts({ homey }) {
+    if (homey.app.smartFoodPantryManagementSystem.getExpiryAlerts) {
+      return homey.app.smartFoodPantryManagementSystem.getExpiryAlerts();
+    }
+    return {};
+  },
+
+  async getGroceryList({ homey }) {
+    if (homey.app.smartFoodPantryManagementSystem.getGroceryList) {
+      return homey.app.smartFoodPantryManagementSystem.getGroceryList();
+    }
+    return {};
+  },
+
+  async getMealPlan({ homey }) {
+    if (homey.app.smartFoodPantryManagementSystem.getMealPlan) {
+      return homey.app.smartFoodPantryManagementSystem.getMealPlan();
+    }
+    return {};
+  },
+
+  async addFoodItem({ homey, body }) {
+    if (homey.app.smartFoodPantryManagementSystem.addItem) {
+      return homey.app.smartFoodPantryManagementSystem.addItem(body);
+    }
+    return {};
+  },
+
+  async getFoodWasteAnalytics({ homey }) {
+    if (homey.app.smartFoodPantryManagementSystem.getWasteAnalytics) {
+      return homey.app.smartFoodPantryManagementSystem.getWasteAnalytics();
+    }
+    return {};
+  },
+
+  // ===== Wave 13: Home Sustainability Tracker System =====
+
+  async getCarbonFootprint({ homey }) {
+    if (homey.app.homeSustainabilityTrackerSystem.getCarbonFootprint) {
+      return homey.app.homeSustainabilityTrackerSystem.getCarbonFootprint();
+    }
+    return {};
+  },
+
+  async getWaterUsage({ homey }) {
+    if (homey.app.homeSustainabilityTrackerSystem.getWaterUsage) {
+      return homey.app.homeSustainabilityTrackerSystem.getWaterUsage();
+    }
+    return {};
+  },
+
+  async getSustainabilityGoals({ homey }) {
+    if (homey.app.homeSustainabilityTrackerSystem.getGoals) {
+      return homey.app.homeSustainabilityTrackerSystem.getGoals();
+    }
+    return {};
+  },
+
+  async getSustainabilityBadges({ homey }) {
+    if (homey.app.homeSustainabilityTrackerSystem.getBadges) {
+      return homey.app.homeSustainabilityTrackerSystem.getBadges();
+    }
+    return {};
+  },
+
+  async getSustainabilityTips({ homey }) {
+    if (homey.app.homeSustainabilityTrackerSystem.getTips) {
+      return homey.app.homeSustainabilityTrackerSystem.getTips();
+    }
+    return {};
+  },
+
+  async getSustainabilityReport({ homey }) {
+    if (homey.app.homeSustainabilityTrackerSystem.getReport) {
+      return homey.app.homeSustainabilityTrackerSystem.getReport();
+    }
+    return {};
+  },
+
+  // ===== Wave 13: Smart Perimeter Management System =====
+
+  async getPerimeterStatus({ homey }) {
+    if (homey.app.smartPerimeterManagementSystem.getStatus) {
+      return homey.app.smartPerimeterManagementSystem.getStatus();
+    }
+    return {};
+  },
+
+  async getPerimeterZones({ homey }) {
+    if (homey.app.smartPerimeterManagementSystem.getZones) {
+      return homey.app.smartPerimeterManagementSystem.getZones();
+    }
+    return {};
+  },
+
+  async getPerimeterAccessLog({ homey }) {
+    if (homey.app.smartPerimeterManagementSystem.getAccessLog) {
+      return homey.app.smartPerimeterManagementSystem.getAccessLog();
+    }
+    return {};
+  },
+
+  async openGate({ homey, params }) {
+    if (homey.app.smartPerimeterManagementSystem.openGate) {
+      return homey.app.smartPerimeterManagementSystem.openGate(params.gateId);
+    }
+    return {};
+  },
+
+  async getVehicleLog({ homey }) {
+    if (homey.app.smartPerimeterManagementSystem.getVehicleLog) {
+      return homey.app.smartPerimeterManagementSystem.getVehicleLog();
+    }
+    return {};
+  },
+
+  async getPerimeterAudit({ homey }) {
+    if (homey.app.smartPerimeterManagementSystem.getAudit) {
+      return homey.app.smartPerimeterManagementSystem.getAudit();
+    }
+    return {};
+  },
+
+  // ===== Wave 13: Home Robotics Orchestration System =====
+
+  async getRobotFleet({ homey }) {
+    if (homey.app.homeRoboticsOrchestrationSystem.getFleet) {
+      return homey.app.homeRoboticsOrchestrationSystem.getFleet();
+    }
+    return {};
+  },
+
+  async getRobotSchedules({ homey }) {
+    if (homey.app.homeRoboticsOrchestrationSystem.getSchedules) {
+      return homey.app.homeRoboticsOrchestrationSystem.getSchedules();
+    }
+    return {};
+  },
+
+  async startRobotCleaning({ homey, body }) {
+    if (homey.app.homeRoboticsOrchestrationSystem.startCleaning) {
+      return homey.app.homeRoboticsOrchestrationSystem.startCleaning(body);
+    }
+    return {};
+  },
+
+  async getRobotMaintenance({ homey }) {
+    if (homey.app.homeRoboticsOrchestrationSystem.getMaintenance) {
+      return homey.app.homeRoboticsOrchestrationSystem.getMaintenance();
+    }
+    return {};
+  },
+
+  async getRobotHealth({ homey }) {
+    if (homey.app.homeRoboticsOrchestrationSystem.getHealth) {
+      return homey.app.homeRoboticsOrchestrationSystem.getHealth();
+    }
+    return {};
+  },
+
+  // ===== Wave 13: Smart Home Digital Twin System =====
+
+  async getDigitalTwinRooms({ homey }) {
+    if (homey.app.smartHomeDigitalTwinSystem.getRooms) {
+      return homey.app.smartHomeDigitalTwinSystem.getRooms();
+    }
+    return {};
+  },
+
+  async getDigitalTwinSensors({ homey }) {
+    if (homey.app.smartHomeDigitalTwinSystem.getSensorOverlay) {
+      return homey.app.smartHomeDigitalTwinSystem.getSensorOverlay();
+    }
+    return {};
+  },
+
+  async getEnergyFlowModel({ homey }) {
+    if (homey.app.smartHomeDigitalTwinSystem.getEnergyFlow) {
+      return homey.app.smartHomeDigitalTwinSystem.getEnergyFlow();
+    }
+    return {};
+  },
+
+  async getOccupancyHeatmap({ homey }) {
+    if (homey.app.smartHomeDigitalTwinSystem.getOccupancyHeatmap) {
+      return homey.app.smartHomeDigitalTwinSystem.getOccupancyHeatmap();
+    }
+    return {};
+  },
+
+  async getComfortScores({ homey }) {
+    if (homey.app.smartHomeDigitalTwinSystem.getComfortScores) {
+      return homey.app.smartHomeDigitalTwinSystem.getComfortScores();
+    }
+    return {};
+  },
+
+  async runWhatIfSimulation({ homey, body }) {
+    if (homey.app.smartHomeDigitalTwinSystem.runSimulation) {
+      return homey.app.smartHomeDigitalTwinSystem.runSimulation(body);
+    }
+    return {};
+  },
+
+  // ===== Wave 13: Smart Disaster Resilience System =====
+
+  async getDisasterRiskAssessment({ homey }) {
+    if (homey.app.smartDisasterResilienceSystem.getRiskAssessment) {
+      return homey.app.smartDisasterResilienceSystem.getRiskAssessment();
+    }
+    return {};
+  },
+
+  async getEmergencySupplies({ homey }) {
+    if (homey.app.smartDisasterResilienceSystem.getSupplies) {
+      return homey.app.smartDisasterResilienceSystem.getSupplies();
+    }
+    return {};
+  },
+
+  async getBackupPowerStatus({ homey }) {
+    if (homey.app.smartDisasterResilienceSystem.getBackupPowerStatus) {
+      return homey.app.smartDisasterResilienceSystem.getBackupPowerStatus();
+    }
+    return {};
+  },
+
+  async getEvacuationPlan({ homey }) {
+    if (homey.app.smartDisasterResilienceSystem.getEvacuationPlan) {
+      return homey.app.smartDisasterResilienceSystem.getEvacuationPlan();
+    }
+    return {};
+  },
+
+  async getReadinessScore({ homey }) {
+    if (homey.app.smartDisasterResilienceSystem.getReadinessScore) {
+      return homey.app.smartDisasterResilienceSystem.getReadinessScore();
+    }
+    return {};
+  },
+
+  async runDisasterDrill({ homey, body }) {
+    if (homey.app.smartDisasterResilienceSystem.runDrill) {
+      return homey.app.smartDisasterResilienceSystem.runDrill(body);
+    }
+    return {};
   }
 };
