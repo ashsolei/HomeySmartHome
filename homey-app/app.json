@@ -1943,11 +1943,11 @@
       "method": "GET",
       "path": "/power/quality"
     },
-    "getFoodInventory": {
+    "getFoodPantryInventory": {
       "method": "GET",
       "path": "/food/inventory"
     },
-    "getFoodExpiry": {
+    "getFoodExpiryAlerts": {
       "method": "GET",
       "path": "/food/expiry"
     },
@@ -1963,7 +1963,7 @@
       "method": "POST",
       "path": "/food/items"
     },
-    "getFoodWaste": {
+    "getFoodWasteAnalytics": {
       "method": "GET",
       "path": "/food/waste"
     },
@@ -2003,11 +2003,11 @@
       "method": "GET",
       "path": "/perimeter/access-log"
     },
-    "openPerimeterGate": {
+    "openGate": {
       "method": "POST",
       "path": "/perimeter/gates/:gateId/open"
     },
-    "getPerimeterVehicles": {
+    "getVehicleLog": {
       "method": "GET",
       "path": "/perimeter/vehicles"
     },
@@ -2015,23 +2015,23 @@
       "method": "GET",
       "path": "/perimeter/audit"
     },
-    "getRoboticsFleet": {
+    "getRobotFleet": {
       "method": "GET",
       "path": "/robotics/fleet"
     },
-    "getRoboticsSchedules": {
+    "getRobotSchedules": {
       "method": "GET",
       "path": "/robotics/schedules"
     },
-    "startRoboticsCleaning": {
+    "startRobotCleaning": {
       "method": "POST",
       "path": "/robotics/cleaning"
     },
-    "getRoboticsMaintenance": {
+    "getRobotMaintenance": {
       "method": "GET",
       "path": "/robotics/maintenance"
     },
-    "getRoboticsHealth": {
+    "getRobotHealth": {
       "method": "GET",
       "path": "/robotics/health"
     },
@@ -2043,31 +2043,31 @@
       "method": "GET",
       "path": "/twin/sensors"
     },
-    "getDigitalTwinEnergyFlow": {
+    "getEnergyFlowModel": {
       "method": "GET",
       "path": "/twin/energy-flow"
     },
-    "getDigitalTwinHeatmap": {
+    "getOccupancyHeatmap": {
       "method": "GET",
       "path": "/twin/heatmap"
     },
-    "getDigitalTwinComfort": {
+    "getComfortScores": {
       "method": "GET",
       "path": "/twin/comfort"
     },
-    "runDigitalTwinWhatIf": {
+    "runWhatIfSimulation": {
       "method": "POST",
       "path": "/twin/what-if"
     },
-    "getDisasterRisk": {
+    "getDisasterRiskAssessment": {
       "method": "GET",
       "path": "/disaster/risk"
     },
-    "getDisasterSupplies": {
+    "getEmergencySupplies": {
       "method": "GET",
       "path": "/disaster/supplies"
     },
-    "getDisasterBackupPower": {
+    "getBackupPowerStatus": {
       "method": "GET",
       "path": "/disaster/backup-power"
     },
@@ -2075,7 +2075,7 @@
       "method": "GET",
       "path": "/disaster/evacuation"
     },
-    "getDisasterReadiness": {
+    "getReadinessScore": {
       "method": "GET",
       "path": "/disaster/readiness"
     },

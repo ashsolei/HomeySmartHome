@@ -1,0 +1,6 @@
+{
+  "name": "homey",
+  "version": "3.0.0",
+  "description": "Homey SDK shim for standalone deployment",
+  "main": "index.js"
+}

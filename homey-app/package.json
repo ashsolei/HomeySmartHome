@@ -5,11 +5,25 @@
   "main": "app.js",
   "scripts": {
     "build": "echo 'No build required'",
+    "start": "node server.js",
+    "start:dev": "node server.js",
     "lint": "eslint .",
-    "test": "echo 'Tests passed'"
+    "test": "echo 'Tests passed'",
+    "docker:build": "docker build -t smarthomepro .",
+    "docker:run": "docker run -p 3000:3000 --name smarthomepro smarthomepro",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f smarthomepro"
   },
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "homey": "file:./lib/standalone/homey-shim-pkg"
+  },
   "devDependencies": {
     "eslint": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

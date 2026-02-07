@@ -1,0 +1,718 @@
+'use strict';
+
+/**
+ * Smart Home Pro — Standalone Express Server
+ * 
+ * Boots the entire platform outside of Homey using HomeyShim for runtime emulation.
+ * Auto-generates REST API routes from app.json + api.js definitions.
+ */
+
+const express = require('express');
+const cors = require('cors');
+const HomeyShim = require('./lib/standalone/HomeyShim');
+
+// ============================================
+// ALL 93 SYSTEM MODULE IMPORTS (from app.js)
+// ============================================
+
+const AdvancedAutomationEngine = require('./lib/AdvancedAutomationEngine');
+const IntelligentDashboard = require('./lib/IntelligentDashboard');
+const IntelligenceManager = require('./lib/IntelligenceManager');
+const AdvancedAnalytics = require('./lib/AdvancedAnalytics');
+const VoiceControlSystem = require('./lib/VoiceControlSystem');
+const GeofencingEngine = require('./lib/GeofencingEngine');
+const SceneLearningSystem = require('./lib/SceneLearningSystem');
+const AdvancedNotificationManager = require('./lib/AdvancedNotificationManager');
+const DeviceHealthMonitor = require('./lib/DeviceHealthMonitor');
+const EnergyForecastingEngine = require('./lib/EnergyForecastingEngine');
+const SmartSchedulingSystem = require('./lib/SmartSchedulingSystem');
+const IntegrationHub = require('./lib/IntegrationHub');
+const MultiUserPreferenceSystem = require('./lib/MultiUserPreferenceSystem');
+const BackupRecoverySystem = require('./lib/BackupRecoverySystem');
+const PerformanceOptimizer = require('./lib/PerformanceOptimizer');
+const AmbientIntelligenceSystem = require('./lib/AmbientIntelligenceSystem');
+const MoodActivityDetectionSystem = require('./lib/MoodActivityDetectionSystem');
+const EnergyStorageManagementSystem = require('./lib/EnergyStorageManagementSystem');
+const AdvancedSceneTemplateSystem = require('./lib/AdvancedSceneTemplateSystem');
+const PredictiveMaintenanceScheduler = require('./lib/PredictiveMaintenanceScheduler');
+const CrossHomeSynchronizationSystem = require('./lib/CrossHomeSynchronizationSystem');
+const SmartWaterManagementSystem = require('./lib/SmartWaterManagementSystem');
+const AirQualityManagementSystem = require('./lib/AirQualityManagementSystem');
+const AdvancedSecuritySystem = require('./lib/AdvancedSecuritySystem');
+const WellnessSleepOptimizer = require('./lib/WellnessSleepOptimizer');
+const SmartApplianceController = require('./lib/SmartApplianceController');
+const GardenPlantCareSystem = require('./lib/GardenPlantCareSystem');
+const AIVoiceAssistantIntegration = require('./lib/AIVoiceAssistantIntegration');
+const SmartLockManagementSystem = require('./lib/SmartLockManagementSystem');
+const PetCareAutomationSystem = require('./lib/PetCareAutomationSystem');
+const AdvancedWeatherIntegration = require('./lib/AdvancedWeatherIntegration');
+const SmartWasteManagementSystem = require('./lib/SmartWasteManagementSystem');
+const VehicleIntegrationSystem = require('./lib/VehicleIntegrationSystem');
+const AdvancedAVAutomation = require('./lib/AdvancedAVAutomation');
+const OutdoorLightingScenarios = require('./lib/OutdoorLightingScenarios');
+const PoolSpaManagementSystem = require('./lib/PoolSpaManagementSystem');
+const AdvancedEnergyTradingSystem = require('./lib/AdvancedEnergyTradingSystem');
+const HomeGymFitnessSystem = require('./lib/HomeGymFitnessSystem');
+const SmartWindowManagementSystem = require('./lib/SmartWindowManagementSystem');
+const WineCellarManagementSystem = require('./lib/WineCellarManagementSystem');
+const AdvancedWakeUpRoutineSystem = require('./lib/AdvancedWakeUpRoutineSystem');
+const MailboxPackageTrackingSystem = require('./lib/MailboxPackageTrackingSystem');
+const AdvancedAirPurificationSystem = require('./lib/AdvancedAirPurificationSystem');
+const SmartFurnitureControlSystem = require('./lib/SmartFurnitureControlSystem');
+const HomeOfficeOptimizationSystem = require('./lib/HomeOfficeOptimizationSystem');
+// Wave 6
+const SmartHomeTheaterSystem = require('./lib/SmartHomeTheaterSystem');
+const AdvancedKitchenAutomationSystem = require('./lib/AdvancedKitchenAutomationSystem');
+const HomeSpaAndSaunaSystem = require('./lib/HomeSpaAndSaunaSystem');
+const SmartWardrobeManagementSystem = require('./lib/SmartWardrobeManagementSystem');
+const HomeBarManagementSystem = require('./lib/HomeBarManagementSystem');
+const AdvancedBabyAndChildCareSystem = require('./lib/AdvancedBabyAndChildCareSystem');
+const HomeCleaningAutomationSystem = require('./lib/HomeCleaningAutomationSystem');
+const SmartGarageManagementSystem = require('./lib/SmartGarageManagementSystem');
+// Wave 7
+const SmartLaundryManagementSystem = require('./lib/SmartLaundryManagementSystem');
+const HomeWorkshopSafetySystem = require('./lib/HomeWorkshopSafetySystem');
+const AdvancedMusicAudioSystem = require('./lib/AdvancedMusicAudioSystem');
+const SmartAquariumManagementSystem = require('./lib/SmartAquariumManagementSystem');
+const HomeOfficeProductivityHub = require('./lib/HomeOfficeProductivityHub');
+const AdvancedIndoorPlantCareSystem = require('./lib/AdvancedIndoorPlantCareSystem');
+const SmartPetDoorActivitySystem = require('./lib/SmartPetDoorActivitySystem');
+const HomeLibraryManagementSystem = require('./lib/HomeLibraryManagementSystem');
+// Wave 8
+const SolarEnergyOptimizationSystem = require('./lib/SolarEnergyOptimizationSystem');
+const HomeEmergencyResponseSystem = require('./lib/HomeEmergencyResponseSystem');
+const AdvancedHomeNetworkSecuritySystem = require('./lib/AdvancedHomeNetworkSecuritySystem');
+const SmartIrrigationWaterConservationSystem = require('./lib/SmartIrrigationWaterConservationSystem');
+const AdvancedAirQualityVentilationControlSystem = require('./lib/AdvancedAirQualityVentilationControlSystem');
+const HomeAccessibilityElderlyCareSystem = require('./lib/HomeAccessibilityElderlyCareSystem');
+const AdvancedPackageDeliveryManagementSystem = require('./lib/AdvancedPackageDeliveryManagementSystem');
+const SmartHomeInsuranceRiskAssessmentSystem = require('./lib/SmartHomeInsuranceRiskAssessmentSystem');
+// Wave 9
+const AdvancedAIPredictionEngine = require('./lib/AdvancedAIPredictionEngine');
+const CrossSystemAIOrchestrationHub = require('./lib/CrossSystemAIOrchestrationHub');
+// Wave 10
+const DeepLearningVisionSystem = require('./lib/DeepLearningVisionSystem');
+const NaturalLanguageAutomationEngine = require('./lib/NaturalLanguageAutomationEngine');
+// System optimizer
+const { SystemOptimizer } = require('./lib/utils/SystemOptimizer');
+// Wave 11 — Infrastructure & Optimization Systems
+const { CentralizedCacheManager } = require('./lib/utils/CentralizedCacheManager');
+const { UnifiedEventScheduler } = require('./lib/utils/UnifiedEventScheduler');
+const ErrorHandlingMiddleware = require('./lib/ErrorHandlingMiddleware');
+const MemoryGuardSystem = require('./lib/MemoryGuardSystem');
+const APIAuthenticationGateway = require('./lib/APIAuthenticationGateway');
+const SystemHealthDashboard = require('./lib/SystemHealthDashboard');
+// Wave 12
+const SmartDoorbellIntercomSystem = require('./lib/SmartDoorbellIntercomSystem');
+const IndoorLightingSceneEngine = require('./lib/IndoorLightingSceneEngine');
+const EnergyBillingAnalyticsSystem = require('./lib/EnergyBillingAnalyticsSystem');
+const VisitorGuestManagementSystem = require('./lib/VisitorGuestManagementSystem');
+const RoomOccupancyMappingSystem = require('./lib/RoomOccupancyMappingSystem');
+const PowerContinuityUPSSystem = require('./lib/PowerContinuityUPSSystem');
+// Wave 13
+const SmartFoodPantryManagementSystem = require('./lib/SmartFoodPantryManagementSystem');
+const HomeSustainabilityTrackerSystem = require('./lib/HomeSustainabilityTrackerSystem');
+const SmartPerimeterManagementSystem = require('./lib/SmartPerimeterManagementSystem');
+const HomeRoboticsOrchestrationSystem = require('./lib/HomeRoboticsOrchestrationSystem');
+const SmartHomeDigitalTwinSystem = require('./lib/SmartHomeDigitalTwinSystem');
+const SmartDisasterResilienceSystem = require('./lib/SmartDisasterResilienceSystem');
+
+// ============================================
+// INLINE MANAGER STUBS (these are defined inline in app.js)
+// ============================================
+
+class DeviceManager {
+  constructor(app) { this.app = app; this.devices = {}; }
+  async initialize() { console.log('[DeviceManager] initialized (standalone stub)'); }
+  async getDevices() { return this.devices; }
+  async getDevicesSummary() {
+    return { total: Object.keys(this.devices).length, byClass: {}, byZone: {}, online: 0, offline: 0 };
+  }
+  async setZoneLights() {}
+}
+
+class SceneManager {
+  constructor(app) { this.app = app; this.activeScene = null; }
+  async initialize() { console.log('[SceneManager] initialized (standalone stub)'); }
+  async activateScene(sceneId) {
+    const scene = this.app.scenes[sceneId];
+    if (!scene) throw new Error(`Scene not found: ${sceneId}`);
+    this.activeScene = sceneId;
+  }
+  getActiveScene() { return this.activeScene; }
+}
+
+class AutomationManager {
+  constructor(app) { this.app = app; this.executionHistory = []; }
+  async initialize() { console.log('[AutomationManager] initialized (standalone stub)'); }
+  async executeRoutine(routineId) {
+    const routine = this.app.routines[routineId];
+    if (!routine) throw new Error(`Routine not found: ${routineId}`);
+    this.executionHistory.push({ routineId, timestamp: new Date().toISOString() });
+  }
+}
+
+class EnergyManager {
+  constructor(app) { this.app = app; this.consumptionHistory = []; this.threshold = 3000; }
+  async initialize() { console.log('[EnergyManager] initialized (standalone stub)'); }
+  async getCurrentConsumption() { return { total: 0, devices: [], threshold: this.threshold, isHigh: false }; }
+}
+
+class SecurityManager {
+  constructor(app) { this.app = app; this.events = []; }
+  async initialize() { console.log('[SecurityManager] initialized (standalone stub)'); }
+  async setMode(mode) { this.app.securityMode = mode; }
+  async getStatus() { return { mode: this.app.securityMode, devices: [], recentEvents: this.events.slice(-10) }; }
+}
+
+class ClimateManager {
+  constructor(app) { this.app = app; this.targets = {}; }
+  async initialize() { console.log('[ClimateManager] initialized (standalone stub)'); }
+  async getAllZonesStatus() { return {}; }
+  async setZoneTemperature() {}
+  async setTargetTemperature(zone, temp) { this.targets[zone] = temp; }
+}
+
+class PresenceManager {
+  constructor(app) { this.app = app; this.presenceStatus = {}; }
+  async initialize() { console.log('[PresenceManager] initialized (standalone stub)'); }
+  isAnyoneHome() { return Object.values(this.presenceStatus).some(p => p.present); }
+  async getStatus() { return { users: this.presenceStatus, anyoneHome: this.isAnyoneHome(), homeCount: 0 }; }
+}
+
+class NotificationManager {
+  constructor(app) { this.app = app; this.history = []; }
+  async initialize() { console.log('[NotificationManager] initialized (standalone stub)'); }
+  async send(message, priority = 'normal') {
+    const n = { message, priority, timestamp: new Date().toISOString() };
+    this.history.push(n);
+    if (this.history.length > 100) this.history.shift();
+    return n;
+  }
+}
+
+// ============================================
+// BOOT SEQUENCE
+// ============================================
+
+const startTime = Date.now();
+const systemStatuses = {};
+
+async function boot() {
+  console.log('╔══════════════════════════════════════════════╗');
+  console.log('║   Smart Home Pro — Standalone Server Boot    ║');
+  console.log('╚══════════════════════════════════════════════╝');
+  console.log('');
+
+  // 1. Create HomeyShim instance
+  const homey = new HomeyShim();
+
+  // 2. Create app object (mimics SmartHomeProApp without extending Homey.App)
+  const app = {
+    homey,
+    scenes: {},
+    routines: {},
+    securityMode: 'disarmed',
+    nightMode: false,
+    energySavingMode: false,
+    presenceData: {},
+    log: (...args) => console.log('[App]', ...args),
+    error: (...args) => console.error('[App]', ...args),
+
+    // getDashboardData mirrors what's in app.js
+    async getDashboardData() {
+      return {
+        presence: await this.presenceManager.getStatus(),
+        energy: await this.energyManager.getCurrentConsumption(),
+        climate: await this.climateManager.getAllZonesStatus(),
+        security: { mode: this.securityMode, status: await this.securityManager.getStatus() },
+        scenes: this.scenes,
+        activeScene: this.sceneManager.getActiveScene(),
+        devices: await this.deviceManager.getDevicesSummary()
+      };
+    }
+  };
+
+  // 3. Instantiate all systems on the app object
+  // ── Inner managers (stubs) ──
+  app.deviceManager = new DeviceManager(app);
+  app.sceneManager = new SceneManager(app);
+  app.automationManager = new AutomationManager(app);
+  app.energyManager = new EnergyManager(app);
+  app.securityManager = new SecurityManager(app);
+  app.climateManager = new ClimateManager(app);
+  app.presenceManager = new PresenceManager(app);
+  app.notificationManager = new NotificationManager(app);
+
+  // ── Waves 1-7: constructor(homey) ──
+  app.automationEngine = new AdvancedAutomationEngine(homey);
+  app.intelligentDashboard = new IntelligentDashboard(homey);
+  app.intelligenceManager = new IntelligenceManager(homey);
+  app.advancedAnalytics = new AdvancedAnalytics(homey);
+  app.voiceControlSystem = new VoiceControlSystem(homey);
+  app.geofencingEngine = new GeofencingEngine(homey);
+  app.sceneLearningSystem = new SceneLearningSystem(homey);
+  app.advancedNotificationManager = new AdvancedNotificationManager(homey);
+  app.deviceHealthMonitor = new DeviceHealthMonitor(homey);
+  app.energyForecastingEngine = new EnergyForecastingEngine(homey);
+  app.smartSchedulingSystem = new SmartSchedulingSystem(homey);
+  app.integrationHub = new IntegrationHub(homey);
+  app.multiUserPreferenceSystem = new MultiUserPreferenceSystem(homey);
+  // Wave 2
+  app.backupRecoverySystem = new BackupRecoverySystem(homey);
+  app.performanceOptimizer = new PerformanceOptimizer(homey);
+  app.ambientIntelligenceSystem = new AmbientIntelligenceSystem(homey);
+  app.moodActivityDetectionSystem = new MoodActivityDetectionSystem(homey);
+  app.energyStorageManagementSystem = new EnergyStorageManagementSystem(homey);
+  app.advancedSceneTemplateSystem = new AdvancedSceneTemplateSystem(homey);
+  app.predictiveMaintenanceScheduler = new PredictiveMaintenanceScheduler(homey);
+  app.crossHomeSynchronizationSystem = new CrossHomeSynchronizationSystem(homey);
+  // Wave 3
+  app.smartWaterManagementSystem = new SmartWaterManagementSystem(homey);
+  app.airQualityManagementSystem = new AirQualityManagementSystem(homey);
+  app.advancedSecuritySystem = new AdvancedSecuritySystem(homey);
+  app.wellnessSleepOptimizer = new WellnessSleepOptimizer(homey);
+  app.smartApplianceController = new SmartApplianceController(homey);
+  app.gardenPlantCareSystem = new GardenPlantCareSystem(homey);
+  app.aiVoiceAssistantIntegration = new AIVoiceAssistantIntegration(homey);
+  app.smartLockManagementSystem = new SmartLockManagementSystem(homey);
+  // Wave 4
+  app.petCareAutomationSystem = new PetCareAutomationSystem(homey);
+  app.advancedWeatherIntegration = new AdvancedWeatherIntegration(homey);
+  app.smartWasteManagementSystem = new SmartWasteManagementSystem(homey);
+  app.vehicleIntegrationSystem = new VehicleIntegrationSystem(homey);
+  app.advancedAVAutomation = new AdvancedAVAutomation(homey);
+  app.outdoorLightingScenarios = new OutdoorLightingScenarios(homey);
+  app.poolSpaManagementSystem = new PoolSpaManagementSystem(homey);
+  app.advancedEnergyTradingSystem = new AdvancedEnergyTradingSystem(homey);
+  // Wave 5
+  app.homeGymFitnessSystem = new HomeGymFitnessSystem(homey);
+  app.smartWindowManagementSystem = new SmartWindowManagementSystem(homey);
+  app.wineCellarManagementSystem = new WineCellarManagementSystem(homey);
+  app.advancedWakeUpRoutineSystem = new AdvancedWakeUpRoutineSystem(homey);
+  app.mailboxPackageTrackingSystem = new MailboxPackageTrackingSystem(homey);
+  app.advancedAirPurificationSystem = new AdvancedAirPurificationSystem(homey);
+  app.smartFurnitureControlSystem = new SmartFurnitureControlSystem(homey);
+  app.homeOfficeOptimizationSystem = new HomeOfficeOptimizationSystem(homey);
+  // Wave 6
+  app.smartHomeTheaterSystem = new SmartHomeTheaterSystem(homey);
+  app.advancedKitchenAutomationSystem = new AdvancedKitchenAutomationSystem(homey);
+  app.homeSpaAndSaunaSystem = new HomeSpaAndSaunaSystem(homey);
+  app.smartWardrobeManagementSystem = new SmartWardrobeManagementSystem(homey);
+  app.homeBarManagementSystem = new HomeBarManagementSystem(homey);
+  app.advancedBabyAndChildCareSystem = new AdvancedBabyAndChildCareSystem(homey);
+  app.homeCleaningAutomationSystem = new HomeCleaningAutomationSystem(homey);
+  app.smartGarageManagementSystem = new SmartGarageManagementSystem(homey);
+  // Wave 7
+  app.smartLaundryManagementSystem = new SmartLaundryManagementSystem(homey);
+  app.homeWorkshopSafetySystem = new HomeWorkshopSafetySystem(homey);
+  app.advancedMusicAudioSystem = new AdvancedMusicAudioSystem(homey);
+  app.smartAquariumManagementSystem = new SmartAquariumManagementSystem(homey);
+  app.homeOfficeProductivityHub = new HomeOfficeProductivityHub(homey);
+  app.advancedIndoorPlantCareSystem = new AdvancedIndoorPlantCareSystem(homey);
+  app.smartPetDoorActivitySystem = new SmartPetDoorActivitySystem(homey);
+  app.homeLibraryManagementSystem = new HomeLibraryManagementSystem(homey);
+
+  // ── Waves 8-10: no constructor args ──
+  app.solarEnergyOptimizationSystem = new SolarEnergyOptimizationSystem();
+  app.homeEmergencyResponseSystem = new HomeEmergencyResponseSystem();
+  app.advancedHomeNetworkSecuritySystem = new AdvancedHomeNetworkSecuritySystem();
+  app.smartIrrigationWaterConservationSystem = new SmartIrrigationWaterConservationSystem();
+  app.advancedAirQualityVentilationControlSystem = new AdvancedAirQualityVentilationControlSystem();
+  app.homeAccessibilityElderlyCareSystem = new HomeAccessibilityElderlyCareSystem();
+  app.advancedPackageDeliveryManagementSystem = new AdvancedPackageDeliveryManagementSystem();
+  app.smartHomeInsuranceRiskAssessmentSystem = new SmartHomeInsuranceRiskAssessmentSystem();
+  // Wave 9
+  app.advancedAIPredictionEngine = new AdvancedAIPredictionEngine();
+  app.crossSystemAIOrchestrationHub = new CrossSystemAIOrchestrationHub();
+  // Wave 10
+  app.deepLearningVisionSystem = new DeepLearningVisionSystem();
+  app.naturalLanguageAutomationEngine = new NaturalLanguageAutomationEngine();
+
+  // ── System optimizer ──
+  app.systemOptimizer = new SystemOptimizer();
+
+  // ── Wave 11: singletons / special patterns ──
+  app.centralizedCacheManager = CentralizedCacheManager.getInstance({ maxGlobalSize: 10000 });
+  app.unifiedEventScheduler = UnifiedEventScheduler.getInstance();
+  app.errorHandlingMiddleware = ErrorHandlingMiddleware.getInstance(homey);
+  app.memoryGuardSystem = MemoryGuardSystem.getInstance();
+  app.apiAuthenticationGateway = APIAuthenticationGateway.getInstance();
+  app.systemHealthDashboard = new SystemHealthDashboard();
+
+  // ── Wave 12: constructor(homey) ──
+  app.smartDoorbellIntercomSystem = new SmartDoorbellIntercomSystem(homey);
+  app.indoorLightingSceneEngine = new IndoorLightingSceneEngine(homey);
+  app.energyBillingAnalyticsSystem = new EnergyBillingAnalyticsSystem(homey);
+  app.visitorGuestManagementSystem = new VisitorGuestManagementSystem(homey);
+  app.roomOccupancyMappingSystem = new RoomOccupancyMappingSystem(homey);
+  app.powerContinuityUPSSystem = new PowerContinuityUPSSystem(homey);
+
+  // ── Wave 13: constructor(homey) ──
+  app.smartFoodPantryManagementSystem = new SmartFoodPantryManagementSystem(homey);
+  app.homeSustainabilityTrackerSystem = new HomeSustainabilityTrackerSystem(homey);
+  app.smartPerimeterManagementSystem = new SmartPerimeterManagementSystem(homey);
+  app.homeRoboticsOrchestrationSystem = new HomeRoboticsOrchestrationSystem(homey);
+  app.smartHomeDigitalTwinSystem = new SmartHomeDigitalTwinSystem(homey);
+  app.smartDisasterResilienceSystem = new SmartDisasterResilienceSystem(homey);
+
+  // 4. Wire homey.app
+  homey.app = app;
+
+  // 5. Collect ALL initializable systems for Promise.allSettled
+  const allSystems = [
+    // Inner managers
+    { name: 'DeviceManager', ref: app.deviceManager },
+    { name: 'SceneManager', ref: app.sceneManager },
+    { name: 'AutomationManager', ref: app.automationManager },
+    { name: 'EnergyManager', ref: app.energyManager },
+    { name: 'SecurityManager', ref: app.securityManager },
+    { name: 'ClimateManager', ref: app.climateManager },
+    { name: 'PresenceManager', ref: app.presenceManager },
+    { name: 'NotificationManager', ref: app.notificationManager },
+    // Wave 1
+    { name: 'AdvancedAutomationEngine', ref: app.automationEngine },
+    { name: 'IntelligentDashboard', ref: app.intelligentDashboard },
+    { name: 'IntelligenceManager', ref: app.intelligenceManager },
+    { name: 'AdvancedAnalytics', ref: app.advancedAnalytics },
+    { name: 'VoiceControlSystem', ref: app.voiceControlSystem },
+    { name: 'GeofencingEngine', ref: app.geofencingEngine },
+    { name: 'SceneLearningSystem', ref: app.sceneLearningSystem },
+    { name: 'AdvancedNotificationManager', ref: app.advancedNotificationManager },
+    { name: 'DeviceHealthMonitor', ref: app.deviceHealthMonitor },
+    { name: 'EnergyForecastingEngine', ref: app.energyForecastingEngine },
+    { name: 'SmartSchedulingSystem', ref: app.smartSchedulingSystem },
+    { name: 'IntegrationHub', ref: app.integrationHub },
+    { name: 'MultiUserPreferenceSystem', ref: app.multiUserPreferenceSystem },
+    // Wave 2
+    { name: 'BackupRecoverySystem', ref: app.backupRecoverySystem },
+    { name: 'PerformanceOptimizer', ref: app.performanceOptimizer },
+    { name: 'AmbientIntelligenceSystem', ref: app.ambientIntelligenceSystem },
+    { name: 'MoodActivityDetectionSystem', ref: app.moodActivityDetectionSystem },
+    { name: 'EnergyStorageManagementSystem', ref: app.energyStorageManagementSystem },
+    { name: 'AdvancedSceneTemplateSystem', ref: app.advancedSceneTemplateSystem },
+    { name: 'PredictiveMaintenanceScheduler', ref: app.predictiveMaintenanceScheduler },
+    { name: 'CrossHomeSynchronizationSystem', ref: app.crossHomeSynchronizationSystem },
+    // Wave 3
+    { name: 'SmartWaterManagementSystem', ref: app.smartWaterManagementSystem },
+    { name: 'AirQualityManagementSystem', ref: app.airQualityManagementSystem },
+    { name: 'AdvancedSecuritySystem', ref: app.advancedSecuritySystem },
+    { name: 'WellnessSleepOptimizer', ref: app.wellnessSleepOptimizer },
+    { name: 'SmartApplianceController', ref: app.smartApplianceController },
+    { name: 'GardenPlantCareSystem', ref: app.gardenPlantCareSystem },
+    { name: 'AIVoiceAssistantIntegration', ref: app.aiVoiceAssistantIntegration },
+    { name: 'SmartLockManagementSystem', ref: app.smartLockManagementSystem },
+    // Wave 4
+    { name: 'PetCareAutomationSystem', ref: app.petCareAutomationSystem },
+    { name: 'AdvancedWeatherIntegration', ref: app.advancedWeatherIntegration },
+    { name: 'SmartWasteManagementSystem', ref: app.smartWasteManagementSystem },
+    { name: 'VehicleIntegrationSystem', ref: app.vehicleIntegrationSystem },
+    { name: 'AdvancedAVAutomation', ref: app.advancedAVAutomation },
+    { name: 'OutdoorLightingScenarios', ref: app.outdoorLightingScenarios },
+    { name: 'PoolSpaManagementSystem', ref: app.poolSpaManagementSystem },
+    { name: 'AdvancedEnergyTradingSystem', ref: app.advancedEnergyTradingSystem },
+    // Wave 5
+    { name: 'HomeGymFitnessSystem', ref: app.homeGymFitnessSystem },
+    { name: 'SmartWindowManagementSystem', ref: app.smartWindowManagementSystem },
+    { name: 'WineCellarManagementSystem', ref: app.wineCellarManagementSystem },
+    { name: 'AdvancedWakeUpRoutineSystem', ref: app.advancedWakeUpRoutineSystem },
+    { name: 'MailboxPackageTrackingSystem', ref: app.mailboxPackageTrackingSystem },
+    { name: 'AdvancedAirPurificationSystem', ref: app.advancedAirPurificationSystem },
+    { name: 'SmartFurnitureControlSystem', ref: app.smartFurnitureControlSystem },
+    { name: 'HomeOfficeOptimizationSystem', ref: app.homeOfficeOptimizationSystem },
+    // Wave 6
+    { name: 'SmartHomeTheaterSystem', ref: app.smartHomeTheaterSystem },
+    { name: 'AdvancedKitchenAutomationSystem', ref: app.advancedKitchenAutomationSystem },
+    { name: 'HomeSpaAndSaunaSystem', ref: app.homeSpaAndSaunaSystem },
+    { name: 'SmartWardrobeManagementSystem', ref: app.smartWardrobeManagementSystem },
+    { name: 'HomeBarManagementSystem', ref: app.homeBarManagementSystem },
+    { name: 'AdvancedBabyAndChildCareSystem', ref: app.advancedBabyAndChildCareSystem },
+    { name: 'HomeCleaningAutomationSystem', ref: app.homeCleaningAutomationSystem },
+    { name: 'SmartGarageManagementSystem', ref: app.smartGarageManagementSystem },
+    // Wave 7
+    { name: 'SmartLaundryManagementSystem', ref: app.smartLaundryManagementSystem },
+    { name: 'HomeWorkshopSafetySystem', ref: app.homeWorkshopSafetySystem },
+    { name: 'AdvancedMusicAudioSystem', ref: app.advancedMusicAudioSystem },
+    { name: 'SmartAquariumManagementSystem', ref: app.smartAquariumManagementSystem },
+    { name: 'HomeOfficeProductivityHub', ref: app.homeOfficeProductivityHub },
+    { name: 'AdvancedIndoorPlantCareSystem', ref: app.advancedIndoorPlantCareSystem },
+    { name: 'SmartPetDoorActivitySystem', ref: app.smartPetDoorActivitySystem },
+    { name: 'HomeLibraryManagementSystem', ref: app.homeLibraryManagementSystem },
+    // Wave 8
+    { name: 'SolarEnergyOptimizationSystem', ref: app.solarEnergyOptimizationSystem },
+    { name: 'HomeEmergencyResponseSystem', ref: app.homeEmergencyResponseSystem },
+    { name: 'AdvancedHomeNetworkSecuritySystem', ref: app.advancedHomeNetworkSecuritySystem },
+    { name: 'SmartIrrigationWaterConservationSystem', ref: app.smartIrrigationWaterConservationSystem },
+    { name: 'AdvancedAirQualityVentilationControlSystem', ref: app.advancedAirQualityVentilationControlSystem },
+    { name: 'HomeAccessibilityElderlyCareSystem', ref: app.homeAccessibilityElderlyCareSystem },
+    { name: 'AdvancedPackageDeliveryManagementSystem', ref: app.advancedPackageDeliveryManagementSystem },
+    { name: 'SmartHomeInsuranceRiskAssessmentSystem', ref: app.smartHomeInsuranceRiskAssessmentSystem },
+    // Wave 9
+    { name: 'AdvancedAIPredictionEngine', ref: app.advancedAIPredictionEngine },
+    { name: 'CrossSystemAIOrchestrationHub', ref: app.crossSystemAIOrchestrationHub },
+    // Wave 10
+    { name: 'DeepLearningVisionSystem', ref: app.deepLearningVisionSystem },
+    { name: 'NaturalLanguageAutomationEngine', ref: app.naturalLanguageAutomationEngine },
+    // Wave 11
+    { name: 'SystemHealthDashboard', ref: app.systemHealthDashboard },
+    { name: 'MemoryGuardSystem', ref: app.memoryGuardSystem },
+    // Wave 12
+    { name: 'SmartDoorbellIntercomSystem', ref: app.smartDoorbellIntercomSystem },
+    { name: 'IndoorLightingSceneEngine', ref: app.indoorLightingSceneEngine },
+    { name: 'EnergyBillingAnalyticsSystem', ref: app.energyBillingAnalyticsSystem },
+    { name: 'VisitorGuestManagementSystem', ref: app.visitorGuestManagementSystem },
+    { name: 'RoomOccupancyMappingSystem', ref: app.roomOccupancyMappingSystem },
+    { name: 'PowerContinuityUPSSystem', ref: app.powerContinuityUPSSystem },
+    // Wave 13
+    { name: 'SmartFoodPantryManagementSystem', ref: app.smartFoodPantryManagementSystem },
+    { name: 'HomeSustainabilityTrackerSystem', ref: app.homeSustainabilityTrackerSystem },
+    { name: 'SmartPerimeterManagementSystem', ref: app.smartPerimeterManagementSystem },
+    { name: 'HomeRoboticsOrchestrationSystem', ref: app.homeRoboticsOrchestrationSystem },
+    { name: 'SmartHomeDigitalTwinSystem', ref: app.smartHomeDigitalTwinSystem },
+    { name: 'SmartDisasterResilienceSystem', ref: app.smartDisasterResilienceSystem },
+  ];
+
+  // 6. Initialize all systems with Promise.allSettled for resilience
+  console.log(`\nInitializing ${allSystems.length} systems…`);
+
+  const INIT_TIMEOUT = 30000; // 30 seconds per system max
+
+  const withTimeout = (promise, name, ms) => {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(new Error(`Timeout after ${ms / 1000}s`));
+      }, ms);
+      promise
+        .then((val) => { clearTimeout(timer); resolve(val); })
+        .catch((err) => { clearTimeout(timer); reject(err); });
+    });
+  };
+
+  const initPromises = allSystems.map(({ name, ref }) => {
+    if (!ref || typeof ref.initialize !== 'function') {
+      systemStatuses[name] = { status: 'skipped', reason: 'no initialize()' };
+      return Promise.resolve();
+    }
+    return withTimeout(ref.initialize(), name, INIT_TIMEOUT)
+      .then(() => { systemStatuses[name] = { status: 'ok' }; })
+      .catch((err) => {
+        systemStatuses[name] = { status: 'failed', error: err.message };
+        throw err; // rethrow so allSettled marks it as rejected
+      });
+  });
+
+  const results = await Promise.allSettled(initPromises);
+
+  const succeeded = results.filter(r => r.status === 'fulfilled').length;
+  const failed = results.filter(r => r.status === 'rejected').length;
+
+  console.log(`\n✅ ${succeeded} systems initialized successfully`);
+  if (failed > 0) {
+    console.log(`⚠️  ${failed} systems failed to initialize:`);
+    for (const [name, info] of Object.entries(systemStatuses)) {
+      if (info.status === 'failed') {
+        console.log(`   ✗ ${name}: ${info.error}`);
+      }
+    }
+  }
+  console.log('');
+
+  return { homey, app, systemCount: allSystems.length };
+}
+
+// ============================================
+// EXPRESS SERVER
+// ============================================
+
+async function startServer() {
+  const { homey, app: smartApp, systemCount } = await boot();
+
+  const server = express();
+
+  // ── Middleware ──
+  server.use(express.json({ limit: '10mb' }));
+  server.use(cors());
+
+  // Request logging
+  server.use((req, _res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+  });
+
+  // ── Health Endpoints ──
+  server.get('/health', (_req, res) => {
+    res.json({
+      status: 'ok',
+      uptime: process.uptime(),
+      systemCount,
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  server.get('/health/systems', (_req, res) => {
+    res.json(systemStatuses);
+  });
+
+  server.get('/api/v1/stats', (_req, res) => {
+    const memUsage = process.memoryUsage();
+    res.json({
+      platform: 'Smart Home Pro (Standalone)',
+      uptime: process.uptime(),
+      bootDuration: `${((Date.now() - startTime) / 1000).toFixed(1)}s`,
+      systems: {
+        total: systemCount,
+        ok: Object.values(systemStatuses).filter(s => s.status === 'ok').length,
+        failed: Object.values(systemStatuses).filter(s => s.status === 'failed').length,
+        skipped: Object.values(systemStatuses).filter(s => s.status === 'skipped').length
+      },
+      memory: {
+        rss: `${(memUsage.rss / 1024 / 1024).toFixed(1)} MB`,
+        heapUsed: `${(memUsage.heapUsed / 1024 / 1024).toFixed(1)} MB`,
+        heapTotal: `${(memUsage.heapTotal / 1024 / 1024).toFixed(1)} MB`
+      },
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // ── Auto-generate API routes from app.json + api.js ──
+  const apiHandlers = require('./api.js');
+  const appManifest = require('./app.json');
+  const apiDefs = appManifest.api || {};
+
+  const methodMap = { GET: 'get', POST: 'post', PUT: 'put', DELETE: 'delete', PATCH: 'patch' };
+  let routeCount = 0;
+
+  for (const [fnName, def] of Object.entries(apiDefs)) {
+    const handler = apiHandlers[fnName];
+    if (!handler || typeof handler !== 'function') {
+      console.log(`  ⚠ No handler found for API: ${fnName}`);
+      continue;
+    }
+
+    const method = methodMap[(def.method || 'GET').toUpperCase()];
+    if (!method) continue;
+
+    const path = `/api${def.path}`;
+
+    server[method](path, async (req, res) => {
+      try {
+        const result = await handler({
+          homey,
+          params: req.params,
+          body: req.body,
+          query: req.query
+        });
+        res.json(result);
+      } catch (err) {
+        console.error(`[API Error] ${fnName}:`, err.message);
+        res.status(500).json({
+          error: err.message,
+          endpoint: fnName,
+          timestamp: new Date().toISOString()
+        });
+      }
+    });
+
+    routeCount++;
+  }
+
+  console.log(`📡 ${routeCount} API routes registered from app.json definitions`);
+
+  // ── Error handling middleware ──
+  server.use((err, _req, res, _next) => {
+    console.error('[Unhandled Error]', err);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: err.message,
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // ── 404 handler ──
+  server.use((_req, res) => {
+    res.status(404).json({
+      error: 'Not found',
+      message: 'The requested endpoint does not exist',
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // ── Graceful shutdown ──
+  const gracefulShutdown = async (signal) => {
+    console.log(`\n${signal} received — shutting down gracefully…`);
+
+    // Destroy Wave 11 infrastructure
+    try {
+      if (smartApp.unifiedEventScheduler && smartApp.unifiedEventScheduler.destroy) {
+        await smartApp.unifiedEventScheduler.destroy(5000);
+      }
+      if (smartApp.systemHealthDashboard && smartApp.systemHealthDashboard.destroy) {
+        smartApp.systemHealthDashboard.destroy();
+      }
+      if (smartApp.memoryGuardSystem && smartApp.memoryGuardSystem.destroy) {
+        smartApp.memoryGuardSystem.destroy();
+      }
+      if (smartApp.centralizedCacheManager && smartApp.centralizedCacheManager.destroy) {
+        smartApp.centralizedCacheManager.destroy();
+      }
+      if (smartApp.errorHandlingMiddleware && smartApp.errorHandlingMiddleware.destroy) {
+        smartApp.errorHandlingMiddleware.destroy();
+      }
+      if (smartApp.apiAuthenticationGateway && smartApp.apiAuthenticationGateway.destroy) {
+        smartApp.apiAuthenticationGateway.destroy();
+      }
+    } catch (e) {
+      console.error('Error during infrastructure shutdown:', e.message);
+    }
+
+    // Destroy Wave 12 systems
+    const wave12 = [
+      smartApp.smartDoorbellIntercomSystem, smartApp.indoorLightingSceneEngine,
+      smartApp.energyBillingAnalyticsSystem, smartApp.visitorGuestManagementSystem,
+      smartApp.roomOccupancyMappingSystem, smartApp.powerContinuityUPSSystem
+    ];
+    for (const sys of wave12) {
+      try { if (sys && sys.destroy) sys.destroy(); } catch (_e) { /* ignore */ }
+    }
+
+    // Destroy Wave 13 systems
+    const wave13 = [
+      smartApp.smartFoodPantryManagementSystem, smartApp.homeSustainabilityTrackerSystem,
+      smartApp.smartPerimeterManagementSystem, smartApp.homeRoboticsOrchestrationSystem,
+      smartApp.smartHomeDigitalTwinSystem, smartApp.smartDisasterResilienceSystem
+    ];
+    for (const sys of wave13) {
+      try { if (sys && sys.destroy) sys.destroy(); } catch (_e) { /* ignore */ }
+    }
+
+    console.log('Cleanup complete. Exiting.');
+    process.exit(0);
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+  // ── Listen ──
+  const PORT = process.env.PORT || 3000;
+  server.listen(PORT, () => {
+    const bootSeconds = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log('');
+    console.log('╔══════════════════════════════════════════════╗');
+    console.log(`║  🏠 Smart Home Pro running on port ${String(PORT).padEnd(10)}║`);
+    console.log(`║  ⏱  Boot time: ${bootSeconds.padEnd(30)}║`);
+    console.log(`║  📊 Systems: ${String(systemCount).padEnd(32)}║`);
+    console.log(`║  📡 API routes: ${String(routeCount).padEnd(29)}║`);
+    console.log('╚══════════════════════════════════════════════╝');
+    console.log('');
+    console.log(`Health:  http://localhost:${PORT}/health`);
+    console.log(`Stats:   http://localhost:${PORT}/api/v1/stats`);
+    console.log(`Systems: http://localhost:${PORT}/health/systems`);
+    console.log('');
+  });
+}
+
+// ── Entry point ──
+startServer().catch((err) => {
+  console.error('Fatal error during server boot:', err);
+  process.exit(1);
+});

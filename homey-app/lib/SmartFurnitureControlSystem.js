@@ -104,7 +104,7 @@ class SmartFurnitureControlSystem extends EventEmitter {
           reminderSystem: true,
           ergonomicTracking: true,
           childLock: false,
-          led Display: true
+          ledDisplay: true
         },
         ergonomics: {
           userHeight: 175, // cm
