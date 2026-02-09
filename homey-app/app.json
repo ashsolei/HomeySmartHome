@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "compatibility": ">=8.0.0",
   "sdk": 3,
-  "platforms": ["local", "cloud"],
+  "platforms": [
+    "local",
+    "cloud"
+  ],
   "name": {
     "en": "Smart Home Pro",
     "sv": "Smart Home Pro"
@@ -12,7 +15,9 @@
     "en": "Advanced dashboard and automation system for Homey",
     "sv": "Avancerat dashboard och automationssystem för Homey"
   },
-  "category": ["tools"],
+  "category": [
+    "tools"
+  ],
   "permissions": [
     "homey:manager:api",
     "homey:manager:geolocation",
@@ -42,12 +47,18 @@
           {
             "name": "zone",
             "type": "string",
-            "title": { "en": "Zone", "sv": "Zon" }
+            "title": {
+              "en": "Zone",
+              "sv": "Zon"
+            }
           },
           {
             "name": "presence",
             "type": "boolean",
-            "title": { "en": "Presence", "sv": "Närvaro" }
+            "title": {
+              "en": "Presence",
+              "sv": "Närvaro"
+            }
           }
         ]
       },
@@ -61,12 +72,18 @@
           {
             "name": "device",
             "type": "string",
-            "title": { "en": "Device", "sv": "Enhet" }
+            "title": {
+              "en": "Device",
+              "sv": "Enhet"
+            }
           },
           {
             "name": "consumption",
             "type": "number",
-            "title": { "en": "Consumption (W)", "sv": "Förbrukning (W)" }
+            "title": {
+              "en": "Consumption (W)",
+              "sv": "Förbrukning (W)"
+            }
           }
         ]
       },
@@ -81,8 +98,20 @@
             "name": "condition",
             "type": "dropdown",
             "values": [
-              { "id": "above", "label": { "en": "Above", "sv": "Över" } },
-              { "id": "below", "label": { "en": "Below", "sv": "Under" } }
+              {
+                "id": "above",
+                "label": {
+                  "en": "Above",
+                  "sv": "Över"
+                }
+              },
+              {
+                "id": "below",
+                "label": {
+                  "en": "Below",
+                  "sv": "Under"
+                }
+              }
             ]
           },
           {
@@ -96,12 +125,18 @@
           {
             "name": "zone",
             "type": "string",
-            "title": { "en": "Zone", "sv": "Zon" }
+            "title": {
+              "en": "Zone",
+              "sv": "Zon"
+            }
           },
           {
             "name": "temperature",
             "type": "number",
-            "title": { "en": "Temperature", "sv": "Temperatur" }
+            "title": {
+              "en": "Temperature",
+              "sv": "Temperatur"
+            }
           }
         ]
       },
@@ -115,17 +150,26 @@
           {
             "name": "eventType",
             "type": "string",
-            "title": { "en": "Event type", "sv": "Händelsetyp" }
+            "title": {
+              "en": "Event type",
+              "sv": "Händelsetyp"
+            }
           },
           {
             "name": "device",
             "type": "string",
-            "title": { "en": "Device", "sv": "Enhet" }
+            "title": {
+              "en": "Device",
+              "sv": "Enhet"
+            }
           },
           {
             "name": "zone",
             "type": "string",
-            "title": { "en": "Zone", "sv": "Zon" }
+            "title": {
+              "en": "Zone",
+              "sv": "Zon"
+            }
           }
         ]
       },
@@ -139,7 +183,10 @@
           {
             "name": "scene",
             "type": "autocomplete",
-            "placeholder": { "en": "Select scene", "sv": "Välj scen" }
+            "placeholder": {
+              "en": "Select scene",
+              "sv": "Välj scen"
+            }
           }
         ]
       },
@@ -153,17 +200,26 @@
           {
             "name": "predicted_consumption",
             "type": "number",
-            "title": { "en": "Predicted consumption (kWh)", "sv": "Förutspådd förbrukning (kWh)" }
+            "title": {
+              "en": "Predicted consumption (kWh)",
+              "sv": "Förutspådd förbrukning (kWh)"
+            }
           },
           {
             "name": "confidence",
             "type": "number",
-            "title": { "en": "Confidence (%)", "sv": "Säkerhet (%)" }
+            "title": {
+              "en": "Confidence (%)",
+              "sv": "Säkerhet (%)"
+            }
           },
           {
             "name": "hours_ahead",
             "type": "number",
-            "title": { "en": "Hours ahead", "sv": "Timmar framåt" }
+            "title": {
+              "en": "Hours ahead",
+              "sv": "Timmar framåt"
+            }
           }
         ]
       },
@@ -177,22 +233,34 @@
           {
             "name": "device",
             "type": "string",
-            "title": { "en": "Device", "sv": "Enhet" }
+            "title": {
+              "en": "Device",
+              "sv": "Enhet"
+            }
           },
           {
             "name": "urgency",
             "type": "string",
-            "title": { "en": "Urgency", "sv": "Brådskande" }
+            "title": {
+              "en": "Urgency",
+              "sv": "Brådskande"
+            }
           },
           {
             "name": "days_until_failure",
             "type": "number",
-            "title": { "en": "Days until failure", "sv": "Dagar till fel" }
+            "title": {
+              "en": "Days until failure",
+              "sv": "Dagar till fel"
+            }
           },
           {
             "name": "probability",
             "type": "number",
-            "title": { "en": "Probability (%)", "sv": "Sannolikhet (%)" }
+            "title": {
+              "en": "Probability (%)",
+              "sv": "Sannolikhet (%)"
+            }
           }
         ]
       },
@@ -206,12 +274,18 @@
           {
             "name": "predicted_time",
             "type": "string",
-            "title": { "en": "Predicted arrival time", "sv": "Förutspådd ankomsttid" }
+            "title": {
+              "en": "Predicted arrival time",
+              "sv": "Förutspådd ankomsttid"
+            }
           },
           {
             "name": "confidence",
             "type": "number",
-            "title": { "en": "Confidence (%)", "sv": "Säkerhet (%)" }
+            "title": {
+              "en": "Confidence (%)",
+              "sv": "Säkerhet (%)"
+            }
           }
         ]
       },
@@ -225,17 +299,26 @@
           {
             "name": "rule_name",
             "type": "string",
-            "title": { "en": "Rule name", "sv": "Regelnamn" }
+            "title": {
+              "en": "Rule name",
+              "sv": "Regelnamn"
+            }
           },
           {
             "name": "actions_count",
             "type": "number",
-            "title": { "en": "Actions executed", "sv": "Åtgärder utförda" }
+            "title": {
+              "en": "Actions executed",
+              "sv": "Åtgärder utförda"
+            }
           },
           {
             "name": "energy_saved",
             "type": "number",
-            "title": { "en": "Energy saved (SEK)", "sv": "Energi sparad (SEK)" }
+            "title": {
+              "en": "Energy saved (SEK)",
+              "sv": "Energi sparad (SEK)"
+            }
           }
         ]
       },
@@ -249,12 +332,18 @@
           {
             "name": "systems",
             "type": "string",
-            "title": { "en": "Conflicting systems", "sv": "Motstridiga system" }
+            "title": {
+              "en": "Conflicting systems",
+              "sv": "Motstridiga system"
+            }
           },
           {
             "name": "resolution",
             "type": "string",
-            "title": { "en": "Resolution method", "sv": "Lösningsmetod" }
+            "title": {
+              "en": "Resolution method",
+              "sv": "Lösningsmetod"
+            }
           }
         ]
       },
@@ -268,17 +357,26 @@
           {
             "name": "camera_name",
             "type": "string",
-            "title": { "en": "Camera", "sv": "Kamera" }
+            "title": {
+              "en": "Camera",
+              "sv": "Kamera"
+            }
           },
           {
             "name": "person_name",
             "type": "string",
-            "title": { "en": "Person", "sv": "Person" }
+            "title": {
+              "en": "Person",
+              "sv": "Person"
+            }
           },
           {
             "name": "confidence",
             "type": "number",
-            "title": { "en": "Confidence (%)", "sv": "Säkerhet (%)" }
+            "title": {
+              "en": "Confidence (%)",
+              "sv": "Säkerhet (%)"
+            }
           }
         ]
       },
@@ -292,17 +390,26 @@
           {
             "name": "camera_name",
             "type": "string",
-            "title": { "en": "Camera", "sv": "Kamera" }
+            "title": {
+              "en": "Camera",
+              "sv": "Kamera"
+            }
           },
           {
             "name": "object_type",
             "type": "string",
-            "title": { "en": "Object type", "sv": "Objekttyp" }
+            "title": {
+              "en": "Object type",
+              "sv": "Objekttyp"
+            }
           },
           {
             "name": "confidence",
             "type": "number",
-            "title": { "en": "Confidence (%)", "sv": "Säkerhet (%)" }
+            "title": {
+              "en": "Confidence (%)",
+              "sv": "Säkerhet (%)"
+            }
           }
         ]
       },
@@ -316,17 +423,26 @@
           {
             "name": "anomaly_type",
             "type": "string",
-            "title": { "en": "Anomaly type", "sv": "Avvikelsetyp" }
+            "title": {
+              "en": "Anomaly type",
+              "sv": "Avvikelsetyp"
+            }
           },
           {
             "name": "severity",
             "type": "string",
-            "title": { "en": "Severity", "sv": "Allvarlighetsgrad" }
+            "title": {
+              "en": "Severity",
+              "sv": "Allvarlighetsgrad"
+            }
           },
           {
             "name": "description",
             "type": "string",
-            "title": { "en": "Description", "sv": "Beskrivning" }
+            "title": {
+              "en": "Description",
+              "sv": "Beskrivning"
+            }
           }
         ]
       },
@@ -340,17 +456,26 @@
           {
             "name": "command",
             "type": "string",
-            "title": { "en": "Command", "sv": "Kommando" }
+            "title": {
+              "en": "Command",
+              "sv": "Kommando"
+            }
           },
           {
             "name": "intent",
             "type": "string",
-            "title": { "en": "Intent", "sv": "Avsikt" }
+            "title": {
+              "en": "Intent",
+              "sv": "Avsikt"
+            }
           },
           {
             "name": "confidence",
             "type": "number",
-            "title": { "en": "Confidence (%)", "sv": "Säkerhet (%)" }
+            "title": {
+              "en": "Confidence (%)",
+              "sv": "Säkerhet (%)"
+            }
           }
         ]
       },
@@ -364,12 +489,18 @@
           {
             "name": "automation_name",
             "type": "string",
-            "title": { "en": "Automation name", "sv": "Automationsnamn" }
+            "title": {
+              "en": "Automation name",
+              "sv": "Automationsnamn"
+            }
           },
           {
             "name": "language",
             "type": "string",
-            "title": { "en": "Language", "sv": "Språk" }
+            "title": {
+              "en": "Language",
+              "sv": "Språk"
+            }
           }
         ]
       },
@@ -383,17 +514,26 @@
           {
             "name": "alert_level",
             "type": "string",
-            "title": { "en": "Alert level", "sv": "Varningsnivå" }
+            "title": {
+              "en": "Alert level",
+              "sv": "Varningsnivå"
+            }
           },
           {
             "name": "system_name",
             "type": "string",
-            "title": { "en": "System name", "sv": "Systemnamn" }
+            "title": {
+              "en": "System name",
+              "sv": "Systemnamn"
+            }
           },
           {
             "name": "message",
             "type": "string",
-            "title": { "en": "Message", "sv": "Meddelande" }
+            "title": {
+              "en": "Message",
+              "sv": "Meddelande"
+            }
           }
         ]
       },
@@ -407,12 +547,18 @@
           {
             "name": "pressure_level",
             "type": "string",
-            "title": { "en": "Pressure level", "sv": "Trycknivå" }
+            "title": {
+              "en": "Pressure level",
+              "sv": "Trycknivå"
+            }
           },
           {
             "name": "heap_used_mb",
             "type": "number",
-            "title": { "en": "Heap used (MB)", "sv": "Heap använt (MB)" }
+            "title": {
+              "en": "Heap used (MB)",
+              "sv": "Heap använt (MB)"
+            }
           }
         ]
       },
@@ -426,12 +572,18 @@
           {
             "name": "source_system",
             "type": "string",
-            "title": { "en": "Source system", "sv": "Källsystem" }
+            "title": {
+              "en": "Source system",
+              "sv": "Källsystem"
+            }
           },
           {
             "name": "error_count",
             "type": "number",
-            "title": { "en": "Error count", "sv": "Antal fel" }
+            "title": {
+              "en": "Error count",
+              "sv": "Antal fel"
+            }
           }
         ]
       },
@@ -445,12 +597,18 @@
           {
             "name": "ip_address",
             "type": "string",
-            "title": { "en": "IP address", "sv": "IP-adress" }
+            "title": {
+              "en": "IP address",
+              "sv": "IP-adress"
+            }
           },
           {
             "name": "reason",
             "type": "string",
-            "title": { "en": "Reason", "sv": "Anledning" }
+            "title": {
+              "en": "Reason",
+              "sv": "Anledning"
+            }
           }
         ]
       },
@@ -464,17 +622,26 @@
           {
             "name": "doorbell_name",
             "type": "string",
-            "title": { "en": "Doorbell name", "sv": "Dörrklocksnamn" }
+            "title": {
+              "en": "Doorbell name",
+              "sv": "Dörrklocksnamn"
+            }
           },
           {
             "name": "visitor_type",
             "type": "string",
-            "title": { "en": "Visitor type", "sv": "Besökartyp" }
+            "title": {
+              "en": "Visitor type",
+              "sv": "Besökartyp"
+            }
           },
           {
             "name": "timestamp",
             "type": "string",
-            "title": { "en": "Timestamp", "sv": "Tidsstämpel" }
+            "title": {
+              "en": "Timestamp",
+              "sv": "Tidsstämpel"
+            }
           }
         ]
       },
@@ -488,17 +655,26 @@
           {
             "name": "outage_type",
             "type": "string",
-            "title": { "en": "Outage type", "sv": "Avbrottstyp" }
+            "title": {
+              "en": "Outage type",
+              "sv": "Avbrottstyp"
+            }
           },
           {
             "name": "estimated_duration",
             "type": "string",
-            "title": { "en": "Estimated duration", "sv": "Uppskattad varaktighet" }
+            "title": {
+              "en": "Estimated duration",
+              "sv": "Uppskattad varaktighet"
+            }
           },
           {
             "name": "ups_battery_pct",
             "type": "number",
-            "title": { "en": "UPS battery (%)", "sv": "UPS-batteri (%)" }
+            "title": {
+              "en": "UPS battery (%)",
+              "sv": "UPS-batteri (%)"
+            }
           }
         ]
       },
@@ -512,17 +688,26 @@
           {
             "name": "guest_name",
             "type": "string",
-            "title": { "en": "Guest name", "sv": "Gästnamn" }
+            "title": {
+              "en": "Guest name",
+              "sv": "Gästnamn"
+            }
           },
           {
             "name": "access_method",
             "type": "string",
-            "title": { "en": "Access method", "sv": "Åtkomstmetod" }
+            "title": {
+              "en": "Access method",
+              "sv": "Åtkomstmetod"
+            }
           },
           {
             "name": "visit_type",
             "type": "string",
-            "title": { "en": "Visit type", "sv": "Besökstyp" }
+            "title": {
+              "en": "Visit type",
+              "sv": "Besökstyp"
+            }
           }
         ]
       },
@@ -536,12 +721,18 @@
           {
             "name": "guest_name",
             "type": "string",
-            "title": { "en": "Guest name", "sv": "Gästnamn" }
+            "title": {
+              "en": "Guest name",
+              "sv": "Gästnamn"
+            }
           },
           {
             "name": "visit_duration",
             "type": "string",
-            "title": { "en": "Visit duration", "sv": "Besökslängd" }
+            "title": {
+              "en": "Visit duration",
+              "sv": "Besökslängd"
+            }
           }
         ]
       },
@@ -555,17 +746,26 @@
           {
             "name": "room_name",
             "type": "string",
-            "title": { "en": "Room name", "sv": "Rumsnamn" }
+            "title": {
+              "en": "Room name",
+              "sv": "Rumsnamn"
+            }
           },
           {
             "name": "occupant_count",
             "type": "number",
-            "title": { "en": "Occupant count", "sv": "Antal personer" }
+            "title": {
+              "en": "Occupant count",
+              "sv": "Antal personer"
+            }
           },
           {
             "name": "previous_count",
             "type": "number",
-            "title": { "en": "Previous count", "sv": "Tidigare antal" }
+            "title": {
+              "en": "Previous count",
+              "sv": "Tidigare antal"
+            }
           }
         ]
       },
@@ -579,17 +779,26 @@
           {
             "name": "budget_name",
             "type": "string",
-            "title": { "en": "Budget name", "sv": "Budgetnamn" }
+            "title": {
+              "en": "Budget name",
+              "sv": "Budgetnamn"
+            }
           },
           {
             "name": "current_cost",
             "type": "number",
-            "title": { "en": "Current cost", "sv": "Aktuell kostnad" }
+            "title": {
+              "en": "Current cost",
+              "sv": "Aktuell kostnad"
+            }
           },
           {
             "name": "budget_limit",
             "type": "number",
-            "title": { "en": "Budget limit", "sv": "Budgetgräns" }
+            "title": {
+              "en": "Budget limit",
+              "sv": "Budgetgräns"
+            }
           }
         ]
       },
@@ -603,17 +812,26 @@
           {
             "name": "scene_name",
             "type": "string",
-            "title": { "en": "Scene name", "sv": "Scennamn" }
+            "title": {
+              "en": "Scene name",
+              "sv": "Scennamn"
+            }
           },
           {
             "name": "room",
             "type": "string",
-            "title": { "en": "Room", "sv": "Rum" }
+            "title": {
+              "en": "Room",
+              "sv": "Rum"
+            }
           },
           {
             "name": "brightness_pct",
             "type": "number",
-            "title": { "en": "Brightness (%)", "sv": "Ljusstyrka (%)" }
+            "title": {
+              "en": "Brightness (%)",
+              "sv": "Ljusstyrka (%)"
+            }
           }
         ]
       },
@@ -627,17 +845,26 @@
           {
             "name": "ups_name",
             "type": "string",
-            "title": { "en": "UPS name", "sv": "UPS-namn" }
+            "title": {
+              "en": "UPS name",
+              "sv": "UPS-namn"
+            }
           },
           {
             "name": "battery_pct",
             "type": "number",
-            "title": { "en": "Battery (%)", "sv": "Batteri (%)" }
+            "title": {
+              "en": "Battery (%)",
+              "sv": "Batteri (%)"
+            }
           },
           {
             "name": "runtime_minutes",
             "type": "number",
-            "title": { "en": "Runtime (min)", "sv": "Drifttid (min)" }
+            "title": {
+              "en": "Runtime (min)",
+              "sv": "Drifttid (min)"
+            }
           }
         ]
       },
@@ -651,12 +878,18 @@
           {
             "name": "sleep_phase",
             "type": "string",
-            "title": { "en": "Sleep phase", "sv": "Sömnfas" }
+            "title": {
+              "en": "Sleep phase",
+              "sv": "Sömnfas"
+            }
           },
           {
             "name": "quality_score",
             "type": "number",
-            "title": { "en": "Quality score", "sv": "Kvalitetspoäng" }
+            "title": {
+              "en": "Quality score",
+              "sv": "Kvalitetspoäng"
+            }
           }
         ]
       },
@@ -670,12 +903,18 @@
           {
             "name": "item_name",
             "type": "string",
-            "title": { "en": "Item name", "sv": "Varunamn" }
+            "title": {
+              "en": "Item name",
+              "sv": "Varunamn"
+            }
           },
           {
             "name": "days_remaining",
             "type": "number",
-            "title": { "en": "Days remaining", "sv": "Dagar kvar" }
+            "title": {
+              "en": "Days remaining",
+              "sv": "Dagar kvar"
+            }
           }
         ]
       },
@@ -689,12 +928,18 @@
           {
             "name": "zone_name",
             "type": "string",
-            "title": { "en": "Zone name", "sv": "Zonnamn" }
+            "title": {
+              "en": "Zone name",
+              "sv": "Zonnamn"
+            }
           },
           {
             "name": "threat_level",
             "type": "string",
-            "title": { "en": "Threat level", "sv": "Hotnivå" }
+            "title": {
+              "en": "Threat level",
+              "sv": "Hotnivå"
+            }
           }
         ]
       },
@@ -708,12 +953,18 @@
           {
             "name": "hazard_type",
             "type": "string",
-            "title": { "en": "Hazard type", "sv": "Risktyp" }
+            "title": {
+              "en": "Hazard type",
+              "sv": "Risktyp"
+            }
           },
           {
             "name": "risk_level",
             "type": "number",
-            "title": { "en": "Risk level", "sv": "Risknivå" }
+            "title": {
+              "en": "Risk level",
+              "sv": "Risknivå"
+            }
           }
         ]
       },
@@ -727,12 +978,18 @@
           {
             "name": "goal_name",
             "type": "string",
-            "title": { "en": "Goal name", "sv": "Målnamn" }
+            "title": {
+              "en": "Goal name",
+              "sv": "Målnamn"
+            }
           },
           {
             "name": "value",
             "type": "number",
-            "title": { "en": "Value", "sv": "Värde" }
+            "title": {
+              "en": "Value",
+              "sv": "Värde"
+            }
           }
         ]
       },
@@ -746,12 +1003,18 @@
           {
             "name": "robot_name",
             "type": "string",
-            "title": { "en": "Robot name", "sv": "Robotnamn" }
+            "title": {
+              "en": "Robot name",
+              "sv": "Robotnamn"
+            }
           },
           {
             "name": "coverage_pct",
             "type": "number",
-            "title": { "en": "Coverage %", "sv": "Täckning %" }
+            "title": {
+              "en": "Coverage %",
+              "sv": "Täckning %"
+            }
           }
         ]
       },
@@ -765,19 +1028,410 @@
           {
             "name": "room_name",
             "type": "string",
-            "title": { "en": "Room name", "sv": "Rumsnamn" }
+            "title": {
+              "en": "Room name",
+              "sv": "Rumsnamn"
+            }
           },
           {
             "name": "sensor_type",
             "type": "string",
-            "title": { "en": "Sensor type", "sv": "Sensortyp" }
+            "title": {
+              "en": "Sensor type",
+              "sv": "Sensortyp"
+            }
           },
           {
             "name": "value",
             "type": "number",
-            "title": { "en": "Value", "sv": "Värde" }
+            "title": {
+              "en": "Value",
+              "sv": "Värde"
+            }
           }
         ]
+      },
+      {
+        "id": "ev-charge-complete",
+        "title": {
+          "en": "EV charging complete",
+          "sv": "Elbilsladdning klar"
+        },
+        "tokens": [
+          {
+            "name": "vehicle_name",
+            "type": "string",
+            "title": {
+              "en": "Vehicle",
+              "sv": "Fordon"
+            }
+          },
+          {
+            "name": "soc_pct",
+            "type": "number",
+            "title": {
+              "en": "State of charge %",
+              "sv": "Laddningsnivå %"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ev-charge-fault",
+        "title": {
+          "en": "EV charging fault",
+          "sv": "Elbilsladdningsfel"
+        },
+        "tokens": [
+          {
+            "name": "station_id",
+            "type": "string",
+            "title": {
+              "en": "Station",
+              "sv": "Station"
+            }
+          },
+          {
+            "name": "fault",
+            "type": "string",
+            "title": {
+              "en": "Fault",
+              "sv": "Fel"
+            }
+          }
+        ]
+      },
+      {
+        "id": "noise-threshold-breach",
+        "title": {
+          "en": "Noise threshold breached",
+          "sv": "Ljudgräns överskriden"
+        },
+        "tokens": [
+          {
+            "name": "room",
+            "type": "string",
+            "title": {
+              "en": "Room",
+              "sv": "Rum"
+            }
+          },
+          {
+            "name": "level_db",
+            "type": "number",
+            "title": {
+              "en": "Level (dB)",
+              "sv": "Nivå (dB)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "baby-cry-detected",
+        "title": {
+          "en": "Baby cry detected",
+          "sv": "Bebis gråt upptäckt"
+        },
+        "tokens": [
+          {
+            "name": "room",
+            "type": "string",
+            "title": {
+              "en": "Room",
+              "sv": "Rum"
+            }
+          }
+        ]
+      },
+      {
+        "id": "screen-time-limit-reached",
+        "title": {
+          "en": "Screen time limit reached",
+          "sv": "Skärmtidsgräns nådd"
+        },
+        "tokens": [
+          {
+            "name": "child_name",
+            "type": "string",
+            "title": {
+              "en": "Child",
+              "sv": "Barn"
+            }
+          }
+        ]
+      },
+      {
+        "id": "achievement-badge-earned",
+        "title": {
+          "en": "Achievement badge earned",
+          "sv": "Prestationsmärke intjänat"
+        },
+        "tokens": [
+          {
+            "name": "child_name",
+            "type": "string",
+            "title": {
+              "en": "Child",
+              "sv": "Barn"
+            }
+          },
+          {
+            "name": "badge",
+            "type": "string",
+            "title": {
+              "en": "Badge",
+              "sv": "Märke"
+            }
+          }
+        ]
+      },
+      {
+        "id": "season-transition",
+        "title": {
+          "en": "Season transition detected",
+          "sv": "Årstidsskifte upptäckt"
+        },
+        "tokens": [
+          {
+            "name": "from_season",
+            "type": "string",
+            "title": {
+              "en": "From",
+              "sv": "Från"
+            }
+          },
+          {
+            "name": "to_season",
+            "type": "string",
+            "title": {
+              "en": "To",
+              "sv": "Till"
+            }
+          }
+        ]
+      },
+      {
+        "id": "frost-warning",
+        "title": {
+          "en": "Frost warning",
+          "sv": "Frostvarning"
+        },
+        "tokens": [
+          {
+            "name": "temperature",
+            "type": "number",
+            "title": {
+              "en": "Temperature (°C)",
+              "sv": "Temperatur (°C)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "guest-arrived",
+        "title": {
+          "en": "Guest arrived",
+          "sv": "Gäst anlänt"
+        },
+        "tokens": [
+          {
+            "name": "guest_name",
+            "type": "string",
+            "title": {
+              "en": "Guest",
+              "sv": "Gäst"
+            }
+          }
+        ]
+      },
+      {
+        "id": "guest-departed",
+        "title": {
+          "en": "Guest departed",
+          "sv": "Gäst avrest"
+        },
+        "tokens": [
+          {
+            "name": "guest_name",
+            "type": "string",
+            "title": {
+              "en": "Guest",
+              "sv": "Gäst"
+            }
+          }
+        ]
+      },
+      {
+        "id": "sauna-ready",
+        "title": {
+          "en": "Sauna ready",
+          "sv": "Bastun klar"
+        },
+        "tokens": [
+          {
+            "name": "temperature",
+            "type": "number",
+            "title": {
+              "en": "Temperature (°C)",
+              "sv": "Temperatur (°C)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "wellness-score-low",
+        "title": {
+          "en": "Wellness score low",
+          "sv": "Lågt välmåendepoäng"
+        },
+        "tokens": [
+          {
+            "name": "member_name",
+            "type": "string",
+            "title": {
+              "en": "Member",
+              "sv": "Medlem"
+            }
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "title": {
+              "en": "Score",
+              "sv": "Poäng"
+            }
+          }
+        ]
+      },
+      {
+        "id": "mirror-user-detected",
+        "title": {
+          "en": "User detected at smart mirror"
+        },
+        "hint": {
+          "en": "Triggered when a user is detected at a smart mirror"
+        },
+        "args": []
+      },
+      {
+        "id": "energy-audit-completed",
+        "title": {
+          "en": "Energy audit completed"
+        },
+        "hint": {
+          "en": "Triggered when an energy audit is completed"
+        },
+        "args": []
+      },
+      {
+        "id": "fireplace-started",
+        "title": {
+          "en": "Fireplace started"
+        },
+        "hint": {
+          "en": "Triggered when a fireplace is ignited"
+        },
+        "args": []
+      },
+      {
+        "id": "fireplace-safety-alert",
+        "title": {
+          "en": "Fireplace safety alert"
+        },
+        "hint": {
+          "en": "Triggered on fireplace safety concern"
+        },
+        "args": []
+      },
+      {
+        "id": "chimney-sweep-due",
+        "title": {
+          "en": "Chimney sweep due"
+        },
+        "hint": {
+          "en": "Triggered when chimney sweep is due"
+        },
+        "args": []
+      },
+      {
+        "id": "sleep-session-ended",
+        "title": {
+          "en": "Sleep session ended"
+        },
+        "hint": {
+          "en": "Triggered when a sleep session ends"
+        },
+        "args": []
+      },
+      {
+        "id": "smart-alarm-triggered",
+        "title": {
+          "en": "Smart alarm triggered"
+        },
+        "hint": {
+          "en": "Triggered when smart wake alarm activates"
+        },
+        "args": []
+      },
+      {
+        "id": "snoring-detected",
+        "title": {
+          "en": "Snoring detected"
+        },
+        "hint": {
+          "en": "Triggered when snoring is detected"
+        },
+        "args": []
+      },
+      {
+        "id": "hvac-zone-adjusted",
+        "title": {
+          "en": "HVAC zone adjusted"
+        },
+        "hint": {
+          "en": "Triggered when HVAC zone is adjusted"
+        },
+        "args": []
+      },
+      {
+        "id": "hvac-filter-replacement",
+        "title": {
+          "en": "HVAC filter replacement needed"
+        },
+        "hint": {
+          "en": "Triggered when HVAC filter needs replacement"
+        },
+        "args": []
+      },
+      {
+        "id": "drone-anomaly-detected",
+        "title": {
+          "en": "Security drone anomaly detected"
+        },
+        "hint": {
+          "en": "Triggered when drone detects anomaly"
+        },
+        "args": []
+      },
+      {
+        "id": "drone-patrol-started",
+        "title": {
+          "en": "Drone patrol started"
+        },
+        "hint": {
+          "en": "Triggered when drone begins patrol"
+        },
+        "args": []
+      },
+      {
+        "id": "drone-battery-low",
+        "title": {
+          "en": "Drone battery low"
+        },
+        "hint": {
+          "en": "Triggered when drone battery is low"
+        },
+        "args": []
       }
     ],
     "conditions": [
@@ -812,7 +1466,10 @@
           {
             "name": "zone",
             "type": "autocomplete",
-            "placeholder": { "en": "Select zone", "sv": "Välj zon" }
+            "placeholder": {
+              "en": "Select zone",
+              "sv": "Välj zon"
+            }
           },
           {
             "name": "min",
@@ -838,7 +1495,10 @@
           {
             "name": "scene",
             "type": "autocomplete",
-            "placeholder": { "en": "Select scene", "sv": "Välj scen" }
+            "placeholder": {
+              "en": "Select scene",
+              "sv": "Välj scen"
+            }
           }
         ]
       },
@@ -853,10 +1513,34 @@
             "name": "model",
             "type": "dropdown",
             "values": [
-              { "id": "energy", "label": { "en": "Energy usage", "sv": "Energianvändning" } },
-              { "id": "presence", "label": { "en": "Presence", "sv": "Närvaro" } },
-              { "id": "failure", "label": { "en": "Device failure", "sv": "Enhetsfel" } },
-              { "id": "comfort", "label": { "en": "Comfort", "sv": "Komfort" } }
+              {
+                "id": "energy",
+                "label": {
+                  "en": "Energy usage",
+                  "sv": "Energianvändning"
+                }
+              },
+              {
+                "id": "presence",
+                "label": {
+                  "en": "Presence",
+                  "sv": "Närvaro"
+                }
+              },
+              {
+                "id": "failure",
+                "label": {
+                  "en": "Device failure",
+                  "sv": "Enhetsfel"
+                }
+              },
+              {
+                "id": "comfort",
+                "label": {
+                  "en": "Comfort",
+                  "sv": "Komfort"
+                }
+              }
             ]
           },
           {
@@ -880,10 +1564,34 @@
             "name": "model",
             "type": "dropdown",
             "values": [
-              { "id": "energy-usage", "label": { "en": "Energy usage", "sv": "Energianvändning" } },
-              { "id": "presence-pattern", "label": { "en": "Presence pattern", "sv": "Närvaromönster" } },
-              { "id": "device-failure", "label": { "en": "Device failure", "sv": "Enhetsfel" } },
-              { "id": "comfort-preferences", "label": { "en": "Comfort preferences", "sv": "Komfortpreferenser" } }
+              {
+                "id": "energy-usage",
+                "label": {
+                  "en": "Energy usage",
+                  "sv": "Energianvändning"
+                }
+              },
+              {
+                "id": "presence-pattern",
+                "label": {
+                  "en": "Presence pattern",
+                  "sv": "Närvaromönster"
+                }
+              },
+              {
+                "id": "device-failure",
+                "label": {
+                  "en": "Device failure",
+                  "sv": "Enhetsfel"
+                }
+              },
+              {
+                "id": "comfort-preferences",
+                "label": {
+                  "en": "Comfort preferences",
+                  "sv": "Komfortpreferenser"
+                }
+              }
             ]
           },
           {
@@ -920,7 +1628,10 @@
           {
             "name": "person_name",
             "type": "text",
-            "placeholder": { "en": "Person name", "sv": "Personnamn" }
+            "placeholder": {
+              "en": "Person name",
+              "sv": "Personnamn"
+            }
           }
         ]
       },
@@ -1002,7 +1713,10 @@
           {
             "name": "room",
             "type": "autocomplete",
-            "placeholder": { "en": "Select room", "sv": "Välj rum" }
+            "placeholder": {
+              "en": "Select room",
+              "sv": "Välj rum"
+            }
           }
         ]
       },
@@ -1030,7 +1744,10 @@
           {
             "name": "scene",
             "type": "autocomplete",
-            "placeholder": { "en": "Select scene", "sv": "Välj scen" }
+            "placeholder": {
+              "en": "Select scene",
+              "sv": "Välj scen"
+            }
           }
         ]
       },
@@ -1090,9 +1807,27 @@
             "name": "item_name",
             "type": "dropdown",
             "values": [
-              { "id": "milk", "label": { "en": "Milk", "sv": "Mjölk" } },
-              { "id": "bread", "label": { "en": "Bread", "sv": "Bröd" } },
-              { "id": "eggs", "label": { "en": "Eggs", "sv": "Ägg" } }
+              {
+                "id": "milk",
+                "label": {
+                  "en": "Milk",
+                  "sv": "Mjölk"
+                }
+              },
+              {
+                "id": "bread",
+                "label": {
+                  "en": "Bread",
+                  "sv": "Bröd"
+                }
+              },
+              {
+                "id": "eggs",
+                "label": {
+                  "en": "Eggs",
+                  "sv": "Ägg"
+                }
+              }
             ]
           }
         ]
@@ -1110,6 +1845,182 @@
           "en": "Robot is available",
           "sv": "Robot är tillgänglig"
         }
+      },
+      {
+        "id": "ev-is-charging",
+        "title": {
+          "en": "EV is charging",
+          "sv": "Elbil laddar"
+        }
+      },
+      {
+        "id": "ev-solar-surplus",
+        "title": {
+          "en": "Solar surplus available for EV",
+          "sv": "Solöverskott tillgängligt för elbil"
+        }
+      },
+      {
+        "id": "quiet-hours-active",
+        "title": {
+          "en": "Quiet hours are active",
+          "sv": "Tysta timmar är aktiva"
+        }
+      },
+      {
+        "id": "screen-time-remaining",
+        "title": {
+          "en": "Child has screen time remaining",
+          "sv": "Barn har skärmtid kvar"
+        }
+      },
+      {
+        "id": "is-current-season",
+        "title": {
+          "en": "Current season is",
+          "sv": "Nuvarande årstid är"
+        },
+        "args": [
+          {
+            "name": "season",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "midwinter",
+                "label": {
+                  "en": "Midwinter",
+                  "sv": "Midvinter"
+                }
+              },
+              {
+                "id": "late_winter",
+                "label": {
+                  "en": "Late Winter",
+                  "sv": "Senvinter"
+                }
+              },
+              {
+                "id": "early_spring",
+                "label": {
+                  "en": "Early Spring",
+                  "sv": "Tidig vår"
+                }
+              },
+              {
+                "id": "late_spring",
+                "label": {
+                  "en": "Late Spring",
+                  "sv": "Sen vår"
+                }
+              },
+              {
+                "id": "summer",
+                "label": {
+                  "en": "Summer",
+                  "sv": "Sommar"
+                }
+              },
+              {
+                "id": "late_summer",
+                "label": {
+                  "en": "Late Summer",
+                  "sv": "Sensommar"
+                }
+              },
+              {
+                "id": "autumn",
+                "label": {
+                  "en": "Autumn",
+                  "sv": "Höst"
+                }
+              },
+              {
+                "id": "dark_november",
+                "label": {
+                  "en": "Dark November",
+                  "sv": "Mörka november"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "guest-is-present",
+        "title": {
+          "en": "Guest is present",
+          "sv": "Gäst är närvarande"
+        }
+      },
+      {
+        "id": "is-mirror-active",
+        "title": {
+          "en": "Smart mirror is active"
+        },
+        "hint": {
+          "en": "Check if a smart mirror is active"
+        },
+        "args": []
+      },
+      {
+        "id": "is-fireplace-running",
+        "title": {
+          "en": "Fireplace is running"
+        },
+        "hint": {
+          "en": "Check if any fireplace is active"
+        },
+        "args": []
+      },
+      {
+        "id": "is-burn-ban-active",
+        "title": {
+          "en": "Burn ban is active"
+        },
+        "hint": {
+          "en": "Check if burn ban is active"
+        },
+        "args": []
+      },
+      {
+        "id": "is-sleeping",
+        "title": {
+          "en": "Someone is sleeping"
+        },
+        "hint": {
+          "en": "Check if bed occupancy detected"
+        },
+        "args": []
+      },
+      {
+        "id": "is-hvac-comfort-ok",
+        "title": {
+          "en": "HVAC comfort is acceptable"
+        },
+        "hint": {
+          "en": "Check if zones have acceptable comfort"
+        },
+        "args": []
+      },
+      {
+        "id": "is-drone-patrolling",
+        "title": {
+          "en": "Security drone is patrolling"
+        },
+        "hint": {
+          "en": "Check if drone is on patrol"
+        },
+        "args": []
+      },
+      {
+        "id": "is-energy-rating-above",
+        "title": {
+          "en": "Energy rating is above threshold"
+        },
+        "hint": {
+          "en": "Check if energy rating meets target"
+        },
+        "args": []
       }
     ],
     "actions": [
@@ -1123,7 +2034,10 @@
           {
             "name": "scene",
             "type": "autocomplete",
-            "placeholder": { "en": "Select scene", "sv": "Välj scen" }
+            "placeholder": {
+              "en": "Select scene",
+              "sv": "Välj scen"
+            }
           }
         ]
       },
@@ -1137,15 +2051,36 @@
           {
             "name": "zone",
             "type": "autocomplete",
-            "placeholder": { "en": "Select zone", "sv": "Välj zon" }
+            "placeholder": {
+              "en": "Select zone",
+              "sv": "Välj zon"
+            }
           },
           {
             "name": "action",
             "type": "dropdown",
             "values": [
-              { "id": "on", "label": { "en": "Turn on", "sv": "Tänd" } },
-              { "id": "off", "label": { "en": "Turn off", "sv": "Släck" } },
-              { "id": "dim", "label": { "en": "Dim", "sv": "Dimra" } }
+              {
+                "id": "on",
+                "label": {
+                  "en": "Turn on",
+                  "sv": "Tänd"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "Turn off",
+                  "sv": "Släck"
+                }
+              },
+              {
+                "id": "dim",
+                "label": {
+                  "en": "Dim",
+                  "sv": "Dimra"
+                }
+              }
             ]
           },
           {
@@ -1168,7 +2103,10 @@
           {
             "name": "zone",
             "type": "autocomplete",
-            "placeholder": { "en": "Select zone", "sv": "Välj zon" }
+            "placeholder": {
+              "en": "Select zone",
+              "sv": "Välj zon"
+            }
           },
           {
             "name": "temperature",
@@ -1188,16 +2126,43 @@
           {
             "name": "message",
             "type": "text",
-            "placeholder": { "en": "Message", "sv": "Meddelande" }
+            "placeholder": {
+              "en": "Message",
+              "sv": "Meddelande"
+            }
           },
           {
             "name": "priority",
             "type": "dropdown",
             "values": [
-              { "id": "low", "label": { "en": "Low", "sv": "Låg" } },
-              { "id": "normal", "label": { "en": "Normal", "sv": "Normal" } },
-              { "id": "high", "label": { "en": "High", "sv": "Hög" } },
-              { "id": "critical", "label": { "en": "Critical", "sv": "Kritisk" } }
+              {
+                "id": "low",
+                "label": {
+                  "en": "Low",
+                  "sv": "Låg"
+                }
+              },
+              {
+                "id": "normal",
+                "label": {
+                  "en": "Normal",
+                  "sv": "Normal"
+                }
+              },
+              {
+                "id": "high",
+                "label": {
+                  "en": "High",
+                  "sv": "Hög"
+                }
+              },
+              {
+                "id": "critical",
+                "label": {
+                  "en": "Critical",
+                  "sv": "Kritisk"
+                }
+              }
             ]
           }
         ]
@@ -1213,10 +2178,34 @@
             "name": "mode",
             "type": "dropdown",
             "values": [
-              { "id": "disarmed", "label": { "en": "Disarmed", "sv": "Avlarmat" } },
-              { "id": "home", "label": { "en": "Home", "sv": "Hemma" } },
-              { "id": "away", "label": { "en": "Away", "sv": "Borta" } },
-              { "id": "night", "label": { "en": "Night", "sv": "Natt" } }
+              {
+                "id": "disarmed",
+                "label": {
+                  "en": "Disarmed",
+                  "sv": "Avlarmat"
+                }
+              },
+              {
+                "id": "home",
+                "label": {
+                  "en": "Home",
+                  "sv": "Hemma"
+                }
+              },
+              {
+                "id": "away",
+                "label": {
+                  "en": "Away",
+                  "sv": "Borta"
+                }
+              },
+              {
+                "id": "night",
+                "label": {
+                  "en": "Night",
+                  "sv": "Natt"
+                }
+              }
             ]
           }
         ]
@@ -1231,7 +2220,10 @@
           {
             "name": "routine",
             "type": "autocomplete",
-            "placeholder": { "en": "Select routine", "sv": "Välj rutin" }
+            "placeholder": {
+              "en": "Select routine",
+              "sv": "Välj rutin"
+            }
           }
         ]
       },
@@ -1246,10 +2238,34 @@
             "name": "model",
             "type": "dropdown",
             "values": [
-              { "id": "energy-usage", "label": { "en": "Energy usage", "sv": "Energianvändning" } },
-              { "id": "presence-pattern", "label": { "en": "Presence pattern", "sv": "Närvaromönster" } },
-              { "id": "device-failure", "label": { "en": "Device failure", "sv": "Enhetsfel" } },
-              { "id": "comfort-preferences", "label": { "en": "Comfort preferences", "sv": "Komfortpreferenser" } }
+              {
+                "id": "energy-usage",
+                "label": {
+                  "en": "Energy usage",
+                  "sv": "Energianvändning"
+                }
+              },
+              {
+                "id": "presence-pattern",
+                "label": {
+                  "en": "Presence pattern",
+                  "sv": "Närvaromönster"
+                }
+              },
+              {
+                "id": "device-failure",
+                "label": {
+                  "en": "Device failure",
+                  "sv": "Enhetsfel"
+                }
+              },
+              {
+                "id": "comfort-preferences",
+                "label": {
+                  "en": "Comfort preferences",
+                  "sv": "Komfortpreferenser"
+                }
+              }
             ]
           }
         ]
@@ -1265,9 +2281,27 @@
             "name": "trigger",
             "type": "dropdown",
             "values": [
-              { "id": "solar-peak-production", "label": { "en": "Solar peak", "sv": "Solenergi-topp" } },
-              { "id": "last-person-leaving", "label": { "en": "Last person leaving", "sv": "Sista person lämnar" } },
-              { "id": "first-person-arriving", "label": { "en": "First person arriving", "sv": "Första person anländer" } }
+              {
+                "id": "solar-peak-production",
+                "label": {
+                  "en": "Solar peak",
+                  "sv": "Solenergi-topp"
+                }
+              },
+              {
+                "id": "last-person-leaving",
+                "label": {
+                  "en": "Last person leaving",
+                  "sv": "Sista person lämnar"
+                }
+              },
+              {
+                "id": "first-person-arriving",
+                "label": {
+                  "en": "First person arriving",
+                  "sv": "Första person anländer"
+                }
+              }
             ]
           }
         ]
@@ -1283,9 +2317,27 @@
             "name": "mode",
             "type": "dropdown",
             "values": [
-              { "id": "user-preference", "label": { "en": "User preference", "sv": "Användarpreferens" } },
-              { "id": "ai-optimal", "label": { "en": "AI optimal", "sv": "AI-optimal" } },
-              { "id": "energy-first", "label": { "en": "Energy first", "sv": "Energi först" } }
+              {
+                "id": "user-preference",
+                "label": {
+                  "en": "User preference",
+                  "sv": "Användarpreferens"
+                }
+              },
+              {
+                "id": "ai-optimal",
+                "label": {
+                  "en": "AI optimal",
+                  "sv": "AI-optimal"
+                }
+              },
+              {
+                "id": "energy-first",
+                "label": {
+                  "en": "Energy first",
+                  "sv": "Energi först"
+                }
+              }
             ]
           }
         ]
@@ -1301,8 +2353,20 @@
             "name": "enabled",
             "type": "dropdown",
             "values": [
-              { "id": "true", "label": { "en": "Enable", "sv": "Aktivera" } },
-              { "id": "false", "label": { "en": "Disable", "sv": "Inaktivera" } }
+              {
+                "id": "true",
+                "label": {
+                  "en": "Enable",
+                  "sv": "Aktivera"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Disable",
+                  "sv": "Inaktivera"
+                }
+              }
             ]
           }
         ]
@@ -1317,16 +2381,43 @@
           {
             "name": "name",
             "type": "text",
-            "placeholder": { "en": "Person name", "sv": "Personnamn" }
+            "placeholder": {
+              "en": "Person name",
+              "sv": "Personnamn"
+            }
           },
           {
             "name": "role",
             "type": "dropdown",
             "values": [
-              { "id": "owner", "label": { "en": "Owner", "sv": "Ägare" } },
-              { "id": "family", "label": { "en": "Family", "sv": "Familj" } },
-              { "id": "visitor", "label": { "en": "Visitor", "sv": "Besökare" } },
-              { "id": "service", "label": { "en": "Service", "sv": "Service" } }
+              {
+                "id": "owner",
+                "label": {
+                  "en": "Owner",
+                  "sv": "Ägare"
+                }
+              },
+              {
+                "id": "family",
+                "label": {
+                  "en": "Family",
+                  "sv": "Familj"
+                }
+              },
+              {
+                "id": "visitor",
+                "label": {
+                  "en": "Visitor",
+                  "sv": "Besökare"
+                }
+              },
+              {
+                "id": "service",
+                "label": {
+                  "en": "Service",
+                  "sv": "Service"
+                }
+              }
             ]
           }
         ]
@@ -1341,7 +2432,10 @@
           {
             "name": "command",
             "type": "text",
-            "placeholder": { "en": "Enter command", "sv": "Ange kommando" }
+            "placeholder": {
+              "en": "Enter command",
+              "sv": "Ange kommando"
+            }
           }
         ]
       },
@@ -1355,14 +2449,29 @@
           {
             "name": "camera",
             "type": "autocomplete",
-            "placeholder": { "en": "Select camera", "sv": "Välj kamera" }
+            "placeholder": {
+              "en": "Select camera",
+              "sv": "Välj kamera"
+            }
           },
           {
             "name": "enabled",
             "type": "dropdown",
             "values": [
-              { "id": "true", "label": { "en": "Enable", "sv": "Aktivera" } },
-              { "id": "false", "label": { "en": "Disable", "sv": "Inaktivera" } }
+              {
+                "id": "true",
+                "label": {
+                  "en": "Enable",
+                  "sv": "Aktivera"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Disable",
+                  "sv": "Inaktivera"
+                }
+              }
             ]
           }
         ]
@@ -1378,11 +2487,41 @@
             "name": "language",
             "type": "dropdown",
             "values": [
-              { "id": "en", "label": { "en": "English", "sv": "Engelska" } },
-              { "id": "sv", "label": { "en": "Swedish", "sv": "Svenska" } },
-              { "id": "es", "label": { "en": "Spanish", "sv": "Spanska" } },
-              { "id": "de", "label": { "en": "German", "sv": "Tyska" } },
-              { "id": "fr", "label": { "en": "French", "sv": "Franska" } }
+              {
+                "id": "en",
+                "label": {
+                  "en": "English",
+                  "sv": "Engelska"
+                }
+              },
+              {
+                "id": "sv",
+                "label": {
+                  "en": "Swedish",
+                  "sv": "Svenska"
+                }
+              },
+              {
+                "id": "es",
+                "label": {
+                  "en": "Spanish",
+                  "sv": "Spanska"
+                }
+              },
+              {
+                "id": "de",
+                "label": {
+                  "en": "German",
+                  "sv": "Tyska"
+                }
+              },
+              {
+                "id": "fr",
+                "label": {
+                  "en": "French",
+                  "sv": "Franska"
+                }
+              }
             ]
           }
         ]
@@ -1397,7 +2536,10 @@
           {
             "name": "namespace",
             "type": "text",
-            "placeholder": { "en": "Namespace name", "sv": "Namnrymdsnamn" }
+            "placeholder": {
+              "en": "Namespace name",
+              "sv": "Namnrymdsnamn"
+            }
           }
         ]
       },
@@ -1418,14 +2560,29 @@
           {
             "name": "taskId",
             "type": "text",
-            "placeholder": { "en": "Task ID", "sv": "Uppgifts-ID" }
+            "placeholder": {
+              "en": "Task ID",
+              "sv": "Uppgifts-ID"
+            }
           },
           {
             "name": "enabled",
             "type": "dropdown",
             "values": [
-              { "id": "true", "label": { "en": "Enable", "sv": "Aktivera" } },
-              { "id": "false", "label": { "en": "Disable", "sv": "Inaktivera" } }
+              {
+                "id": "true",
+                "label": {
+                  "en": "Enable",
+                  "sv": "Aktivera"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Disable",
+                  "sv": "Inaktivera"
+                }
+              }
             ]
           }
         ]
@@ -1440,12 +2597,18 @@
           {
             "name": "scene",
             "type": "autocomplete",
-            "placeholder": { "en": "Select scene", "sv": "Välj scen" }
+            "placeholder": {
+              "en": "Select scene",
+              "sv": "Välj scen"
+            }
           },
           {
             "name": "room",
             "type": "autocomplete",
-            "placeholder": { "en": "Select room", "sv": "Välj rum" }
+            "placeholder": {
+              "en": "Select room",
+              "sv": "Välj rum"
+            }
           }
         ]
       },
@@ -1460,8 +2623,20 @@
             "name": "enabled",
             "type": "dropdown",
             "values": [
-              { "id": "true", "label": { "en": "Enable", "sv": "Aktivera" } },
-              { "id": "false", "label": { "en": "Disable", "sv": "Inaktivera" } }
+              {
+                "id": "true",
+                "label": {
+                  "en": "Enable",
+                  "sv": "Aktivera"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Disable",
+                  "sv": "Inaktivera"
+                }
+              }
             ]
           }
         ]
@@ -1476,7 +2651,10 @@
           {
             "name": "guest_name",
             "type": "text",
-            "placeholder": { "en": "Guest name", "sv": "Gästnamn" }
+            "placeholder": {
+              "en": "Guest name",
+              "sv": "Gästnamn"
+            }
           },
           {
             "name": "duration_hours",
@@ -1503,9 +2681,27 @@
             "name": "period",
             "type": "dropdown",
             "values": [
-              { "id": "daily", "label": { "en": "Daily", "sv": "Daglig" } },
-              { "id": "weekly", "label": { "en": "Weekly", "sv": "Veckovis" } },
-              { "id": "monthly", "label": { "en": "Monthly", "sv": "Månatlig" } }
+              {
+                "id": "daily",
+                "label": {
+                  "en": "Daily",
+                  "sv": "Daglig"
+                }
+              },
+              {
+                "id": "weekly",
+                "label": {
+                  "en": "Weekly",
+                  "sv": "Veckovis"
+                }
+              },
+              {
+                "id": "monthly",
+                "label": {
+                  "en": "Monthly",
+                  "sv": "Månatlig"
+                }
+              }
             ]
           }
         ]
@@ -1528,8 +2724,20 @@
             "name": "enabled",
             "type": "dropdown",
             "values": [
-              { "id": "true", "label": { "en": "Enable", "sv": "Aktivera" } },
-              { "id": "false", "label": { "en": "Disable", "sv": "Inaktivera" } }
+              {
+                "id": "true",
+                "label": {
+                  "en": "Enable",
+                  "sv": "Aktivera"
+                }
+              },
+              {
+                "id": "false",
+                "label": {
+                  "en": "Disable",
+                  "sv": "Inaktivera"
+                }
+              }
             ]
           }
         ]
@@ -1545,9 +2753,27 @@
             "name": "gate_id",
             "type": "dropdown",
             "values": [
-              { "id": "main", "label": { "en": "Main gate", "sv": "Huvudgrind" } },
-              { "id": "side", "label": { "en": "Side gate", "sv": "Sidogrind" } },
-              { "id": "back", "label": { "en": "Back gate", "sv": "Bakgrind" } }
+              {
+                "id": "main",
+                "label": {
+                  "en": "Main gate",
+                  "sv": "Huvudgrind"
+                }
+              },
+              {
+                "id": "side",
+                "label": {
+                  "en": "Side gate",
+                  "sv": "Sidogrind"
+                }
+              },
+              {
+                "id": "back",
+                "label": {
+                  "en": "Back gate",
+                  "sv": "Bakgrind"
+                }
+              }
             ]
           }
         ]
@@ -1569,7 +2795,10 @@
           {
             "name": "item_name",
             "type": "text",
-            "placeholder": { "en": "Item name", "sv": "Varunamn" }
+            "placeholder": {
+              "en": "Item name",
+              "sv": "Varunamn"
+            }
           }
         ]
       },
@@ -1584,10 +2813,34 @@
             "name": "zone",
             "type": "dropdown",
             "values": [
-              { "id": "kitchen", "label": { "en": "Kitchen", "sv": "Kök" } },
-              { "id": "living_room", "label": { "en": "Living room", "sv": "Vardagsrum" } },
-              { "id": "bedroom", "label": { "en": "Bedroom", "sv": "Sovrum" } },
-              { "id": "all", "label": { "en": "All zones", "sv": "Alla zoner" } }
+              {
+                "id": "kitchen",
+                "label": {
+                  "en": "Kitchen",
+                  "sv": "Kök"
+                }
+              },
+              {
+                "id": "living_room",
+                "label": {
+                  "en": "Living room",
+                  "sv": "Vardagsrum"
+                }
+              },
+              {
+                "id": "bedroom",
+                "label": {
+                  "en": "Bedroom",
+                  "sv": "Sovrum"
+                }
+              },
+              {
+                "id": "all",
+                "label": {
+                  "en": "All zones",
+                  "sv": "Alla zoner"
+                }
+              }
             ]
           }
         ]
@@ -1603,10 +2856,34 @@
             "name": "drill_type",
             "type": "dropdown",
             "values": [
-              { "id": "fire", "label": { "en": "Fire", "sv": "Brand" } },
-              { "id": "earthquake", "label": { "en": "Earthquake", "sv": "Jordbävning" } },
-              { "id": "flood", "label": { "en": "Flood", "sv": "Översvämning" } },
-              { "id": "power_outage", "label": { "en": "Power outage", "sv": "Strömavbrott" } }
+              {
+                "id": "fire",
+                "label": {
+                  "en": "Fire",
+                  "sv": "Brand"
+                }
+              },
+              {
+                "id": "earthquake",
+                "label": {
+                  "en": "Earthquake",
+                  "sv": "Jordbävning"
+                }
+              },
+              {
+                "id": "flood",
+                "label": {
+                  "en": "Flood",
+                  "sv": "Översvämning"
+                }
+              },
+              {
+                "id": "power_outage",
+                "label": {
+                  "en": "Power outage",
+                  "sv": "Strömavbrott"
+                }
+              }
             ]
           }
         ]
@@ -1617,6 +2894,299 @@
           "en": "Capture digital twin snapshot",
           "sv": "Ta digital tvilling-ögonblicksbild"
         }
+      },
+      {
+        "id": "start-ev-charging",
+        "title": {
+          "en": "Start EV charging",
+          "sv": "Starta elbilsladdning"
+        },
+        "args": [
+          {
+            "name": "station",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "garage",
+                "label": {
+                  "en": "Garage",
+                  "sv": "Garage"
+                }
+              },
+              {
+                "id": "driveway",
+                "label": {
+                  "en": "Driveway",
+                  "sv": "Uppfart"
+                }
+              },
+              {
+                "id": "carport",
+                "label": {
+                  "en": "Carport",
+                  "sv": "Carport"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "stop-ev-charging",
+        "title": {
+          "en": "Stop EV charging",
+          "sv": "Stoppa elbilsladdning"
+        }
+      },
+      {
+        "id": "activate-sound-masking",
+        "title": {
+          "en": "Activate sound masking",
+          "sv": "Aktivera ljudmaskering"
+        },
+        "args": [
+          {
+            "name": "sound_type",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "white",
+                "label": {
+                  "en": "White noise",
+                  "sv": "Vitt brus"
+                }
+              },
+              {
+                "id": "pink",
+                "label": {
+                  "en": "Pink noise",
+                  "sv": "Rosa brus"
+                }
+              },
+              {
+                "id": "brown",
+                "label": {
+                  "en": "Brown noise",
+                  "sv": "Brunt brus"
+                }
+              },
+              {
+                "id": "rain",
+                "label": {
+                  "en": "Rain",
+                  "sv": "Regn"
+                }
+              },
+              {
+                "id": "forest",
+                "label": {
+                  "en": "Forest",
+                  "sv": "Skog"
+                }
+              },
+              {
+                "id": "ocean",
+                "label": {
+                  "en": "Ocean",
+                  "sv": "Hav"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "enforce-quiet-zone",
+        "title": {
+          "en": "Enforce quiet zone",
+          "sv": "Aktivera tyst zon"
+        },
+        "args": [
+          {
+            "name": "room",
+            "type": "text",
+            "placeholder": {
+              "en": "Room name",
+              "sv": "Rumsnamn"
+            }
+          }
+        ]
+      },
+      {
+        "id": "add-screen-time-bonus",
+        "title": {
+          "en": "Add bonus screen time",
+          "sv": "Lägg till bonusskärmtid"
+        },
+        "args": [
+          {
+            "name": "minutes",
+            "type": "number",
+            "min": 5,
+            "max": 120,
+            "placeholder": {
+              "en": "Minutes",
+              "sv": "Minuter"
+            }
+          }
+        ]
+      },
+      {
+        "id": "activate-seasonal-scene",
+        "title": {
+          "en": "Activate seasonal scene",
+          "sv": "Aktivera årstidsscen"
+        }
+      },
+      {
+        "id": "trigger-guest-welcome",
+        "title": {
+          "en": "Trigger guest welcome",
+          "sv": "Starta gästvälkomnande"
+        },
+        "args": [
+          {
+            "name": "guest_name",
+            "type": "text",
+            "placeholder": {
+              "en": "Guest name",
+              "sv": "Gästnamn"
+            }
+          }
+        ]
+      },
+      {
+        "id": "activate-party-mode-guest",
+        "title": {
+          "en": "Activate guest party mode",
+          "sv": "Aktivera gästfestläge"
+        }
+      },
+      {
+        "id": "preheat-sauna-guest",
+        "title": {
+          "en": "Preheat sauna for guest",
+          "sv": "Förvärm bastu för gäst"
+        },
+        "args": [
+          {
+            "name": "temperature",
+            "type": "number",
+            "min": 50,
+            "max": 100,
+            "placeholder": {
+              "en": "Target °C",
+              "sv": "Mål °C"
+            }
+          }
+        ]
+      },
+      {
+        "id": "send-hydration-reminder",
+        "title": {
+          "en": "Send hydration reminder",
+          "sv": "Skicka vattenpåminnelse"
+        }
+      },
+      {
+        "id": "set-mirror-brightness",
+        "title": {
+          "en": "Set smart mirror brightness"
+        },
+        "hint": {
+          "en": "Adjust mirror brightness"
+        },
+        "args": []
+      },
+      {
+        "id": "start-fireplace",
+        "title": {
+          "en": "Start fireplace"
+        },
+        "hint": {
+          "en": "Ignite a fireplace"
+        },
+        "args": []
+      },
+      {
+        "id": "stop-fireplace",
+        "title": {
+          "en": "Stop fireplace"
+        },
+        "hint": {
+          "en": "Shut down a fireplace"
+        },
+        "args": []
+      },
+      {
+        "id": "activate-fireplace-scene",
+        "title": {
+          "en": "Activate fireplace scene"
+        },
+        "hint": {
+          "en": "Activate fireplace ambiance"
+        },
+        "args": []
+      },
+      {
+        "id": "set-sleep-soundscape",
+        "title": {
+          "en": "Set sleep soundscape"
+        },
+        "hint": {
+          "en": "Change sleep sound environment"
+        },
+        "args": []
+      },
+      {
+        "id": "trigger-smart-alarm",
+        "title": {
+          "en": "Trigger smart alarm"
+        },
+        "hint": {
+          "en": "Trigger the smart wake alarm"
+        },
+        "args": []
+      },
+      {
+        "id": "set-hvac-zone-target",
+        "title": {
+          "en": "Set HVAC zone target"
+        },
+        "hint": {
+          "en": "Set target temp for HVAC zone"
+        },
+        "args": []
+      },
+      {
+        "id": "start-drone-patrol",
+        "title": {
+          "en": "Start drone patrol"
+        },
+        "hint": {
+          "en": "Launch drone on patrol route"
+        },
+        "args": []
+      },
+      {
+        "id": "recall-drone",
+        "title": {
+          "en": "Recall drone to base"
+        },
+        "hint": {
+          "en": "Command drone to return to dock"
+        },
+        "args": []
+      },
+      {
+        "id": "run-energy-audit",
+        "title": {
+          "en": "Run energy audit"
+        },
+        "hint": {
+          "en": "Trigger energy audit"
+        },
+        "args": []
       }
     ]
   },
@@ -1630,19 +3200,28 @@
         {
           "id": "showEnergy",
           "type": "checkbox",
-          "label": { "en": "Show energy", "sv": "Visa energi" },
+          "label": {
+            "en": "Show energy",
+            "sv": "Visa energi"
+          },
           "value": true
         },
         {
           "id": "showClimate",
           "type": "checkbox",
-          "label": { "en": "Show climate", "sv": "Visa klimat" },
+          "label": {
+            "en": "Show climate",
+            "sv": "Visa klimat"
+          },
           "value": true
         },
         {
           "id": "showSecurity",
           "type": "checkbox",
-          "label": { "en": "Show security", "sv": "Visa säkerhet" },
+          "label": {
+            "en": "Show security",
+            "sv": "Visa säkerhet"
+          },
           "value": true
         }
       ],
@@ -1861,7 +3440,7 @@
     },
     "getCarbonFootprint": {
       "method": "GET",
-      "path": "/billing/carbon"
+      "path": "/sustainability/carbon"
     },
     "getApplianceCostRanking": {
       "method": "GET",
@@ -1873,7 +3452,7 @@
     },
     "getGuestProfiles": {
       "method": "GET",
-      "path": "/guests/profiles"
+      "path": "/guest/profiles"
     },
     "createGuestProfile": {
       "method": "POST",
@@ -1909,7 +3488,7 @@
     },
     "getOccupancyHeatmap": {
       "method": "GET",
-      "path": "/occupancy/heatmap"
+      "path": "/twin/heatmap"
     },
     "getRoomUtilizationReport": {
       "method": "GET",
@@ -1953,11 +3532,11 @@
     },
     "getGroceryList": {
       "method": "GET",
-      "path": "/food/grocery-list"
+      "path": "/nutrition/grocery-list"
     },
     "getMealPlan": {
       "method": "GET",
-      "path": "/food/meal-plan"
+      "path": "/nutrition/meal-plan"
     },
     "addFoodItem": {
       "method": "POST",
@@ -1966,10 +3545,6 @@
     "getFoodWasteAnalytics": {
       "method": "GET",
       "path": "/food/waste"
-    },
-    "getCarbonFootprint": {
-      "method": "GET",
-      "path": "/sustainability/carbon"
     },
     "getWaterUsage": {
       "method": "GET",
@@ -2047,10 +3622,6 @@
       "method": "GET",
       "path": "/twin/energy-flow"
     },
-    "getOccupancyHeatmap": {
-      "method": "GET",
-      "path": "/twin/heatmap"
-    },
     "getComfortScores": {
       "method": "GET",
       "path": "/twin/comfort"
@@ -2082,6 +3653,242 @@
     "runDisasterDrill": {
       "method": "POST",
       "path": "/disaster/drill"
+    },
+    "getEVChargingStations": {
+      "method": "GET",
+      "path": "/ev/stations"
+    },
+    "getEVVehicles": {
+      "method": "GET",
+      "path": "/ev/vehicles"
+    },
+    "getEVChargingSchedules": {
+      "method": "GET",
+      "path": "/ev/schedules"
+    },
+    "getEVEnergyStats": {
+      "method": "GET",
+      "path": "/ev/energy"
+    },
+    "getEVChargingStatistics": {
+      "method": "GET",
+      "path": "/ev/statistics"
+    },
+    "getNutritionProfiles": {
+      "method": "GET",
+      "path": "/nutrition/profiles"
+    },
+    "getWellnessScores": {
+      "method": "GET",
+      "path": "/nutrition/wellness"
+    },
+    "getNutritionStatistics": {
+      "method": "GET",
+      "path": "/nutrition/statistics"
+    },
+    "getNoiseRoomProfiles": {
+      "method": "GET",
+      "path": "/noise/rooms"
+    },
+    "getNoiseLevels": {
+      "method": "GET",
+      "path": "/noise/levels"
+    },
+    "getQuietZones": {
+      "method": "GET",
+      "path": "/noise/quiet-zones"
+    },
+    "getNoiseReport": {
+      "method": "GET",
+      "path": "/noise/report"
+    },
+    "getNoiseStatistics": {
+      "method": "GET",
+      "path": "/noise/statistics"
+    },
+    "getChildProfiles": {
+      "method": "GET",
+      "path": "/education/children"
+    },
+    "getScreenTimeStatus": {
+      "method": "GET",
+      "path": "/education/screen-time"
+    },
+    "getHomeworkAssignments": {
+      "method": "GET",
+      "path": "/education/homework"
+    },
+    "getChildProgressReport": {
+      "method": "GET",
+      "path": "/education/progress"
+    },
+    "getChildEducationStatistics": {
+      "method": "GET",
+      "path": "/education/statistics"
+    },
+    "getSeasonalStatus": {
+      "method": "GET",
+      "path": "/seasonal/status"
+    },
+    "getSeasonalProfiles": {
+      "method": "GET",
+      "path": "/seasonal/profiles"
+    },
+    "getSeasonalMaintenance": {
+      "method": "GET",
+      "path": "/seasonal/maintenance"
+    },
+    "getHolidayCalendar": {
+      "method": "GET",
+      "path": "/seasonal/holidays"
+    },
+    "getSeasonalStatistics": {
+      "method": "GET",
+      "path": "/seasonal/statistics"
+    },
+    "getActiveGuestSessions": {
+      "method": "GET",
+      "path": "/guest/sessions"
+    },
+    "triggerGuestWelcome": {
+      "method": "POST",
+      "path": "/guest/welcome"
+    },
+    "getEntertainmentLibrary": {
+      "method": "GET",
+      "path": "/guest/entertainment"
+    },
+    "getGuestEntertainmentStatistics": {
+      "method": "GET",
+      "path": "/guest/statistics"
+    },
+    "getSmartMirrorStatus": {
+      "method": "GET",
+      "path": "/smart-mirror/status"
+    },
+    "getMirrorDevices": {
+      "method": "GET",
+      "path": "/smart-mirror/devices"
+    },
+    "getMirrorWidgets": {
+      "method": "GET",
+      "path": "/smart-mirror/widgets"
+    },
+    "setMirrorBrightness": {
+      "method": "PUT",
+      "path": "/smart-mirror/brightness"
+    },
+    "getMirrorUserProfiles": {
+      "method": "GET",
+      "path": "/smart-mirror/profiles"
+    },
+    "getEnergyAuditStatus": {
+      "method": "GET",
+      "path": "/energy-audit/status"
+    },
+    "getEnergyAuditReport": {
+      "method": "GET",
+      "path": "/energy-audit/report"
+    },
+    "getEnergyRecommendations": {
+      "method": "GET",
+      "path": "/energy-audit/recommendations"
+    },
+    "getApplianceAnalysis": {
+      "method": "GET",
+      "path": "/energy-audit/appliances"
+    },
+    "getEPCRating": {
+      "method": "GET",
+      "path": "/energy-audit/epc"
+    },
+    "getFireplaceStatus": {
+      "method": "GET",
+      "path": "/fireplace/status"
+    },
+    "getFireplaceDevices": {
+      "method": "GET",
+      "path": "/fireplace/devices"
+    },
+    "startFireplace": {
+      "method": "PUT",
+      "path": "/fireplace/start"
+    },
+    "stopFireplace": {
+      "method": "PUT",
+      "path": "/fireplace/stop"
+    },
+    "getFireplaceFuelStatus": {
+      "method": "GET",
+      "path": "/fireplace/fuel"
+    },
+    "getChimneyMaintenanceStatus": {
+      "method": "GET",
+      "path": "/fireplace/chimney"
+    },
+    "getSleepEnvironmentStatus": {
+      "method": "GET",
+      "path": "/sleep/status"
+    },
+    "getSleepZones": {
+      "method": "GET",
+      "path": "/sleep/zones"
+    },
+    "getSleepProfiles": {
+      "method": "GET",
+      "path": "/sleep/profiles"
+    },
+    "getSleepHistory": {
+      "method": "GET",
+      "path": "/sleep/history"
+    },
+    "setSleepSoundscape": {
+      "method": "PUT",
+      "path": "/sleep/soundscape"
+    },
+    "getHVACZoneStatus": {
+      "method": "GET",
+      "path": "/hvac-zone/status"
+    },
+    "getHVACZones": {
+      "method": "GET",
+      "path": "/hvac-zone/zones"
+    },
+    "setHVACZoneTarget": {
+      "method": "PUT",
+      "path": "/hvac-zone/target"
+    },
+    "getHVACEquipment": {
+      "method": "GET",
+      "path": "/hvac-zone/equipment"
+    },
+    "getHVACComfortScores": {
+      "method": "GET",
+      "path": "/hvac-zone/comfort"
+    },
+    "getSecurityDroneStatus": {
+      "method": "GET",
+      "path": "/security-drone/status"
+    },
+    "getDroneFleet": {
+      "method": "GET",
+      "path": "/security-drone/fleet"
+    },
+    "getPatrolRoutes": {
+      "method": "GET",
+      "path": "/security-drone/routes"
+    },
+    "startDronePatrol": {
+      "method": "PUT",
+      "path": "/security-drone/patrol"
+    },
+    "getDroneEventLog": {
+      "method": "GET",
+      "path": "/security-drone/events"
+    },
+    "recallDrone": {
+      "method": "PUT",
+      "path": "/security-drone/recall"
     }
   }
 }

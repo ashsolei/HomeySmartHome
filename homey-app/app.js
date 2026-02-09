@@ -103,6 +103,21 @@ const SmartPerimeterManagementSystem = require('./lib/SmartPerimeterManagementSy
 const HomeRoboticsOrchestrationSystem = require('./lib/HomeRoboticsOrchestrationSystem');
 const SmartHomeDigitalTwinSystem = require('./lib/SmartHomeDigitalTwinSystem');
 const SmartDisasterResilienceSystem = require('./lib/SmartDisasterResilienceSystem');
+// Wave 14 - EV Charging, Nutrition, Noise, Child Education, Seasonal, Guest Entertainment
+const SmartEVChargingManagementSystem = require('./lib/SmartEVChargingManagementSystem');
+const HomeNutritionWellnessSystem = require('./lib/HomeNutritionWellnessSystem');
+const SmartNoiseManagementSystem = require('./lib/SmartNoiseManagementSystem');
+const HomeChildEducationSystem = require('./lib/HomeChildEducationSystem');
+const SmartSeasonalAdaptationSystem = require('./lib/SmartSeasonalAdaptationSystem');
+const AdvancedGuestEntertainmentSystem = require('./lib/AdvancedGuestEntertainmentSystem');
+
+// Wave 15 - Smart Mirror, Energy Audit, Fireplace, Sleep Environment, HVAC Zone, Security Drone
+const SmartMirrorDashboardSystem = require('./lib/SmartMirrorDashboardSystem');
+const HomeEnergyAuditSystem = require('./lib/HomeEnergyAuditSystem');
+const SmartFireplaceManagementSystem = require('./lib/SmartFireplaceManagementSystem');
+const AdvancedSleepEnvironmentSystem = require('./lib/AdvancedSleepEnvironmentSystem');
+const SmartHVACZoneControlSystem = require('./lib/SmartHVACZoneControlSystem');
+const HomeSecurityDroneSystem = require('./lib/HomeSecurityDroneSystem');
 
 class SmartHomeProApp extends Homey.App {
   
@@ -224,22 +239,22 @@ class SmartHomeProApp extends Homey.App {
     this.homeLibraryManagementSystem = new HomeLibraryManagementSystem(this.homey);
     
     // Eighth wave of autonomous features - Home Safety, Security & Infrastructure
-    this.solarEnergyOptimizationSystem = new SolarEnergyOptimizationSystem();
-    this.homeEmergencyResponseSystem = new HomeEmergencyResponseSystem();
-    this.advancedHomeNetworkSecuritySystem = new AdvancedHomeNetworkSecuritySystem();
-    this.smartIrrigationWaterConservationSystem = new SmartIrrigationWaterConservationSystem();
-    this.advancedAirQualityVentilationControlSystem = new AdvancedAirQualityVentilationControlSystem();
-    this.homeAccessibilityElderlyCareSystem = new HomeAccessibilityElderlyCareSystem();
-    this.advancedPackageDeliveryManagementSystem = new AdvancedPackageDeliveryManagementSystem();
-    this.smartHomeInsuranceRiskAssessmentSystem = new SmartHomeInsuranceRiskAssessmentSystem();
+    this.solarEnergyOptimizationSystem = new SolarEnergyOptimizationSystem(this.homey);
+    this.homeEmergencyResponseSystem = new HomeEmergencyResponseSystem(this.homey);
+    this.advancedHomeNetworkSecuritySystem = new AdvancedHomeNetworkSecuritySystem(this.homey);
+    this.smartIrrigationWaterConservationSystem = new SmartIrrigationWaterConservationSystem(this.homey);
+    this.advancedAirQualityVentilationControlSystem = new AdvancedAirQualityVentilationControlSystem(this.homey);
+    this.homeAccessibilityElderlyCareSystem = new HomeAccessibilityElderlyCareSystem(this.homey);
+    this.advancedPackageDeliveryManagementSystem = new AdvancedPackageDeliveryManagementSystem(this.homey);
+    this.smartHomeInsuranceRiskAssessmentSystem = new SmartHomeInsuranceRiskAssessmentSystem(this.homey);
     
     // Ninth wave of autonomous features - AI & Advanced Integration
-    this.advancedAIPredictionEngine = new AdvancedAIPredictionEngine();
-    this.crossSystemAIOrchestrationHub = new CrossSystemAIOrchestrationHub();
+    this.advancedAIPredictionEngine = new AdvancedAIPredictionEngine(this.homey);
+    this.crossSystemAIOrchestrationHub = new CrossSystemAIOrchestrationHub(this.homey);
     
     // Tenth wave of autonomous features - Deep Learning & NLP
-    this.deepLearningVisionSystem = new DeepLearningVisionSystem();
-    this.naturalLanguageAutomationEngine = new NaturalLanguageAutomationEngine();
+    this.deepLearningVisionSystem = new DeepLearningVisionSystem(this.homey);
+    this.naturalLanguageAutomationEngine = new NaturalLanguageAutomationEngine(this.homey);
     
     // Initialize system optimizer
     this.systemOptimizer = new SystemOptimizer();
@@ -267,6 +282,22 @@ class SmartHomeProApp extends Homey.App {
     this.homeRoboticsOrchestrationSystem = new HomeRoboticsOrchestrationSystem(this.homey);
     this.smartHomeDigitalTwinSystem = new SmartHomeDigitalTwinSystem(this.homey);
     this.smartDisasterResilienceSystem = new SmartDisasterResilienceSystem(this.homey);
+
+    // Wave 14 - EV Charging, Nutrition, Noise, Child Education, Seasonal, Guest Entertainment
+    this.smartEVChargingManagementSystem = new SmartEVChargingManagementSystem(this.homey);
+    this.homeNutritionWellnessSystem = new HomeNutritionWellnessSystem(this.homey);
+    this.smartNoiseManagementSystem = new SmartNoiseManagementSystem(this.homey);
+    this.homeChildEducationSystem = new HomeChildEducationSystem(this.homey);
+    this.smartSeasonalAdaptationSystem = new SmartSeasonalAdaptationSystem(this.homey);
+    this.advancedGuestEntertainmentSystem = new AdvancedGuestEntertainmentSystem(this.homey);
+
+    // Wave 15 - Smart Mirror, Energy Audit, Fireplace, Sleep Environment, HVAC Zone, Security Drone
+    this.smartMirrorDashboardSystem = new SmartMirrorDashboardSystem(this.homey);
+    this.homeEnergyAuditSystem = new HomeEnergyAuditSystem(this.homey);
+    this.smartFireplaceManagementSystem = new SmartFireplaceManagementSystem(this.homey);
+    this.advancedSleepEnvironmentSystem = new AdvancedSleepEnvironmentSystem(this.homey);
+    this.smartHVACZoneControlSystem = new SmartHVACZoneControlSystem(this.homey);
+    this.homeSecurityDroneSystem = new HomeSecurityDroneSystem(this.homey);
 
     await Promise.all([
       this.deviceManager.initialize(),
@@ -362,7 +393,21 @@ class SmartHomeProApp extends Homey.App {
       this.smartPerimeterManagementSystem.initialize(),
       this.homeRoboticsOrchestrationSystem.initialize(),
       this.smartHomeDigitalTwinSystem.initialize(),
-      this.smartDisasterResilienceSystem.initialize()
+      this.smartDisasterResilienceSystem.initialize(),
+      // Wave 14
+      this.smartEVChargingManagementSystem.initialize(),
+      this.homeNutritionWellnessSystem.initialize(),
+      this.smartNoiseManagementSystem.initialize(),
+      this.homeChildEducationSystem.initialize(),
+      this.smartSeasonalAdaptationSystem.initialize(),
+      this.advancedGuestEntertainmentSystem.initialize(),
+      // Wave 15
+      this.smartMirrorDashboardSystem.initialize(),
+      this.homeEnergyAuditSystem.initialize(),
+      this.smartFireplaceManagementSystem.initialize(),
+      this.advancedSleepEnvironmentSystem.initialize(),
+      this.smartHVACZoneControlSystem.initialize(),
+      this.homeSecurityDroneSystem.initialize()
     ]);
     
     // Wave 11 post-initialization setup
@@ -382,6 +427,12 @@ class SmartHomeProApp extends Homey.App {
 
     // Setup Wave 13 event listeners
     this.setupWave13EventListeners();
+
+    // Setup Wave 14 event listeners
+    this.setupWave14EventListeners();
+
+    // Setup Wave 15 event listeners
+    this.setupWave15EventListeners();
   }
   
   async initializeWave11Infrastructure() {
@@ -490,7 +541,21 @@ class SmartHomeProApp extends Homey.App {
       'SmartPerimeter': this.smartPerimeterManagementSystem,
       'HomeRobotics': this.homeRoboticsOrchestrationSystem,
       'SmartDigitalTwin': this.smartHomeDigitalTwinSystem,
-      'SmartDisasterResilience': this.smartDisasterResilienceSystem
+      'SmartDisasterResilience': this.smartDisasterResilienceSystem,
+      // Wave 14
+      'SmartEVCharging': this.smartEVChargingManagementSystem,
+      'HomeNutritionWellness': this.homeNutritionWellnessSystem,
+      'SmartNoiseManagement': this.smartNoiseManagementSystem,
+      'HomeChildEducation': this.homeChildEducationSystem,
+      'SmartSeasonalAdaptation': this.smartSeasonalAdaptationSystem,
+      'AdvancedGuestEntertainment': this.advancedGuestEntertainmentSystem,
+      // Wave 15
+      'SmartMirrorDashboard': this.smartMirrorDashboardSystem,
+      'HomeEnergyAudit': this.homeEnergyAuditSystem,
+      'SmartFireplaceManagement': this.smartFireplaceManagementSystem,
+      'AdvancedSleepEnvironment': this.advancedSleepEnvironmentSystem,
+      'SmartHVACZoneControl': this.smartHVACZoneControlSystem,
+      'HomeSecurityDrone': this.homeSecurityDroneSystem
     };
     
     for (const [name, ref] of Object.entries(systems)) {
@@ -768,6 +833,214 @@ class SmartHomeProApp extends Homey.App {
     } catch (err) { this.error('Wave 13 disaster event setup error:', err); }
 
     this.log('Wave 13 event listeners configured successfully');
+  }
+
+  setupWave14EventListeners() {
+    // EV Charging events
+    try {
+      this.homey.on('ev-charge-complete', (data) => {
+        this.log(`EV charge complete: ${data.vehicleName} at ${data.soc}%`);
+        this.homey.notifications.createNotification({ excerpt: `⚡ EV charge complete: ${data.vehicleName} at ${data.soc}%` }).catch(() => {});
+      });
+      this.homey.on('ev-charge-fault', (data) => {
+        this.log(`EV charging fault: ${data.stationId} - ${data.fault}`);
+        this.homey.notifications.createNotification({ excerpt: `⚠️ EV charging fault: ${data.fault}` }).catch(() => {});
+      });
+      this.homey.on('ev-solar-charging', (data) => {
+        this.log(`EV solar charging: ${data.solarPower}W surplus → ${data.vehicleName}`);
+      });
+    } catch (err) { this.error('Wave 14 EV charging event setup error:', err); }
+
+    // Nutrition & Wellness events
+    try {
+      this.homey.on('hydration-reminder', (data) => {
+        this.log(`Hydration reminder for ${data.memberName}`);
+      });
+      this.homey.on('supplement-reminder', (data) => {
+        this.log(`Supplement reminder: ${data.supplement} for ${data.memberName}`);
+      });
+      this.homey.on('food-expiry-alert', (data) => {
+        this.log(`Nutrition system: ${data.item} expiring in ${data.daysLeft} days`);
+      });
+      this.homey.on('wellness-score-low', (data) => {
+        this.log(`Low wellness score for ${data.memberName}: ${data.score}/100`);
+        this.homey.notifications.createNotification({ excerpt: `💊 Low wellness score for ${data.memberName}: ${data.score}/100` }).catch(() => {});
+      });
+    } catch (err) { this.error('Wave 14 nutrition event setup error:', err); }
+
+    // Noise Management events
+    try {
+      this.homey.on('noise-threshold-breach', (data) => {
+        this.log(`Noise threshold breach in ${data.room}: ${data.level}dB (limit: ${data.threshold}dB)`);
+      });
+      this.homey.on('quiet-hours-violation', (data) => {
+        this.log(`Quiet hours violation in ${data.room}: ${data.level}dB`);
+        this.homey.notifications.createNotification({ excerpt: `🔇 Quiet hours violation: ${data.room} at ${data.level}dB` }).catch(() => {});
+      });
+      this.homey.on('baby-cry-detected', (data) => {
+        this.log(`Baby cry detected in ${data.room}`);
+        this.homey.notifications.createNotification({ excerpt: `👶 Baby crying detected in ${data.room}` }).catch(() => {});
+      });
+    } catch (err) { this.error('Wave 14 noise event setup error:', err); }
+
+    // Child Education events
+    try {
+      this.homey.on('screen-time-limit-reached', (data) => {
+        this.log(`Screen time limit reached for ${data.childName}`);
+        this.homey.notifications.createNotification({ excerpt: `📱 Screen time limit reached: ${data.childName}` }).catch(() => {});
+      });
+      this.homey.on('homework-due-soon', (data) => {
+        this.log(`Homework due soon: ${data.subject} for ${data.childName}`);
+      });
+      this.homey.on('achievement-badge-earned', (data) => {
+        this.log(`${data.childName} earned badge: ${data.badge}`);
+        this.homey.notifications.createNotification({ excerpt: `🏆 ${data.childName} earned: ${data.badge}` }).catch(() => {});
+      });
+      this.homey.on('bedtime-approaching', (data) => {
+        this.log(`Bedtime approaching for ${data.childName} in ${data.minutesLeft}min`);
+      });
+    } catch (err) { this.error('Wave 14 child education event setup error:', err); }
+
+    // Seasonal Adaptation events
+    try {
+      this.homey.on('season-transition', (data) => {
+        this.log(`Season transition: ${data.fromSeason} → ${data.toSeason}`);
+        this.homey.notifications.createNotification({ excerpt: `🍂 Seasonal shift: ${data.toSeason}` }).catch(() => {});
+      });
+      this.homey.on('seasonal-maintenance-due', (data) => {
+        this.log(`Seasonal maintenance due: ${data.task}`);
+      });
+      this.homey.on('frost-warning', (data) => {
+        this.log(`Frost warning: ${data.temperature}°C expected`);
+        this.homey.notifications.createNotification({ excerpt: `🥶 Frost warning: ${data.temperature}°C` }).catch(() => {});
+      });
+      this.homey.on('holiday-scene-activated', (data) => {
+        this.log(`Holiday scene activated: ${data.holiday}`);
+      });
+    } catch (err) { this.error('Wave 14 seasonal event setup error:', err); }
+
+    // Guest Entertainment events
+    try {
+      this.homey.on('guest-arrived', (data) => {
+        this.log(`Guest arrived: ${data.guestName}`);
+        this.homey.notifications.createNotification({ excerpt: `🏠 Guest arrived: ${data.guestName}` }).catch(() => {});
+      });
+      this.homey.on('guest-wifi-provisioned', (data) => {
+        this.log(`Guest Wi-Fi provisioned for ${data.guestName}, expires: ${data.expiry}`);
+      });
+      this.homey.on('sauna-ready', (data) => {
+        this.log(`Sauna ready at ${data.temperature}°C`);
+        this.homey.notifications.createNotification({ excerpt: `♨️ Sauna ready: ${data.temperature}°C` }).catch(() => {});
+      });
+      this.homey.on('guest-departed', (data) => {
+        this.log(`Guest departed: ${data.guestName}, rating: ${data.rating}/5`);
+      });
+    } catch (err) { this.error('Wave 14 guest entertainment event setup error:', err); }
+
+    this.log('Wave 14 event listeners configured successfully');
+  }
+
+  setupWave15EventListeners() {
+    // Smart Mirror events
+    try {
+      this.homey.on('mirror-widget-updated', (data) => {
+        this.log(`Smart mirror widget updated: ${data.widget} on ${data.mirrorId}`);
+      });
+      this.homey.on('mirror-user-detected', (data) => {
+        this.log(`User detected at mirror: ${data.userName} at ${data.mirrorId}`);
+      });
+      this.homey.on('mirror-gesture', (data) => {
+        this.log(`Mirror gesture: ${data.gesture} on ${data.mirrorId}`);
+      });
+    } catch (err) { this.error('Wave 15 smart mirror event setup error:', err); }
+
+    // Energy Audit events
+    try {
+      this.homey.on('energy-audit-completed', (data) => {
+        this.log(`Energy audit completed: rating ${data.rating}, score ${data.score}`);
+        this.homey.notifications.createNotification({ excerpt: `⚡ Energy audit complete: Rating ${data.rating}` }).catch(() => {});
+      });
+      this.homey.on('energy-waste-detected', (data) => {
+        this.log(`Energy waste detected: ${data.description}, potential savings ${data.savingsSEK} SEK`);
+      });
+      this.homey.on('appliance-replacement-recommended', (data) => {
+        this.log(`Appliance replacement recommended: ${data.appliance}`);
+      });
+    } catch (err) { this.error('Wave 15 energy audit event setup error:', err); }
+
+    // Fireplace events
+    try {
+      this.homey.on('fireplace-started', (data) => {
+        this.log(`Fireplace started: ${data.fireplaceId}, fuel: ${data.fuelType}`);
+      });
+      this.homey.on('fireplace-safety-alert', (data) => {
+        this.log(`Fireplace safety alert: ${data.alert} at ${data.fireplaceId}`);
+        this.homey.notifications.createNotification({ excerpt: `🔥 Fireplace safety: ${data.alert}` }).catch(() => {});
+      });
+      this.homey.on('chimney-sweep-due', (data) => {
+        this.log(`Chimney sweep due: ${data.fireplaceId}`);
+        this.homey.notifications.createNotification({ excerpt: '🧹 Chimney sweep due - schedule sotning' }).catch(() => {});
+      });
+      this.homey.on('fireplace-co-warning', (data) => {
+        this.log(`CO warning at fireplace ${data.fireplaceId}: ${data.level} ppm`);
+        this.homey.notifications.createNotification({ excerpt: `⚠️ CO warning: ${data.level} ppm at ${data.fireplaceId}` }).catch(() => {});
+      });
+    } catch (err) { this.error('Wave 15 fireplace event setup error:', err); }
+
+    // Advanced Sleep Environment events
+    try {
+      this.homey.on('sleep-session-started', (data) => {
+        this.log(`Sleep session started: ${data.zone}, user: ${data.user}`);
+      });
+      this.homey.on('sleep-session-ended', (data) => {
+        this.log(`Sleep session ended: score ${data.sleepScore}, duration ${data.durationMinutes} min`);
+      });
+      this.homey.on('smart-alarm-triggered', (data) => {
+        this.log(`Smart alarm triggered for ${data.user} in ${data.zone}`);
+      });
+      this.homey.on('sleep-environment-adjusted', (data) => {
+        this.log(`Sleep environment adjusted: ${data.adjustment} in ${data.zone}`);
+      });
+      this.homey.on('snoring-detected', (data) => {
+        this.log(`Snoring detected in ${data.zone}, intervention: ${data.intervention}`);
+      });
+    } catch (err) { this.error('Wave 15 sleep environment event setup error:', err); }
+
+    // HVAC Zone Control events
+    try {
+      this.homey.on('hvac-zone-adjusted', (data) => {
+        this.log(`HVAC zone adjusted: ${data.zone} to ${data.targetTemp}°C, mode: ${data.mode}`);
+      });
+      this.homey.on('hvac-comfort-alert', (data) => {
+        this.log(`HVAC comfort alert: ${data.zone} comfort score ${data.score}`);
+      });
+      this.homey.on('hvac-filter-replacement', (data) => {
+        this.log(`HVAC filter replacement needed: ${data.equipment}`);
+        this.homey.notifications.createNotification({ excerpt: `🔧 HVAC filter replacement: ${data.equipment}` }).catch(() => {});
+      });
+      this.homey.on('hvac-seasonal-mode-changed', (data) => {
+        this.log(`HVAC seasonal mode changed to: ${data.mode}`);
+      });
+    } catch (err) { this.error('Wave 15 HVAC zone event setup error:', err); }
+
+    // Security Drone events
+    try {
+      this.homey.on('drone-patrol-started', (data) => {
+        this.log(`Drone patrol started: ${data.droneId} on route ${data.routeId}`);
+      });
+      this.homey.on('drone-anomaly-detected', (data) => {
+        this.log(`Drone anomaly detected: ${data.type} severity ${data.severity}`);
+        this.homey.notifications.createNotification({ excerpt: `🚁 Drone alert: ${data.type} detected` }).catch(() => {});
+      });
+      this.homey.on('drone-battery-low', (data) => {
+        this.log(`Drone battery low: ${data.droneId} at ${data.batteryLevel}%`);
+      });
+      this.homey.on('drone-returned-to-base', (data) => {
+        this.log(`Drone returned to base: ${data.droneId}`);
+      });
+    } catch (err) { this.error('Wave 15 security drone event setup error:', err); }
+
+    this.log('Wave 15 event listeners configured successfully');
   }
 
   setupWave12EventListeners() {
@@ -1519,6 +1792,42 @@ class SmartHomeProApp extends Homey.App {
       this.log('Wave 13 systems shut down gracefully');
     } catch (error) {
       this.error('Error during Wave 13 shutdown:', error);
+    }
+
+    // Wave 14 graceful shutdown
+    try {
+      const wave14Systems = [
+        this.smartEVChargingManagementSystem,
+        this.homeNutritionWellnessSystem,
+        this.smartNoiseManagementSystem,
+        this.homeChildEducationSystem,
+        this.smartSeasonalAdaptationSystem,
+        this.advancedGuestEntertainmentSystem
+      ];
+      for (const system of wave14Systems) {
+        if (system && system.destroy) system.destroy();
+      }
+      this.log('Wave 14 systems shut down gracefully');
+    } catch (error) {
+      this.error('Error during Wave 14 shutdown:', error);
+    }
+
+    // Wave 15 graceful shutdown
+    try {
+      const wave15Systems = [
+        this.smartMirrorDashboardSystem,
+        this.homeEnergyAuditSystem,
+        this.smartFireplaceManagementSystem,
+        this.advancedSleepEnvironmentSystem,
+        this.smartHVACZoneControlSystem,
+        this.homeSecurityDroneSystem
+      ];
+      for (const system of wave15Systems) {
+        if (system && system.destroy) system.destroy();
+      }
+      this.log('Wave 15 systems shut down gracefully');
+    } catch (error) {
+      this.error('Error during Wave 15 shutdown:', error);
     }
     
     this.log('Smart Home Pro has been uninitialized');

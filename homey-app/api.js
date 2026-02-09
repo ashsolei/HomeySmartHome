@@ -3613,5 +3613,461 @@ module.exports = {
       return homey.app.smartDisasterResilienceSystem.runDrill(body);
     }
     return {};
+  },
+
+  // ===== Wave 14: Smart EV Charging Management System =====
+
+  async getEVChargingStations({ homey }) {
+    if (homey.app.smartEVChargingManagementSystem.getAllStations) {
+      return homey.app.smartEVChargingManagementSystem.getAllStations();
+    }
+    return {};
+  },
+
+  async getEVVehicles({ homey }) {
+    if (homey.app.smartEVChargingManagementSystem.getAllVehicles) {
+      return homey.app.smartEVChargingManagementSystem.getAllVehicles();
+    }
+    return {};
+  },
+
+  async getEVChargingSchedules({ homey }) {
+    if (homey.app.smartEVChargingManagementSystem.getSchedules) {
+      return homey.app.smartEVChargingManagementSystem.getSchedules();
+    }
+    return {};
+  },
+
+  async getEVEnergyStats({ homey }) {
+    if (homey.app.smartEVChargingManagementSystem.getOverallEnergyStats) {
+      return homey.app.smartEVChargingManagementSystem.getOverallEnergyStats();
+    }
+    return {};
+  },
+
+  async getEVChargingStatistics({ homey }) {
+    if (homey.app.smartEVChargingManagementSystem.getStatistics) {
+      return homey.app.smartEVChargingManagementSystem.getStatistics();
+    }
+    return {};
+  },
+
+  // ===== Wave 14: Home Nutrition & Wellness System =====
+
+  async getNutritionProfiles({ homey }) {
+    if (homey.app.homeNutritionWellnessSystem.getProfiles) {
+      return homey.app.homeNutritionWellnessSystem.getProfiles();
+    }
+    return {};
+  },
+
+  async getMealPlan({ homey }) {
+    if (homey.app.homeNutritionWellnessSystem.getMealPlan) {
+      return homey.app.homeNutritionWellnessSystem.getMealPlan();
+    }
+    return {};
+  },
+
+  async getWellnessScores({ homey }) {
+    if (homey.app.homeNutritionWellnessSystem.getWellnessScores) {
+      return homey.app.homeNutritionWellnessSystem.getWellnessScores();
+    }
+    return {};
+  },
+
+  async getGroceryList({ homey }) {
+    if (homey.app.homeNutritionWellnessSystem.getShoppingList) {
+      return homey.app.homeNutritionWellnessSystem.getShoppingList();
+    }
+    return {};
+  },
+
+  async getNutritionStatistics({ homey }) {
+    if (homey.app.homeNutritionWellnessSystem.getStatistics) {
+      return homey.app.homeNutritionWellnessSystem.getStatistics();
+    }
+    return {};
+  },
+
+  // ===== Wave 14: Smart Noise Management System =====
+
+  async getNoiseRoomProfiles({ homey }) {
+    if (homey.app.smartNoiseManagementSystem.getRoomProfiles) {
+      return homey.app.smartNoiseManagementSystem.getRoomProfiles();
+    }
+    return {};
+  },
+
+  async getNoiseLevels({ homey }) {
+    if (homey.app.smartNoiseManagementSystem.getCurrentLevels) {
+      return homey.app.smartNoiseManagementSystem.getCurrentLevels();
+    }
+    return {};
+  },
+
+  async getQuietZones({ homey }) {
+    if (homey.app.smartNoiseManagementSystem.getQuietZones) {
+      return homey.app.smartNoiseManagementSystem.getQuietZones();
+    }
+    return {};
+  },
+
+  async getNoiseReport({ homey }) {
+    if (homey.app.smartNoiseManagementSystem.getDailyReport) {
+      return homey.app.smartNoiseManagementSystem.getDailyReport();
+    }
+    return {};
+  },
+
+  async getNoiseStatistics({ homey }) {
+    if (homey.app.smartNoiseManagementSystem.getStatistics) {
+      return homey.app.smartNoiseManagementSystem.getStatistics();
+    }
+    return {};
+  },
+
+  // ===== Wave 14: Home Child Education System =====
+
+  async getChildProfiles({ homey }) {
+    if (homey.app.homeChildEducationSystem.getChildren) {
+      return homey.app.homeChildEducationSystem.getChildren();
+    }
+    return {};
+  },
+
+  async getScreenTimeStatus({ homey }) {
+    if (homey.app.homeChildEducationSystem.getScreenTimeStatus) {
+      return homey.app.homeChildEducationSystem.getScreenTimeStatus();
+    }
+    return {};
+  },
+
+  async getHomeworkAssignments({ homey }) {
+    if (homey.app.homeChildEducationSystem.getAssignments) {
+      return homey.app.homeChildEducationSystem.getAssignments();
+    }
+    return {};
+  },
+
+  async getChildProgressReport({ homey }) {
+    if (homey.app.homeChildEducationSystem.generateWeeklyReport) {
+      return homey.app.homeChildEducationSystem.generateWeeklyReport();
+    }
+    return {};
+  },
+
+  async getChildEducationStatistics({ homey }) {
+    if (homey.app.homeChildEducationSystem.getStatistics) {
+      return homey.app.homeChildEducationSystem.getStatistics();
+    }
+    return {};
+  },
+
+  // ===== Wave 14: Smart Seasonal Adaptation System =====
+
+  async getSeasonalStatus({ homey }) {
+    if (homey.app.smartSeasonalAdaptationSystem.getCurrentSeason) {
+      return homey.app.smartSeasonalAdaptationSystem.getCurrentSeason();
+    }
+    return {};
+  },
+
+  async getSeasonalProfiles({ homey }) {
+    if (homey.app.smartSeasonalAdaptationSystem.getProfiles) {
+      return homey.app.smartSeasonalAdaptationSystem.getProfiles();
+    }
+    return {};
+  },
+
+  async getSeasonalMaintenance({ homey }) {
+    if (homey.app.smartSeasonalAdaptationSystem.getMaintenanceTasks) {
+      return homey.app.smartSeasonalAdaptationSystem.getMaintenanceTasks();
+    }
+    return {};
+  },
+
+  async getHolidayCalendar({ homey }) {
+    if (homey.app.smartSeasonalAdaptationSystem.getHolidays) {
+      return homey.app.smartSeasonalAdaptationSystem.getHolidays();
+    }
+    return {};
+  },
+
+  async getSeasonalStatistics({ homey }) {
+    if (homey.app.smartSeasonalAdaptationSystem.getStatistics) {
+      return homey.app.smartSeasonalAdaptationSystem.getStatistics();
+    }
+    return {};
+  },
+
+  // ===== Wave 14: Advanced Guest Entertainment System =====
+
+  async getGuestProfiles({ homey }) {
+    if (homey.app.advancedGuestEntertainmentSystem.getAllGuests) {
+      return homey.app.advancedGuestEntertainmentSystem.getAllGuests();
+    }
+    return {};
+  },
+
+  async getActiveGuestSessions({ homey }) {
+    if (homey.app.advancedGuestEntertainmentSystem.getActiveSessions) {
+      return homey.app.advancedGuestEntertainmentSystem.getActiveSessions();
+    }
+    return {};
+  },
+
+  async triggerGuestWelcome({ homey, body }) {
+    if (homey.app.advancedGuestEntertainmentSystem.triggerWelcome) {
+      return homey.app.advancedGuestEntertainmentSystem.triggerWelcome(body);
+    }
+    return {};
+  },
+
+  async getEntertainmentLibrary({ homey }) {
+    if (homey.app.advancedGuestEntertainmentSystem.getEntertainmentLibrary) {
+      return homey.app.advancedGuestEntertainmentSystem.getEntertainmentLibrary();
+    }
+    return {};
+  },
+
+  async getGuestEntertainmentStatistics({ homey }) {
+    if (homey.app.advancedGuestEntertainmentSystem.getStatistics) {
+      return homey.app.advancedGuestEntertainmentSystem.getStatistics();
+    }
+    return {};
+  },
+
+  // ============================================
+  // WAVE 15 - Smart Mirror, Energy Audit, Fireplace, Sleep Environment, HVAC Zone, Security Drone
+  // ============================================
+
+  // --- Smart Mirror Dashboard ---
+  async getSmartMirrorStatus({ homey }) {
+    if (homey.app.smartMirrorDashboardSystem && homey.app.smartMirrorDashboardSystem.getStatistics) {
+      return homey.app.smartMirrorDashboardSystem.getStatistics();
+    }
+    return {};
+  },
+
+  async getMirrorDevices({ homey }) {
+    if (homey.app.smartMirrorDashboardSystem && homey.app.smartMirrorDashboardSystem.getMirrorDevices) {
+      return homey.app.smartMirrorDashboardSystem.getMirrorDevices();
+    }
+    return {};
+  },
+
+  async getMirrorWidgets({ homey }) {
+    if (homey.app.smartMirrorDashboardSystem && homey.app.smartMirrorDashboardSystem.getWidgets) {
+      return homey.app.smartMirrorDashboardSystem.getWidgets();
+    }
+    return {};
+  },
+
+  async setMirrorBrightness({ homey, body }) {
+    if (homey.app.smartMirrorDashboardSystem && homey.app.smartMirrorDashboardSystem.setBrightness) {
+      return homey.app.smartMirrorDashboardSystem.setBrightness(body.mirrorId, body.brightness);
+    }
+    return {};
+  },
+
+  async getMirrorUserProfiles({ homey }) {
+    if (homey.app.smartMirrorDashboardSystem && homey.app.smartMirrorDashboardSystem.getUserProfiles) {
+      return homey.app.smartMirrorDashboardSystem.getUserProfiles();
+    }
+    return {};
+  },
+
+  // --- Home Energy Audit ---
+  async getEnergyAuditStatus({ homey }) {
+    if (homey.app.homeEnergyAuditSystem && homey.app.homeEnergyAuditSystem.getStatistics) {
+      return homey.app.homeEnergyAuditSystem.getStatistics();
+    }
+    return {};
+  },
+
+  async getEnergyAuditReport({ homey }) {
+    if (homey.app.homeEnergyAuditSystem && homey.app.homeEnergyAuditSystem.generateAuditReport) {
+      return homey.app.homeEnergyAuditSystem.generateAuditReport();
+    }
+    return {};
+  },
+
+  async getEnergyRecommendations({ homey }) {
+    if (homey.app.homeEnergyAuditSystem && homey.app.homeEnergyAuditSystem.getRecommendations) {
+      return homey.app.homeEnergyAuditSystem.getRecommendations();
+    }
+    return {};
+  },
+
+  async getApplianceAnalysis({ homey }) {
+    if (homey.app.homeEnergyAuditSystem && homey.app.homeEnergyAuditSystem.getApplianceAnalysis) {
+      return homey.app.homeEnergyAuditSystem.getApplianceAnalysis();
+    }
+    return {};
+  },
+
+  async getEPCRating({ homey }) {
+    if (homey.app.homeEnergyAuditSystem && homey.app.homeEnergyAuditSystem.getEPCRating) {
+      return homey.app.homeEnergyAuditSystem.getEPCRating();
+    }
+    return {};
+  },
+
+  // --- Smart Fireplace Management ---
+  async getFireplaceStatus({ homey }) {
+    if (homey.app.smartFireplaceManagementSystem && homey.app.smartFireplaceManagementSystem.getStatistics) {
+      return homey.app.smartFireplaceManagementSystem.getStatistics();
+    }
+    return {};
+  },
+
+  async getFireplaceDevices({ homey }) {
+    if (homey.app.smartFireplaceManagementSystem && homey.app.smartFireplaceManagementSystem.getFireplaces) {
+      return homey.app.smartFireplaceManagementSystem.getFireplaces();
+    }
+    return {};
+  },
+
+  async startFireplace({ homey, body }) {
+    if (homey.app.smartFireplaceManagementSystem && homey.app.smartFireplaceManagementSystem.startFireplace) {
+      return homey.app.smartFireplaceManagementSystem.startFireplace(body.fireplaceId);
+    }
+    return {};
+  },
+
+  async stopFireplace({ homey, body }) {
+    if (homey.app.smartFireplaceManagementSystem && homey.app.smartFireplaceManagementSystem.stopFireplace) {
+      return homey.app.smartFireplaceManagementSystem.stopFireplace(body.fireplaceId);
+    }
+    return {};
+  },
+
+  async getFireplaceFuelStatus({ homey }) {
+    if (homey.app.smartFireplaceManagementSystem && homey.app.smartFireplaceManagementSystem.getFuelStatus) {
+      return homey.app.smartFireplaceManagementSystem.getFuelStatus();
+    }
+    return {};
+  },
+
+  async getChimneyMaintenanceStatus({ homey }) {
+    if (homey.app.smartFireplaceManagementSystem && homey.app.smartFireplaceManagementSystem.getChimneyStatus) {
+      return homey.app.smartFireplaceManagementSystem.getChimneyStatus();
+    }
+    return {};
+  },
+
+  // --- Advanced Sleep Environment ---
+  async getSleepEnvironmentStatus({ homey }) {
+    if (homey.app.advancedSleepEnvironmentSystem && homey.app.advancedSleepEnvironmentSystem.getStatistics) {
+      return homey.app.advancedSleepEnvironmentSystem.getStatistics();
+    }
+    return {};
+  },
+
+  async getSleepZones({ homey }) {
+    if (homey.app.advancedSleepEnvironmentSystem && homey.app.advancedSleepEnvironmentSystem.getSleepZones) {
+      return homey.app.advancedSleepEnvironmentSystem.getSleepZones();
+    }
+    return {};
+  },
+
+  async getSleepProfiles({ homey }) {
+    if (homey.app.advancedSleepEnvironmentSystem && homey.app.advancedSleepEnvironmentSystem.getSleepProfiles) {
+      return homey.app.advancedSleepEnvironmentSystem.getSleepProfiles();
+    }
+    return {};
+  },
+
+  async getSleepHistory({ homey }) {
+    if (homey.app.advancedSleepEnvironmentSystem && homey.app.advancedSleepEnvironmentSystem.getSleepHistory) {
+      return homey.app.advancedSleepEnvironmentSystem.getSleepHistory();
+    }
+    return {};
+  },
+
+  async setSleepSoundscape({ homey, body }) {
+    if (homey.app.advancedSleepEnvironmentSystem && homey.app.advancedSleepEnvironmentSystem.setSoundscape) {
+      return homey.app.advancedSleepEnvironmentSystem.setSoundscape(body.zone, body.soundType);
+    }
+    return {};
+  },
+
+  // --- Smart HVAC Zone Control ---
+  async getHVACZoneStatus({ homey }) {
+    if (homey.app.smartHVACZoneControlSystem && homey.app.smartHVACZoneControlSystem.getStatistics) {
+      return homey.app.smartHVACZoneControlSystem.getStatistics();
+    }
+    return {};
+  },
+
+  async getHVACZones({ homey }) {
+    if (homey.app.smartHVACZoneControlSystem && homey.app.smartHVACZoneControlSystem.getZones) {
+      return homey.app.smartHVACZoneControlSystem.getZones();
+    }
+    return {};
+  },
+
+  async setHVACZoneTarget({ homey, body }) {
+    if (homey.app.smartHVACZoneControlSystem && homey.app.smartHVACZoneControlSystem.setZoneTarget) {
+      return homey.app.smartHVACZoneControlSystem.setZoneTarget(body.zone, body.targetTemp);
+    }
+    return {};
+  },
+
+  async getHVACEquipment({ homey }) {
+    if (homey.app.smartHVACZoneControlSystem && homey.app.smartHVACZoneControlSystem.getEquipment) {
+      return homey.app.smartHVACZoneControlSystem.getEquipment();
+    }
+    return {};
+  },
+
+  async getHVACComfortScores({ homey }) {
+    if (homey.app.smartHVACZoneControlSystem && homey.app.smartHVACZoneControlSystem.getComfortScores) {
+      return homey.app.smartHVACZoneControlSystem.getComfortScores();
+    }
+    return {};
+  },
+
+  // --- Home Security Drone ---
+  async getSecurityDroneStatus({ homey }) {
+    if (homey.app.homeSecurityDroneSystem && homey.app.homeSecurityDroneSystem.getStatistics) {
+      return homey.app.homeSecurityDroneSystem.getStatistics();
+    }
+    return {};
+  },
+
+  async getDroneFleet({ homey }) {
+    if (homey.app.homeSecurityDroneSystem && homey.app.homeSecurityDroneSystem.getDroneFleet) {
+      return homey.app.homeSecurityDroneSystem.getDroneFleet();
+    }
+    return {};
+  },
+
+  async getPatrolRoutes({ homey }) {
+    if (homey.app.homeSecurityDroneSystem && homey.app.homeSecurityDroneSystem.getPatrolRoutes) {
+      return homey.app.homeSecurityDroneSystem.getPatrolRoutes();
+    }
+    return {};
+  },
+
+  async startDronePatrol({ homey, body }) {
+    if (homey.app.homeSecurityDroneSystem && homey.app.homeSecurityDroneSystem.startPatrol) {
+      return homey.app.homeSecurityDroneSystem.startPatrol(body.droneId, body.routeId);
+    }
+    return {};
+  },
+
+  async getDroneEventLog({ homey }) {
+    if (homey.app.homeSecurityDroneSystem && homey.app.homeSecurityDroneSystem.getEventLog) {
+      return homey.app.homeSecurityDroneSystem.getEventLog();
+    }
+    return {};
+  },
+
+  async recallDrone({ homey, body }) {
+    if (homey.app.homeSecurityDroneSystem && homey.app.homeSecurityDroneSystem.recallDrone) {
+      return homey.app.homeSecurityDroneSystem.recallDrone(body.droneId);
+    }
+    return {};
   }
 };

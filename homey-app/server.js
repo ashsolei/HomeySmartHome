@@ -116,6 +116,21 @@ const SmartPerimeterManagementSystem = require('./lib/SmartPerimeterManagementSy
 const HomeRoboticsOrchestrationSystem = require('./lib/HomeRoboticsOrchestrationSystem');
 const SmartHomeDigitalTwinSystem = require('./lib/SmartHomeDigitalTwinSystem');
 const SmartDisasterResilienceSystem = require('./lib/SmartDisasterResilienceSystem');
+// Wave 14
+const SmartEVChargingManagementSystem = require('./lib/SmartEVChargingManagementSystem');
+const HomeNutritionWellnessSystem = require('./lib/HomeNutritionWellnessSystem');
+const SmartNoiseManagementSystem = require('./lib/SmartNoiseManagementSystem');
+const HomeChildEducationSystem = require('./lib/HomeChildEducationSystem');
+const SmartSeasonalAdaptationSystem = require('./lib/SmartSeasonalAdaptationSystem');
+const AdvancedGuestEntertainmentSystem = require('./lib/AdvancedGuestEntertainmentSystem');
+
+// Wave 15
+const SmartMirrorDashboardSystem = require('./lib/SmartMirrorDashboardSystem');
+const HomeEnergyAuditSystem = require('./lib/HomeEnergyAuditSystem');
+const SmartFireplaceManagementSystem = require('./lib/SmartFireplaceManagementSystem');
+const AdvancedSleepEnvironmentSystem = require('./lib/AdvancedSleepEnvironmentSystem');
+const SmartHVACZoneControlSystem = require('./lib/SmartHVACZoneControlSystem');
+const HomeSecurityDroneSystem = require('./lib/HomeSecurityDroneSystem');
 
 // ============================================
 // INLINE MANAGER STUBS (these are defined inline in app.js)
@@ -313,21 +328,21 @@ async function boot() {
   app.smartPetDoorActivitySystem = new SmartPetDoorActivitySystem(homey);
   app.homeLibraryManagementSystem = new HomeLibraryManagementSystem(homey);
 
-  // ── Waves 8-10: no constructor args ──
-  app.solarEnergyOptimizationSystem = new SolarEnergyOptimizationSystem();
-  app.homeEmergencyResponseSystem = new HomeEmergencyResponseSystem();
-  app.advancedHomeNetworkSecuritySystem = new AdvancedHomeNetworkSecuritySystem();
-  app.smartIrrigationWaterConservationSystem = new SmartIrrigationWaterConservationSystem();
-  app.advancedAirQualityVentilationControlSystem = new AdvancedAirQualityVentilationControlSystem();
-  app.homeAccessibilityElderlyCareSystem = new HomeAccessibilityElderlyCareSystem();
-  app.advancedPackageDeliveryManagementSystem = new AdvancedPackageDeliveryManagementSystem();
-  app.smartHomeInsuranceRiskAssessmentSystem = new SmartHomeInsuranceRiskAssessmentSystem();
+  // ── Waves 8-10: constructor(homey) (fixed in Wave 14) ──
+  app.solarEnergyOptimizationSystem = new SolarEnergyOptimizationSystem(homey);
+  app.homeEmergencyResponseSystem = new HomeEmergencyResponseSystem(homey);
+  app.advancedHomeNetworkSecuritySystem = new AdvancedHomeNetworkSecuritySystem(homey);
+  app.smartIrrigationWaterConservationSystem = new SmartIrrigationWaterConservationSystem(homey);
+  app.advancedAirQualityVentilationControlSystem = new AdvancedAirQualityVentilationControlSystem(homey);
+  app.homeAccessibilityElderlyCareSystem = new HomeAccessibilityElderlyCareSystem(homey);
+  app.advancedPackageDeliveryManagementSystem = new AdvancedPackageDeliveryManagementSystem(homey);
+  app.smartHomeInsuranceRiskAssessmentSystem = new SmartHomeInsuranceRiskAssessmentSystem(homey);
   // Wave 9
-  app.advancedAIPredictionEngine = new AdvancedAIPredictionEngine();
-  app.crossSystemAIOrchestrationHub = new CrossSystemAIOrchestrationHub();
+  app.advancedAIPredictionEngine = new AdvancedAIPredictionEngine(homey);
+  app.crossSystemAIOrchestrationHub = new CrossSystemAIOrchestrationHub(homey);
   // Wave 10
-  app.deepLearningVisionSystem = new DeepLearningVisionSystem();
-  app.naturalLanguageAutomationEngine = new NaturalLanguageAutomationEngine();
+  app.deepLearningVisionSystem = new DeepLearningVisionSystem(homey);
+  app.naturalLanguageAutomationEngine = new NaturalLanguageAutomationEngine(homey);
 
   // ── System optimizer ──
   app.systemOptimizer = new SystemOptimizer();
@@ -355,6 +370,22 @@ async function boot() {
   app.homeRoboticsOrchestrationSystem = new HomeRoboticsOrchestrationSystem(homey);
   app.smartHomeDigitalTwinSystem = new SmartHomeDigitalTwinSystem(homey);
   app.smartDisasterResilienceSystem = new SmartDisasterResilienceSystem(homey);
+
+  // ── Wave 14: constructor(homey) ──
+  app.smartEVChargingManagementSystem = new SmartEVChargingManagementSystem(homey);
+  app.homeNutritionWellnessSystem = new HomeNutritionWellnessSystem(homey);
+  app.smartNoiseManagementSystem = new SmartNoiseManagementSystem(homey);
+  app.homeChildEducationSystem = new HomeChildEducationSystem(homey);
+  app.smartSeasonalAdaptationSystem = new SmartSeasonalAdaptationSystem(homey);
+  app.advancedGuestEntertainmentSystem = new AdvancedGuestEntertainmentSystem(homey);
+
+  // ── Wave 15: constructor(homey) ──
+  app.smartMirrorDashboardSystem = new SmartMirrorDashboardSystem(homey);
+  app.homeEnergyAuditSystem = new HomeEnergyAuditSystem(homey);
+  app.smartFireplaceManagementSystem = new SmartFireplaceManagementSystem(homey);
+  app.advancedSleepEnvironmentSystem = new AdvancedSleepEnvironmentSystem(homey);
+  app.smartHVACZoneControlSystem = new SmartHVACZoneControlSystem(homey);
+  app.homeSecurityDroneSystem = new HomeSecurityDroneSystem(homey);
 
   // 4. Wire homey.app
   homey.app = app;
@@ -470,6 +501,20 @@ async function boot() {
     { name: 'HomeRoboticsOrchestrationSystem', ref: app.homeRoboticsOrchestrationSystem },
     { name: 'SmartHomeDigitalTwinSystem', ref: app.smartHomeDigitalTwinSystem },
     { name: 'SmartDisasterResilienceSystem', ref: app.smartDisasterResilienceSystem },
+    // Wave 14
+    { name: 'SmartEVChargingManagementSystem', ref: app.smartEVChargingManagementSystem },
+    { name: 'HomeNutritionWellnessSystem', ref: app.homeNutritionWellnessSystem },
+    { name: 'SmartNoiseManagementSystem', ref: app.smartNoiseManagementSystem },
+    { name: 'HomeChildEducationSystem', ref: app.homeChildEducationSystem },
+    { name: 'SmartSeasonalAdaptationSystem', ref: app.smartSeasonalAdaptationSystem },
+    { name: 'AdvancedGuestEntertainmentSystem', ref: app.advancedGuestEntertainmentSystem },
+    // Wave 15
+    { name: 'SmartMirrorDashboardSystem', ref: app.smartMirrorDashboardSystem },
+    { name: 'HomeEnergyAuditSystem', ref: app.homeEnergyAuditSystem },
+    { name: 'SmartFireplaceManagementSystem', ref: app.smartFireplaceManagementSystem },
+    { name: 'AdvancedSleepEnvironmentSystem', ref: app.advancedSleepEnvironmentSystem },
+    { name: 'SmartHVACZoneControlSystem', ref: app.smartHVACZoneControlSystem },
+    { name: 'HomeSecurityDroneSystem', ref: app.homeSecurityDroneSystem },
   ];
 
   // 6. Initialize all systems with Promise.allSettled for resilience
@@ -682,6 +727,26 @@ async function startServer() {
       smartApp.smartHomeDigitalTwinSystem, smartApp.smartDisasterResilienceSystem
     ];
     for (const sys of wave13) {
+      try { if (sys && sys.destroy) sys.destroy(); } catch (_e) { /* ignore */ }
+    }
+
+    // Destroy Wave 14 systems
+    const wave14 = [
+      smartApp.smartEVChargingManagementSystem, smartApp.homeNutritionWellnessSystem,
+      smartApp.smartNoiseManagementSystem, smartApp.homeChildEducationSystem,
+      smartApp.smartSeasonalAdaptationSystem, smartApp.advancedGuestEntertainmentSystem
+    ];
+    for (const sys of wave14) {
+      try { if (sys && sys.destroy) sys.destroy(); } catch (_e) { /* ignore */ }
+    }
+
+    // Destroy Wave 15 systems
+    const wave15 = [
+      smartApp.smartMirrorDashboardSystem, smartApp.homeEnergyAuditSystem,
+      smartApp.smartFireplaceManagementSystem, smartApp.advancedSleepEnvironmentSystem,
+      smartApp.smartHVACZoneControlSystem, smartApp.homeSecurityDroneSystem
+    ];
+    for (const sys of wave15) {
       try { if (sys && sys.destroy) sys.destroy(); } catch (_e) { /* ignore */ }
     }
 

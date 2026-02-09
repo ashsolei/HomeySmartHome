@@ -574,8 +574,219 @@
         "generator": "Generator Status",
         "community": "Community Resilience",
         "insurance_docs": "Insurance Documentation"
+      },
+      "ev_charging": {
+        "title": "EV Charging",
+        "stations": "Charging Stations",
+        "vehicles": "Vehicles",
+        "schedules": "Charging Schedules",
+        "energy_stats": "Energy Statistics",
+        "solar_charging": "Solar Charging",
+        "load_balancing": "Load Balancing",
+        "cost_optimization": "Cost Optimization",
+        "battery_health": "Battery Health",
+        "guest_charging": "Guest Charging",
+        "v2h": "Vehicle-to-Home",
+        "charge_complete": "Charge Complete",
+        "charge_fault": "Charging Fault",
+        "pre_conditioning": "Pre-Conditioning",
+        "trip_planning": "Trip Planning"
+      },
+      "nutrition": {
+        "title": "Nutrition & Wellness",
+        "profiles": "Household Profiles",
+        "meal_plan": "Meal Plan",
+        "wellness_scores": "Wellness Scores",
+        "grocery_list": "Grocery List",
+        "hydration": "Hydration",
+        "supplements": "Supplements",
+        "fasting": "Fasting Tracker",
+        "recipes": "Recipes",
+        "food_waste": "Food Waste",
+        "fitness": "Fitness Integration",
+        "sleep_nutrition": "Sleep & Nutrition",
+        "mood_journal": "Mood-Food Journal",
+        "health_metrics": "Health Metrics"
+      },
+      "noise": {
+        "title": "Noise Management",
+        "room_profiles": "Room Profiles",
+        "noise_levels": "Noise Levels",
+        "quiet_zones": "Quiet Zones",
+        "sound_masking": "Sound Masking",
+        "sleep_sounds": "Sleep Sounds",
+        "party_mode": "Party Mode",
+        "baby_monitoring": "Baby Monitoring",
+        "work_from_home": "Work From Home",
+        "health_impact": "Health Impact",
+        "report": "Noise Report",
+        "threshold_breach": "Threshold Breach",
+        "cry_detected": "Cry Detected"
+      },
+      "child_education": {
+        "title": "Child Education",
+        "children": "Children",
+        "screen_time": "Screen Time",
+        "homework": "Homework",
+        "learning_activities": "Learning Activities",
+        "reading": "Reading Tracker",
+        "music_practice": "Music Practice",
+        "science": "Science Experiments",
+        "chores": "Chores",
+        "progress": "Progress Report",
+        "bedtime": "Bedtime Routine",
+        "badges": "Achievement Badges",
+        "holiday_mode": "Holiday Mode",
+        "screen_limit_reached": "Screen Limit Reached"
+      },
+      "seasonal": {
+        "title": "Seasonal Adaptation",
+        "current_season": "Current Season",
+        "profiles": "Seasonal Profiles",
+        "maintenance": "Seasonal Maintenance",
+        "holidays": "Holiday Calendar",
+        "daylight": "Daylight Adaptation",
+        "heating": "Heating Profile",
+        "ventilation": "Ventilation Strategy",
+        "garden": "Garden & Outdoor",
+        "energy": "Energy Optimization",
+        "transition": "Season Transition",
+        "frost_warning": "Frost Warning",
+        "sleep_adaptation": "Sleep Adaptation",
+        "score": "Seasonal Score"
+      },
+      "guest_entertainment": {
+        "title": "Guest Entertainment",
+        "guests": "Guest Profiles",
+        "sessions": "Active Sessions",
+        "welcome": "Welcome Automation",
+        "wifi": "Wi-Fi Provisioning",
+        "entertainment": "Entertainment Library",
+        "streaming": "Streaming Access",
+        "house_rules": "House Rules",
+        "room_prep": "Room Preparation",
+        "sauna": "Sauna Management",
+        "party_mode": "Party Mode",
+        "departure": "Departure Routine",
+        "airbnb": "Airbnb Mode",
+        "analytics": "Guest Analytics",
+        "arrived": "Guest Arrived",
+        "departed": "Guest Departed",
+        "sauna_ready": "Sauna Ready"
       }
+    }
+  },
+  "smartMirrorDashboard": {
+    "title": "Smart Mirror Dashboard",
+    "description": "Interactive smart mirror management with personal dashboards, widgets, and presence detection",
+    "status": {
+      "active": "Mirror Active",
+      "standby": "Mirror Standby",
+      "off": "Mirror Off"
+    },
+    "widgets": {
+      "clock": "Clock",
+      "weather": "Weather",
+      "calendar": "Calendar",
+      "news": "News Headlines",
+      "commute": "Commute Info",
+      "health": "Health Metrics"
+    }
+  },
+  "homeEnergyAudit": {
+    "title": "Home Energy Audit",
+    "description": "Comprehensive energy auditing with room-by-room analysis, EPC ratings, and savings recommendations",
+    "status": {
+      "auditComplete": "Energy Audit Complete",
+      "auditInProgress": "Audit In Progress",
+      "wasteDetected": "Energy Waste Detected"
+    },
+    "ratings": {
+      "excellent": "Excellent (A)",
+      "good": "Good (B-C)",
+      "average": "Average (D)",
+      "poor": "Poor (E-G)"
+    }
+  },
+  "smartFireplaceManagement": {
+    "title": "Smart Fireplace Management",
+    "description": "Fireplace automation with temperature control, safety monitoring, chimney maintenance, and Nordic compliance",
+    "status": {
+      "running": "Fireplace Running",
+      "off": "Fireplace Off",
+      "cooling": "Fireplace Cooling",
+      "safetyAlert": "Safety Alert"
+    },
+    "fuel": {
+      "wood": "Wood (Birch/Pine/Oak)",
+      "pellet": "Pellets",
+      "gas": "Gas (Propane)",
+      "electric": "Electric"
+    },
+    "maintenance": {
+      "chimneySweep": "Chimney Sweep (Sotning)",
+      "creosoteCheck": "Creosote Check",
+      "burnBan": "Burn Ban (Eldningsförbud)"
+    }
+  },
+  "advancedSleepEnvironment": {
+    "title": "Advanced Sleep Environment",
+    "description": "Advanced sleep optimization with sound masking, light cycles, temperature curves, and smart alarms",
+    "status": {
+      "sleeping": "Sleeping",
+      "awake": "Awake",
+      "preSleep": "Pre-Sleep Routine",
+      "alarmActive": "Alarm Active"
+    },
+    "phases": {
+      "awake": "Awake",
+      "lightSleep": "Light Sleep",
+      "deepSleep": "Deep Sleep",
+      "rem": "REM Sleep"
+    },
+    "sounds": {
+      "white": "White Noise",
+      "pink": "Pink Noise",
+      "rain": "Rain",
+      "ocean": "Ocean Waves",
+      "forest": "Forest Sounds"
+    }
+  },
+  "smartHVACZoneControl": {
+    "title": "Smart HVAC Zone Control",
+    "description": "Multi-zone HVAC management with occupancy-based control, energy optimization, and comfort scoring",
+    "status": {
+      "heating": "Heating",
+      "cooling": "Cooling",
+      "auto": "Auto Mode",
+      "eco": "Eco Mode",
+      "off": "Off"
+    },
+    "equipment": {
+      "heatPump": "Heat Pump (Nibe)",
+      "districtHeating": "District Heating",
+      "underfloor": "Underfloor Heating",
+      "radiators": "Smart Radiator Valves",
+      "acUnit": "AC Split Unit",
+      "erv": "Energy Recovery Ventilation"
+    }
+  },
+  "homeSecurityDrone": {
+    "title": "Home Security Drone",
+    "description": "Drone-based security patrol with automated routes, anomaly detection, and privacy compliance",
+    "status": {
+      "patrolling": "Patrolling",
+      "docked": "Docked",
+      "charging": "Charging",
+      "anomalyDetected": "Anomaly Detected",
+      "returning": "Returning to Base"
+    },
+    "routes": {
+      "perimeter": "Full Perimeter",
+      "frontYard": "Front Yard",
+      "backyard": "Backyard",
+      "driveway": "Driveway",
+      "indoor": "Indoor Sweep"
     }
   }
 }
-
