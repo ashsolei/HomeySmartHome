@@ -9,7 +9,13 @@
 
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
 const HomeyShim = require('./lib/standalone/HomeyShim');
+const {
+  DeviceManager, SceneManager, AutomationManager, EnergyManager,
+  SecurityManager, ClimateManager, PresenceManager, NotificationManager,
+} = require('./lib/standalone/ManagerStubs');
 
 // ============================================
 // ALL 93 SYSTEM MODULE IMPORTS (from app.js)
@@ -131,80 +137,6 @@ const SmartFireplaceManagementSystem = require('./lib/SmartFireplaceManagementSy
 const AdvancedSleepEnvironmentSystem = require('./lib/AdvancedSleepEnvironmentSystem');
 const SmartHVACZoneControlSystem = require('./lib/SmartHVACZoneControlSystem');
 const HomeSecurityDroneSystem = require('./lib/HomeSecurityDroneSystem');
-
-// ============================================
-// INLINE MANAGER STUBS (these are defined inline in app.js)
-// ============================================
-
-class DeviceManager {
-  constructor(app) { this.app = app; this.devices = {}; }
-  async initialize() { console.log('[DeviceManager] initialized (standalone stub)'); }
-  async getDevices() { return this.devices; }
-  async getDevicesSummary() {
-    return { total: Object.keys(this.devices).length, byClass: {}, byZone: {}, online: 0, offline: 0 };
-  }
-  async setZoneLights() {}
-}
-
-class SceneManager {
-  constructor(app) { this.app = app; this.activeScene = null; }
-  async initialize() { console.log('[SceneManager] initialized (standalone stub)'); }
-  async activateScene(sceneId) {
-    const scene = this.app.scenes[sceneId];
-    if (!scene) throw new Error(`Scene not found: ${sceneId}`);
-    this.activeScene = sceneId;
-  }
-  getActiveScene() { return this.activeScene; }
-}
-
-class AutomationManager {
-  constructor(app) { this.app = app; this.executionHistory = []; }
-  async initialize() { console.log('[AutomationManager] initialized (standalone stub)'); }
-  async executeRoutine(routineId) {
-    const routine = this.app.routines[routineId];
-    if (!routine) throw new Error(`Routine not found: ${routineId}`);
-    this.executionHistory.push({ routineId, timestamp: new Date().toISOString() });
-  }
-}
-
-class EnergyManager {
-  constructor(app) { this.app = app; this.consumptionHistory = []; this.threshold = 3000; }
-  async initialize() { console.log('[EnergyManager] initialized (standalone stub)'); }
-  async getCurrentConsumption() { return { total: 0, devices: [], threshold: this.threshold, isHigh: false }; }
-}
-
-class SecurityManager {
-  constructor(app) { this.app = app; this.events = []; }
-  async initialize() { console.log('[SecurityManager] initialized (standalone stub)'); }
-  async setMode(mode) { this.app.securityMode = mode; }
-  async getStatus() { return { mode: this.app.securityMode, devices: [], recentEvents: this.events.slice(-10) }; }
-}
-
-class ClimateManager {
-  constructor(app) { this.app = app; this.targets = {}; }
-  async initialize() { console.log('[ClimateManager] initialized (standalone stub)'); }
-  async getAllZonesStatus() { return {}; }
-  async setZoneTemperature() {}
-  async setTargetTemperature(zone, temp) { this.targets[zone] = temp; }
-}
-
-class PresenceManager {
-  constructor(app) { this.app = app; this.presenceStatus = {}; }
-  async initialize() { console.log('[PresenceManager] initialized (standalone stub)'); }
-  isAnyoneHome() { return Object.values(this.presenceStatus).some(p => p.present); }
-  async getStatus() { return { users: this.presenceStatus, anyoneHome: this.isAnyoneHome(), homeCount: 0 }; }
-}
-
-class NotificationManager {
-  constructor(app) { this.app = app; this.history = []; }
-  async initialize() { console.log('[NotificationManager] initialized (standalone stub)'); }
-  async send(message, priority = 'normal') {
-    const n = { message, priority, timestamp: new Date().toISOString() };
-    this.history.push(n);
-    if (this.history.length > 100) this.history.shift();
-    return n;
-  }
-}
 
 // ============================================
 // BOOT SEQUENCE
@@ -574,9 +506,22 @@ async function startServer() {
 
   const server = express();
 
-  // ── Middleware ──
+  // ── Security & Performance Middleware ──
+  server.use(helmet({
+    contentSecurityPolicy: false,  // Allow inline scripts for dashboard
+    crossOriginEmbedderPolicy: false,
+  }));
+  server.use(compression());
   server.use(express.json({ limit: '10mb' }));
-  server.use(cors());
+  const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost,http://localhost:80,http://smarthome-dashboard:3001').split(',').map(s => s.trim());
+  server.use(cors({
+    origin: (origin, cb) => {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      cb(new Error('CORS not allowed'));
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true
+  }));
 
   // Request logging
   server.use((req, _res, next) => {
@@ -585,9 +530,12 @@ async function startServer() {
   });
 
   // ── Health Endpoints ──
+  const pkg = require('./package.json');
+
   server.get('/health', (_req, res) => {
     res.json({
       status: 'ok',
+      version: pkg.version,
       uptime: process.uptime(),
       systemCount,
       timestamp: new Date().toISOString()
@@ -602,6 +550,7 @@ async function startServer() {
     const memUsage = process.memoryUsage();
     res.json({
       platform: 'Smart Home Pro (Standalone)',
+      version: pkg.version,
       uptime: process.uptime(),
       bootDuration: `${((Date.now() - startTime) / 1000).toFixed(1)}s`,
       systems: {
@@ -650,9 +599,11 @@ async function startServer() {
         res.json(result);
       } catch (err) {
         console.error(`[API Error] ${fnName}:`, err.message);
+        const isProduction = process.env.NODE_ENV === 'production';
         res.status(500).json({
-          error: err.message,
+          error: 'Internal server error',
           endpoint: fnName,
+          ...(isProduction ? {} : { message: err.message }),
           timestamp: new Date().toISOString()
         });
       }
@@ -666,9 +617,10 @@ async function startServer() {
   // ── Error handling middleware ──
   server.use((err, _req, res, _next) => {
     console.error('[Unhandled Error]', err);
+    const isProduction = process.env.NODE_ENV === 'production';
     res.status(500).json({
       error: 'Internal server error',
-      message: err.message,
+      ...(isProduction ? {} : { message: err.message }),
       timestamp: new Date().toISOString()
     });
   });
@@ -686,68 +638,30 @@ async function startServer() {
   const gracefulShutdown = async (signal) => {
     console.log(`\n${signal} received — shutting down gracefully…`);
 
-    // Destroy Wave 11 infrastructure
-    try {
-      if (smartApp.unifiedEventScheduler && smartApp.unifiedEventScheduler.destroy) {
+    // Collect all destroyable systems from the app object
+    const destroyables = Object.entries(smartApp)
+      .filter(([_, sys]) => sys && typeof sys === 'object' && typeof sys.destroy === 'function')
+      .map(([name, sys]) => ({ name, sys }));
+
+    console.log(`Destroying ${destroyables.length} systems…`);
+
+    // Destroy the event scheduler first (async with timeout)
+    if (smartApp.unifiedEventScheduler && smartApp.unifiedEventScheduler.destroy) {
+      try {
         await smartApp.unifiedEventScheduler.destroy(5000);
+      } catch (e) {
+        console.error('Error destroying UnifiedEventScheduler:', e.message);
       }
-      if (smartApp.systemHealthDashboard && smartApp.systemHealthDashboard.destroy) {
-        smartApp.systemHealthDashboard.destroy();
-      }
-      if (smartApp.memoryGuardSystem && smartApp.memoryGuardSystem.destroy) {
-        smartApp.memoryGuardSystem.destroy();
-      }
-      if (smartApp.centralizedCacheManager && smartApp.centralizedCacheManager.destroy) {
-        smartApp.centralizedCacheManager.destroy();
-      }
-      if (smartApp.errorHandlingMiddleware && smartApp.errorHandlingMiddleware.destroy) {
-        smartApp.errorHandlingMiddleware.destroy();
-      }
-      if (smartApp.apiAuthenticationGateway && smartApp.apiAuthenticationGateway.destroy) {
-        smartApp.apiAuthenticationGateway.destroy();
-      }
-    } catch (e) {
-      console.error('Error during infrastructure shutdown:', e.message);
     }
 
-    // Destroy Wave 12 systems
-    const wave12 = [
-      smartApp.smartDoorbellIntercomSystem, smartApp.indoorLightingSceneEngine,
-      smartApp.energyBillingAnalyticsSystem, smartApp.visitorGuestManagementSystem,
-      smartApp.roomOccupancyMappingSystem, smartApp.powerContinuityUPSSystem
-    ];
-    for (const sys of wave12) {
-      try { if (sys && sys.destroy) sys.destroy(); } catch (_e) { /* ignore */ }
-    }
-
-    // Destroy Wave 13 systems
-    const wave13 = [
-      smartApp.smartFoodPantryManagementSystem, smartApp.homeSustainabilityTrackerSystem,
-      smartApp.smartPerimeterManagementSystem, smartApp.homeRoboticsOrchestrationSystem,
-      smartApp.smartHomeDigitalTwinSystem, smartApp.smartDisasterResilienceSystem
-    ];
-    for (const sys of wave13) {
-      try { if (sys && sys.destroy) sys.destroy(); } catch (_e) { /* ignore */ }
-    }
-
-    // Destroy Wave 14 systems
-    const wave14 = [
-      smartApp.smartEVChargingManagementSystem, smartApp.homeNutritionWellnessSystem,
-      smartApp.smartNoiseManagementSystem, smartApp.homeChildEducationSystem,
-      smartApp.smartSeasonalAdaptationSystem, smartApp.advancedGuestEntertainmentSystem
-    ];
-    for (const sys of wave14) {
-      try { if (sys && sys.destroy) sys.destroy(); } catch (_e) { /* ignore */ }
-    }
-
-    // Destroy Wave 15 systems
-    const wave15 = [
-      smartApp.smartMirrorDashboardSystem, smartApp.homeEnergyAuditSystem,
-      smartApp.smartFireplaceManagementSystem, smartApp.advancedSleepEnvironmentSystem,
-      smartApp.smartHVACZoneControlSystem, smartApp.homeSecurityDroneSystem
-    ];
-    for (const sys of wave15) {
-      try { if (sys && sys.destroy) sys.destroy(); } catch (_e) { /* ignore */ }
+    // Destroy remaining systems
+    for (const { name, sys } of destroyables) {
+      if (sys === smartApp.unifiedEventScheduler) continue; // already handled
+      try {
+        sys.destroy();
+      } catch (e) {
+        console.error(`Error destroying ${name}:`, e.message);
+      }
     }
 
     console.log('Cleanup complete. Exiting.');

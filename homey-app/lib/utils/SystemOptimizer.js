@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * System Optimizer Utility
  * 
@@ -182,9 +184,10 @@ class SystemOptimizer {
       const result = await fn();
       const duration = Date.now() - startTime;
       
-      // Update average response time
+      // Update average response time (cumulative moving average)
+      const n = this._healthMetrics.requests;
       this._healthMetrics.avgResponseTime = 
-        (this._healthMetrics.avgResponseTime + duration) / 2;
+        this._healthMetrics.avgResponseTime + (duration - this._healthMetrics.avgResponseTime) / n;
       
       if (duration > 5000) {
         console.warn(`Slow operation detected: ${label} took ${duration}ms`);

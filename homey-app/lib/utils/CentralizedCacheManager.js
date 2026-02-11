@@ -82,7 +82,7 @@ class CentralizedCacheManager extends EventEmitter {
   constructor(options = {}) {
     super();
 
-    /** @private */ this._globalMax = options.globalMax ?? 10_000;
+    /** @private */ this._globalMax = options.globalMax ?? options.maxGlobalSize ?? 10_000;
     /** @private */ this._namespaceMax = options.namespaceMax ?? 1_000;
     /** @private */ this._memoryThreshold = options.memoryThreshold ?? 50 * 1024 * 1024; // 50 MB
     /** @private */ this._enableLogging = options.enableLogging ?? true;

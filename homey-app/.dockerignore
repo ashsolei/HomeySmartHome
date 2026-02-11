@@ -3,7 +3,7 @@ npm-debug.log*
 .git
 .gitignore
 .env
-.env.*
+.env.local
 *.md
 AUTONOMOUS_FEATURES_*.md
 .DS_Store
@@ -17,4 +17,7 @@ __tests__
 *.spec.js
 docker-compose*.yml
 Dockerfile
+Dockerfile.dev
 .dockerignore
+.tasks.json
+lib/_*.py

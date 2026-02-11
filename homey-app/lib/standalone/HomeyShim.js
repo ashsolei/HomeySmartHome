@@ -12,8 +12,8 @@ class HomeyShim extends EventEmitter {
     this.setMaxListeners(200);
     this._settings = new Map();
     this._store = new Map();
-    this._timers = [];
-    this._intervals = [];
+    this._timers = new Set();
+    this._intervals = new Set();
     this._startedAt = Date.now();
     this._options = options;
     this._devices = new Map();
@@ -232,18 +232,25 @@ class HomeyShim extends EventEmitter {
   // ─── Timer helpers (Homey-compatible) ─────────────────────────────
   setTimeout(fn, ms) {
     const t = setTimeout(fn, ms);
-    this._timers.push(t);
+    this._timers.add(t);
     return t;
   }
 
   setInterval(fn, ms) {
     const i = setInterval(fn, ms);
-    this._intervals.push(i);
+    this._intervals.add(i);
     return i;
   }
 
-  clearTimeout(t) { clearTimeout(t); }
-  clearInterval(i) { clearInterval(i); }
+  clearTimeout(t) {
+    clearTimeout(t);
+    this._timers.delete(t);
+  }
+
+  clearInterval(i) {
+    clearInterval(i);
+    this._intervals.delete(i);
+  }
 
   // ─── Logging ──────────────────────────────────────────────────────
   log(...args) {
@@ -258,8 +265,10 @@ class HomeyShim extends EventEmitter {
   destroy() {
     this._timers.forEach(t => clearTimeout(t));
     this._intervals.forEach(i => clearInterval(i));
-    this._timers = [];
-    this._intervals = [];
+    this._timers.clear();
+    this._intervals.clear();
+    this._settings.clear();
+    this._store.clear();
     this.removeAllListeners();
   }
 

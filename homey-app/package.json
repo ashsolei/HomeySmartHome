@@ -1,29 +1,34 @@
 {
   "name": "com.smarthomepro.dashboard",
-  "version": "1.0.0",
-  "description": "Smart Home Pro - Advanced Dashboard & Automation for Homey",
+  "version": "3.1.0",
+  "description": "Smart Home Pro - Advanced Dashboard & Automation for Homey (93+ modules, 15 waves)",
   "main": "app.js",
   "scripts": {
     "build": "echo 'No build required'",
     "start": "node server.js",
-    "start:dev": "node server.js",
+    "start:dev": "NODE_ENV=development node server.js",
     "lint": "eslint .",
     "test": "echo 'Tests passed'",
-    "docker:build": "docker build -t smarthomepro .",
-    "docker:run": "docker run -p 3000:3000 --name smarthomepro smarthomepro",
+    "docker:build": "docker build -t smarthomepro:latest .",
+    "docker:run": "docker run -p 3000:3000 --name smarthomepro smarthomepro:latest",
     "docker:up": "docker compose up -d",
+    "docker:up:dev": "docker compose --profile dev up -d --build",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f smarthomepro"
+    "docker:logs": "docker compose logs -f smarthomepro",
+    "docker:full": "docker compose -f ../docker-compose.yml up -d --build",
+    "docker:health": "curl -s http://localhost:3000/health | node -e \"process.stdin.on('data',d=>console.log(JSON.parse(d)))\""
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "express": "^5.1.0",
     "cors": "^2.8.5",
+    "helmet": "^8.0.0",
+    "compression": "^1.7.5",
     "homey": "file:./lib/standalone/homey-shim-pkg"
   },
   "devDependencies": {
-    "eslint": "^8.0.0"
+    "eslint": "^9.0.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   }
 }

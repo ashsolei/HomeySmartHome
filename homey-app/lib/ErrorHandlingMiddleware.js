@@ -684,6 +684,14 @@ class ErrorHandlingMiddleware extends EventEmitter {
   }
 
   /**
+   * Instance-level destroy for unified shutdown compatibility.
+   */
+  destroy() {
+    this.removeAllListeners();
+    ErrorHandlingMiddleware._instance = null;
+  }
+
+  /**
    * Destroy the singleton – primarily for testing.
    */
   static destroyInstance() {
