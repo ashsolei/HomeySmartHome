@@ -1,7 +1,7 @@
 {
   "name": "com.smarthomepro.dashboard",
-  "version": "3.2.0",
-  "description": "Smart Home Pro - Advanced Dashboard & Automation for Homey (93+ modules, 15 waves)",
+  "version": "3.3.0",
+  "description": "Smart Home Pro - Advanced Dashboard & Automation for Homey (97+ modules, 16 waves)",
   "main": "app.js",
   "scripts": {
     "build": "echo 'No build required'",
@@ -23,6 +23,8 @@
     "cors": "^2.8.5",
     "helmet": "^8.0.0",
     "compression": "^1.7.5",
+    "dotenv": "^16.4.7",
+    "express-rate-limit": "^7.5.0",
     "homey": "file:./lib/standalone/homey-shim-pkg"
   },
   "devDependencies": {

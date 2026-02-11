@@ -1,6 +1,6 @@
 {
   "name": "homey-smart-home-dashboard",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Homey Smart Home Dashboard - 66+ moduler, AI-driven automation",
   "main": "server.js",
   "scripts": {

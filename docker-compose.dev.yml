@@ -24,7 +24,7 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-      - "9229:9229"  # Node.js debugger
+      - "127.0.0.1:9229:9229"  # Node.js debugger (localhost only)
     environment:
       - NODE_ENV=development
       - PORT=3000
@@ -72,7 +72,7 @@ services:
     container_name: smarthome-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"  # localhost only
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data

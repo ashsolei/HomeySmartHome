@@ -36,7 +36,7 @@ banner() {
   echo ""
   echo -e "${CYAN}╔══════════════════════════════════════════════╗${NC}"
   echo -e "${CYAN}║   🏠 Smart Home Pro — Docker Deployment      ║${NC}"
-  echo -e "${CYAN}║   Version: 3.2.0                             ║${NC}"
+  echo -e "${CYAN}║   Version: 3.3.0                             ║${NC}"
   echo -e "${CYAN}╚══════════════════════════════════════════════╝${NC}"
   echo ""
 }

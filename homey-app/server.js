@@ -1,4 +1,5 @@
 'use strict';
+require('dotenv').config();
 
 /**
  * Smart Home Pro — Standalone Express Server
@@ -11,6 +12,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const HomeyShim = require('./lib/standalone/HomeyShim');
 const {
   DeviceManager, SceneManager, AutomationManager, EnergyManager,
@@ -138,12 +141,28 @@ const AdvancedSleepEnvironmentSystem = require('./lib/AdvancedSleepEnvironmentSy
 const SmartHVACZoneControlSystem = require('./lib/SmartHVACZoneControlSystem');
 const HomeSecurityDroneSystem = require('./lib/HomeSecurityDroneSystem');
 
+// Wave 16
+const SmartCircadianLightingSystem = require('./lib/SmartCircadianLightingSystem');
+const HomeDigitalWellnessSystem = require('./lib/HomeDigitalWellnessSystem');
+const SmartCompostingGardenSystem = require('./lib/SmartCompostingGardenSystem');
+const AdvancedNeighborhoodIntegrationSystem = require('./lib/AdvancedNeighborhoodIntegrationSystem');
+
 // ============================================
 // BOOT SEQUENCE
 // ============================================
 
 const startTime = Date.now();
 const systemStatuses = {};
+
+// ── Process error handlers ──
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Promise Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught Exception:', err);
+  process.exit(1);
+});
 
 async function boot() {
   console.log('╔══════════════════════════════════════════════╗');
@@ -319,6 +338,12 @@ async function boot() {
   app.smartHVACZoneControlSystem = new SmartHVACZoneControlSystem(homey);
   app.homeSecurityDroneSystem = new HomeSecurityDroneSystem(homey);
 
+  // ── Wave 16: constructor(homey) ──
+  app.smartCircadianLightingSystem = new SmartCircadianLightingSystem(homey);
+  app.homeDigitalWellnessSystem = new HomeDigitalWellnessSystem(homey);
+  app.smartCompostingGardenSystem = new SmartCompostingGardenSystem(homey);
+  app.advancedNeighborhoodIntegrationSystem = new AdvancedNeighborhoodIntegrationSystem(homey);
+
   // 4. Wire homey.app
   homey.app = app;
 
@@ -447,6 +472,11 @@ async function boot() {
     { name: 'AdvancedSleepEnvironmentSystem', ref: app.advancedSleepEnvironmentSystem },
     { name: 'SmartHVACZoneControlSystem', ref: app.smartHVACZoneControlSystem },
     { name: 'HomeSecurityDroneSystem', ref: app.homeSecurityDroneSystem },
+    // Wave 16
+    { name: 'SmartCircadianLightingSystem', ref: app.smartCircadianLightingSystem },
+    { name: 'HomeDigitalWellnessSystem', ref: app.homeDigitalWellnessSystem },
+    { name: 'SmartCompostingGardenSystem', ref: app.smartCompostingGardenSystem },
+    { name: 'AdvancedNeighborhoodIntegrationSystem', ref: app.advancedNeighborhoodIntegrationSystem },
   ];
 
   // 6. Initialize all systems with Promise.allSettled for resilience
@@ -504,6 +534,16 @@ async function boot() {
 async function startServer() {
   const { homey, app: smartApp, systemCount } = await boot();
 
+  // ── Environment Validation ──
+  const requiredInProd = ['JWT_SECRET', 'ALLOWED_ORIGINS'];
+  if (process.env.NODE_ENV === 'production') {
+    for (const key of requiredInProd) {
+      if (!process.env[key]) {
+        console.warn(`⚠ WARNING: ${key} is not set. Using insecure defaults.`);
+      }
+    }
+  }
+
   const server = express();
 
   // ── Security & Performance Middleware ──
@@ -512,7 +552,7 @@ async function startServer() {
     crossOriginEmbedderPolicy: false,
   }));
   server.use(compression());
-  server.use(express.json({ limit: '10mb' }));
+  server.use(express.json({ limit: '1mb' }));
   const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost,http://localhost:80,http://smarthome-dashboard:3001').split(',').map(s => s.trim());
   server.use(cors({
     origin: (origin, cb) => {
@@ -523,9 +563,44 @@ async function startServer() {
     credentials: true
   }));
 
-  // Request logging
-  server.use((req, _res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  // Rate limiting
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 500
+    ,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests', retryAfter: '15 minutes' },
+    keyGenerator: (req) => req.headers['x-forwarded-for'] || req.ip,
+  });
+  server.use('/api/', apiLimiter);
+
+  const strictLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Rate limit exceeded' },
+  });
+  server.use('/api/v1/stats', strictLimiter);
+
+  // Request ID + structured logging
+  server.use((req, res, next) => {
+    req.id = req.headers['x-request-id'] || crypto.randomUUID();
+    res.setHeader('X-Request-ID', req.id);
+    const start = Date.now();
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        requestId: req.id,
+        method: req.method,
+        url: req.url,
+        status: res.statusCode,
+        duration,
+        ip: req.ip
+      }));
+    });
     next();
   });
 
@@ -545,6 +620,37 @@ async function startServer() {
   server.get('/health/systems', (_req, res) => {
     res.json(systemStatuses);
   });
+
+  // Readiness probe for Kubernetes / Docker
+  server.get('/ready', (_req, res) => {
+    const failedCount = Object.values(systemStatuses).filter(s => s.status === 'failed').length;
+    const totalSystems = Object.keys(systemStatuses).length;
+    const isReady = totalSystems > 0 && failedCount < totalSystems * 0.5;
+    res.status(isReady ? 200 : 503).json({
+      ready: isReady,
+      systems: { total: totalSystems, failed: failedCount },
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // API info endpoint
+  server.get('/api/v1/info', (_req, res) => {
+    res.json({
+      name: 'Smart Home Pro API',
+      version: pkg.version,
+      node: process.version,
+      environment: process.env.NODE_ENV || 'development',
+      features: [
+        'home-automation', 'energy-management', 'security',
+        'climate-control', 'predictive-analytics', 'ai-orchestration',
+        'voice-control', 'geofencing', 'multi-user'
+      ],
+      docs: '/api/v1/docs',
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  let routeCount = 0;
 
   // ── Prometheus Metrics Endpoint ──
   server.get('/metrics', (_req, res) => {
@@ -619,7 +725,6 @@ async function startServer() {
   const apiDefs = appManifest.api || {};
 
   const methodMap = { GET: 'get', POST: 'post', PUT: 'put', DELETE: 'delete', PATCH: 'patch' };
-  let routeCount = 0;
 
   for (const [fnName, def] of Object.entries(apiDefs)) {
     const handler = apiHandlers[fnName];
@@ -647,8 +752,7 @@ async function startServer() {
         const isProduction = process.env.NODE_ENV === 'production';
         res.status(500).json({
           error: 'Internal server error',
-          endpoint: fnName,
-          ...(isProduction ? {} : { message: err.message }),
+          ...(isProduction ? {} : { endpoint: fnName, message: err.message }),
           timestamp: new Date().toISOString()
         });
       }
@@ -661,11 +765,9 @@ async function startServer() {
 
   // ── Error handling middleware ──
   server.use((err, _req, res, _next) => {
-    console.error('[Unhandled Error]', err);
-    const isProduction = process.env.NODE_ENV === 'production';
+    console.error(`[Unhandled Error] ${err.message}`);
     res.status(500).json({
       error: 'Internal server error',
-      ...(isProduction ? {} : { message: err.message }),
       timestamp: new Date().toISOString()
     });
   });
@@ -722,15 +824,18 @@ async function startServer() {
     const bootSeconds = ((Date.now() - startTime) / 1000).toFixed(1);
     console.log('');
     console.log('╔══════════════════════════════════════════════╗');
-    console.log(`║  🏠 Smart Home Pro running on port ${String(PORT).padEnd(10)}║`);
+    console.log(`║  🏠 Smart Home Pro v${pkg.version} on port ${String(PORT).padEnd(5)}  ║`);
     console.log(`║  ⏱  Boot time: ${bootSeconds.padEnd(30)}║`);
     console.log(`║  📊 Systems: ${String(systemCount).padEnd(32)}║`);
     console.log(`║  📡 API routes: ${String(routeCount).padEnd(29)}║`);
+    console.log(`║  🛡️  Rate limiting: enabled${' '.repeat(19)}║`);
     console.log('╚══════════════════════════════════════════════╝');
     console.log('');
-    console.log(`Health:  http://localhost:${PORT}/health`);
-    console.log(`Stats:   http://localhost:${PORT}/api/v1/stats`);
-    console.log(`Systems: http://localhost:${PORT}/health/systems`);
+    console.log(`Health:   http://localhost:${PORT}/health`);
+    console.log(`Ready:    http://localhost:${PORT}/ready`);
+    console.log(`Stats:    http://localhost:${PORT}/api/v1/stats`);
+    console.log(`Info:     http://localhost:${PORT}/api/v1/info`);
+    console.log(`Systems:  http://localhost:${PORT}/health/systems`);
     console.log('');
   });
 }

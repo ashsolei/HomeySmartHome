@@ -18,10 +18,10 @@ FROM node:22-alpine AS production
 # Add labels
 LABEL maintainer="Smart Home Pro"
 LABEL description="Smart Home Pro - Advanced Dashboard & Automation Platform"
-LABEL version="3.1.0"
+LABEL version="3.3.0"
 
-# Install dumb-init + curl for health checks
-RUN apk add --no-cache dumb-init curl
+# Install dumb-init for PID 1 handling (wget is included in alpine)
+RUN apk add --no-cache dumb-init
 
 # Create non-root user early
 RUN addgroup -g 1001 -S smarthome && \
@@ -46,7 +46,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
 # Environment variables
 ENV NODE_ENV=production

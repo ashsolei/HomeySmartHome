@@ -23,7 +23,7 @@ class SecurityMiddleware {
     this.csrfTokens = new Map();
 
     // Clean up old entries every minute
-    setInterval(() => this.cleanup(), 60000);
+    this._cleanupInterval = setInterval(() => this.cleanup(), 60000);
   }
 
   /**
@@ -245,6 +245,15 @@ class SecurityMiddleware {
         size: this.csrfTokens.size
       }
     };
+  }
+
+  destroy() {
+    if (this._cleanupInterval) {
+      clearInterval(this._cleanupInterval);
+      this._cleanupInterval = null;
+    }
+    this.rateLimitStore.clear();
+    this.csrfTokens.clear();
   }
 }
 

@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
+const crypto = require('crypto');
 
 // Import advanced modules
 const PredictiveAnalytics = require('./predictive-analytics');
@@ -19,6 +20,16 @@ const HOMEY_URL = process.env.HOMEY_URL || 'http://smarthomepro:3000';
 const HOMEY_TOKEN = process.env.HOMEY_TOKEN || '';
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost,http://localhost:80').split(',').map(s => s.trim());
 
+// ── Process error handlers ──
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Promise Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught Exception:', err);
+  process.exit(1);
+});
+
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -29,6 +40,15 @@ const io = new Server(httpServer, {
     },
     methods: ['GET', 'POST']
   }
+});
+
+// Socket.IO authentication
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization;
+  if (process.env.NODE_ENV === 'production' && !token) {
+    return next(new Error('Authentication required'));
+  }
+  next();
 });
 
 // Initialize advanced services
@@ -60,13 +80,20 @@ app.use(securityMiddleware.validateRequest());
 app.use(performanceMonitor.trackRequest());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Request ID tracking
+app.use((req, res, next) => {
+  req.id = req.headers['x-request-id'] || crypto.randomUUID();
+  res.setHeader('X-Request-ID', req.id);
+  next();
+});
+
 // Health check endpoint (for Docker healthcheck and load balancers)
 app.get('/health', (req, res) => {
   const moduleSummary = moduleLoader.getSummary();
   res.status(200).json({
     status: 'ok',
     service: 'web-dashboard',
-    version: '3.2.0',
+    version: '3.3.0',
     uptime: process.uptime(),
     modules: moduleSummary,
     timestamp: new Date().toISOString()
@@ -394,7 +421,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('control-device', async (data) => {
-    const { deviceId, capability, value } = data;
+    const { deviceId, capability, value } = data || {};
+    if (!deviceId || typeof deviceId !== 'string' || !capability || typeof capability !== 'string') {
+      return socket.emit('error', { message: 'Invalid device control data' });
+    }
     try {
       await homeyClient.setDeviceCapability(deviceId, capability, value);
       io.emit('device-updated', { deviceId, capability, value });
@@ -413,7 +443,7 @@ io.on('connection', (socket) => {
 });
 
 // Periodic updates
-setInterval(async () => {
+const periodicUpdateInterval = setInterval(async () => {
   try {
     const data = getDemoData();
     // Simulate real-time changes
@@ -462,6 +492,8 @@ async function bootModules() {
 
 const gracefulShutdown = (signal) => {
   console.log(`\n${signal} received — shutting down gracefully…`);
+
+  clearInterval(periodicUpdateInterval);
 
   // Stop accepting new connections
   httpServer.close(() => {

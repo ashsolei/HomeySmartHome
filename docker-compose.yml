@@ -1,9 +1,9 @@
 # ──────────────────────────────────────────────────────────
 # Smart Home Pro — Full-Stack Docker Compose
-# Version: 3.2.0
+# Version: 3.3.0
 #
 # Services:
-#   - smarthomepro   : Homey backend API (93+ modules, port 3000)
+#   - smarthomepro   : Homey backend API (111+ modules, port 3000)
 #   - dashboard      : Web dashboard with Socket.IO (port 3001)
 #   - nginx          : Reverse proxy (port 80)
 #
@@ -15,7 +15,7 @@
 # ──────────────────────────────────────────────────────────
 
 services:
-  # ── Homey Backend (93+ system modules, 15 waves) ──
+  # ── Homey Backend (111+ system modules, 16 waves) ──
   smarthomepro:
     build:
       context: ./homey-app
@@ -39,7 +39,7 @@ services:
     volumes:
       - homey_data:/app/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       start_period: 90s
@@ -86,7 +86,7 @@ services:
       smarthomepro:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
       interval: 30s
       timeout: 10s
       start_period: 30s
