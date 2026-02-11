@@ -24,6 +24,37 @@ class AdvancedAutomationEngine {
       this.automations.set(id, automation);
     });
 
+    // Seed from automation-library.json if no automations exist
+    if (this.automations.size === 0) {
+      try {
+        const path = require('path');
+        const fs = require('fs');
+        const libraryPath = path.resolve(__dirname, '../../automations/automation-library.json');
+        if (fs.existsSync(libraryPath)) {
+          const library = JSON.parse(fs.readFileSync(libraryPath, 'utf8'));
+          for (const entry of library) {
+            this.automations.set(entry.id, {
+              ...entry,
+              enabled: true,
+              statistics: {
+                created: Date.now(),
+                lastExecuted: null,
+                executionCount: 0,
+                successCount: 0,
+                failureCount: 0,
+                averageExecutionTime: 0,
+                userOverrides: 0
+              }
+            });
+          }
+          await this.saveAutomations();
+          this.log(`Seeded ${library.length} automations from library`);
+        }
+      } catch (err) {
+        this.log('Could not seed automation library:', err.message);
+      }
+    }
+
     // Load learning data
     this.executionHistory = await this.homey.settings.get('executionHistory') || [];
     this.patterns = new Map(await this.homey.settings.get('patterns') || []);

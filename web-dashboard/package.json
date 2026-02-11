@@ -8,7 +8,7 @@
     "dev": "nodemon server.js",
     "test": "node test-suite.js",
     "test:watch": "nodemon --exec 'node test-suite.js'",
-    "lint": "echo 'Linting passed'",
+    "lint": "eslint .",
     "modules": "ls -1 *.js | wc -l && echo 'moduler installerade'",
     "docs": "open ../README.md",
     "docker:build": "docker build -t smarthome-dashboard .",
@@ -33,6 +33,7 @@
     "compression": "^1.7.5"
   },
   "devDependencies": {
+    "eslint": "^9.0.0",
     "nodemon": "^3.1.9"
   },
   "engines": {

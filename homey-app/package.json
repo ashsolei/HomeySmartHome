@@ -8,7 +8,7 @@
     "start": "node server.js",
     "start:dev": "NODE_ENV=development node server.js",
     "lint": "eslint .",
-    "test": "echo 'Tests passed'",
+    "test": "node test-suite.js",
     "docker:build": "docker build -t smarthomepro:latest .",
     "docker:run": "docker run -p 3000:3000 --name smarthomepro smarthomepro:latest",
     "docker:up": "docker compose up -d",

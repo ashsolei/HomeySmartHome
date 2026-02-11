@@ -456,6 +456,33 @@ async function bootModules() {
   return result;
 }
 
+// ============================================
+// GRACEFUL SHUTDOWN
+// ============================================
+
+const gracefulShutdown = (signal) => {
+  console.log(`\n${signal} received — shutting down gracefully…`);
+
+  // Stop accepting new connections
+  httpServer.close(() => {
+    console.log('HTTP server closed');
+  });
+
+  // Disconnect all Socket.IO clients
+  io.close(() => {
+    console.log('Socket.IO closed');
+  });
+
+  // Give ongoing requests 10s to complete
+  setTimeout(() => {
+    console.log('Cleanup complete. Exiting.');
+    process.exit(0);
+  }, 3000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
 // Start server
 httpServer.listen(PORT, async () => {
   console.log(`🏠 Smart Home Dashboard running at http://localhost:${PORT}`);
