@@ -27,3 +27,9 @@ env.json
 # Build
 dist/
 build/
+
+# Temp scripts & output
+nohup.out
+build_test.sh
+run_build.sh
+run_tests.sh

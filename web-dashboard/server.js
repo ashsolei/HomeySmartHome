@@ -66,7 +66,7 @@ app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
     service: 'web-dashboard',
-    version: '3.1.0',
+    version: '3.2.0',
     uptime: process.uptime(),
     modules: moduleSummary,
     timestamp: new Date().toISOString()

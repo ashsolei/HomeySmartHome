@@ -1,6 +1,6 @@
 # ──────────────────────────────────────────────────────────
 # Smart Home Pro — Full-Stack Docker Compose
-# Version: 3.1.0
+# Version: 3.2.0
 #
 # Services:
 #   - smarthomepro   : Homey backend API (93+ modules, port 3000)

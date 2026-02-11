@@ -546,6 +546,51 @@ async function startServer() {
     res.json(systemStatuses);
   });
 
+  // ── Prometheus Metrics Endpoint ──
+  server.get('/metrics', (_req, res) => {
+    const mem = process.memoryUsage();
+    const okCount = Object.values(systemStatuses).filter(s => s.status === 'ok').length;
+    const failedCount = Object.values(systemStatuses).filter(s => s.status === 'failed').length;
+
+    const lines = [
+      '# HELP smarthome_uptime_seconds Process uptime in seconds',
+      '# TYPE smarthome_uptime_seconds gauge',
+      `smarthome_uptime_seconds ${process.uptime().toFixed(1)}`,
+      '',
+      '# HELP smarthome_systems_total Total number of systems',
+      '# TYPE smarthome_systems_total gauge',
+      `smarthome_systems_total ${systemCount}`,
+      '',
+      '# HELP smarthome_systems_ok Systems initialized successfully',
+      '# TYPE smarthome_systems_ok gauge',
+      `smarthome_systems_ok ${okCount}`,
+      '',
+      '# HELP smarthome_systems_failed Systems that failed to initialize',
+      '# TYPE smarthome_systems_failed gauge',
+      `smarthome_systems_failed ${failedCount}`,
+      '',
+      '# HELP smarthome_memory_rss_bytes Resident set size in bytes',
+      '# TYPE smarthome_memory_rss_bytes gauge',
+      `smarthome_memory_rss_bytes ${mem.rss}`,
+      '',
+      '# HELP smarthome_memory_heap_used_bytes Heap used in bytes',
+      '# TYPE smarthome_memory_heap_used_bytes gauge',
+      `smarthome_memory_heap_used_bytes ${mem.heapUsed}`,
+      '',
+      '# HELP smarthome_memory_heap_total_bytes Total heap in bytes',
+      '# TYPE smarthome_memory_heap_total_bytes gauge',
+      `smarthome_memory_heap_total_bytes ${mem.heapTotal}`,
+      '',
+      '# HELP smarthome_api_routes_total Number of registered API routes',
+      '# TYPE smarthome_api_routes_total gauge',
+      `smarthome_api_routes_total ${routeCount}`,
+      ''
+    ];
+
+    res.setHeader('Content-Type', 'text/plain; version=0.0.4');
+    res.send(lines.join('\n'));
+  });
+
   server.get('/api/v1/stats', (_req, res) => {
     const memUsage = process.memoryUsage();
     res.json({

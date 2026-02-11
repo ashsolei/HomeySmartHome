@@ -21,14 +21,14 @@ scrape_configs:
   # Smart Home Pro Backend
   - job_name: 'smarthomepro'
     static_configs:
-      - targets: ['smarthomepro-dev:3000']
+      - targets: ['smarthomepro:3000']
     metrics_path: '/metrics'
     scrape_interval: 10s
 
   # Dashboard
   - job_name: 'dashboard'
     static_configs:
-      - targets: ['dashboard-dev:3001']
+      - targets: ['dashboard:3001']
     metrics_path: '/metrics'
     scrape_interval: 10s
 
