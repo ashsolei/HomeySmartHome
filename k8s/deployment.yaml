@@ -1,0 +1,299 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: smarthome-pro
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smarthome-config
+  namespace: smarthome-pro
+data:
+  NODE_ENV: "production"
+  TZ: "Europe/Stockholm"
+  LOG_LEVEL: "info"
+  ENABLE_RATE_LIMITING: "true"
+  MAX_REQUESTS_PER_MINUTE: "100"
+  ENABLE_METRICS: "true"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: smarthome-secrets
+  namespace: smarthome-pro
+type: Opaque
+stringData:
+  HOMEY_TOKEN: "your_homey_token_here"
+  JWT_SECRET: "change_this_to_a_random_secret"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smarthomepro
+  namespace: smarthome-pro
+  labels:
+    app: smarthomepro
+    component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: smarthomepro
+  template:
+    metadata:
+      labels:
+        app: smarthomepro
+        component: backend
+    spec:
+      containers:
+      - name: smarthomepro
+        image: ghcr.io/your-repo/smarthomepro:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          name: http
+        - containerPort: 9090
+          name: metrics
+        envFrom:
+        - configMapRef:
+            name: smarthome-config
+        - secretRef:
+            name: smarthome-secrets
+        env:
+        - name: PORT
+          value: "3000"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "500m"
+          limits:
+            memory: "768Mi"
+            cpu: "1500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: smarthomepro-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smarthomepro
+  namespace: smarthome-pro
+  labels:
+    app: smarthomepro
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000
+    name: http
+  - port: 9090
+    targetPort: 9090
+    name: metrics
+  selector:
+    app: smarthomepro
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: smarthome-pro
+  labels:
+    app: dashboard
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+        component: frontend
+    spec:
+      containers:
+      - name: dashboard
+        image: ghcr.io/your-repo/dashboard:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+          name: http
+        envFrom:
+        - configMapRef:
+            name: smarthome-config
+        - secretRef:
+            name: smarthome-secrets
+        env:
+        - name: PORT
+          value: "3001"
+        - name: HOMEY_URL
+          value: "http://smarthomepro:3000"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: dashboard-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+  namespace: smarthome-pro
+  labels:
+    app: dashboard
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3001
+    targetPort: 3001
+    name: http
+  selector:
+    app: dashboard
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: smarthomepro-data
+  namespace: smarthome-pro
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dashboard-data
+  namespace: smarthome-pro
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: smarthome-ingress
+  namespace: smarthome-pro
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - smarthome.yourdomain.com
+    secretName: smarthome-tls
+  rules:
+  - host: smarthome.yourdomain.com
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: smarthomepro
+            port:
+              number: 3000
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dashboard
+            port:
+              number: 3001
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: smarthomepro-hpa
+  namespace: smarthome-pro
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: smarthomepro
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: dashboard-hpa
+  namespace: smarthome-pro
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dashboard
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70

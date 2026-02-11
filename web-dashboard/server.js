@@ -9,28 +9,80 @@ require('dotenv').config();
 
 // Import advanced modules
 const PredictiveAnalytics = require('./predictive-analytics');
+const SecurityMiddleware = require('./security-middleware');
+const PerformanceMonitor = require('./performance-monitor');
+
+// Configuration (must be before Socket.IO init)
+const PORT = process.env.PORT || 3001;
+const HOMEY_URL = process.env.HOMEY_URL || 'http://smarthomepro:3000';
+const HOMEY_TOKEN = process.env.HOMEY_TOKEN || '';
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost,http://localhost:80').split(',').map(s => s.trim());
 
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: '*',
+    origin: (origin, cb) => {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      cb(new Error('CORS not allowed'));
+    },
     methods: ['GET', 'POST']
   }
 });
 
-// Configuration
-const PORT = process.env.PORT || 3000;
-const HOMEY_URL = process.env.HOMEY_URL || 'http://192.168.1.100'; // Update with your Homey IP
-const HOMEY_TOKEN = process.env.HOMEY_TOKEN || '';
-
 // Initialize advanced services
 const analytics = new PredictiveAnalytics();
+const securityMiddleware = new SecurityMiddleware({
+  enableRateLimiting: process.env.ENABLE_RATE_LIMITING !== 'false',
+  maxRequestsPerMinute: parseInt(process.env.MAX_REQUESTS_PER_MINUTE || '100', 10),
+  jwtSecret: process.env.JWT_SECRET
+});
+const performanceMonitor = new PerformanceMonitor({
+  enableDetailedMetrics: true
+});
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(new Error('CORS not allowed'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+app.use(express.json({ limit: '1mb' }));
+app.use(require('helmet')({ contentSecurityPolicy: false }));
+app.use(require('compression')());
+app.use(securityMiddleware.securityHeaders());
+app.use(securityMiddleware.rateLimit());
+app.use(securityMiddleware.validateRequest());
+app.use(performanceMonitor.trackRequest());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Health check endpoint (for Docker healthcheck and load balancers)
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'web-dashboard',
+    version: '3.1.0',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Metrics endpoint for Prometheus
+app.get('/metrics', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain');
+  res.send(performanceMonitor.getPrometheusMetrics());
+});
+
+// Performance stats endpoint
+app.get('/api/stats', (req, res) => {
+  res.json({
+    performance: performanceMonitor.getMetrics(),
+    security: securityMiddleware.getStats()
+  });
+});
 
 // Homey API Client
 class HomeyClient {

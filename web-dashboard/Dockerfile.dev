@@ -1,0 +1,23 @@
+FROM node:22-alpine
+
+# Add development tools
+RUN apk add --no-cache dumb-init curl git
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install all dependencies (including nodemon)
+RUN npm install
+
+# Don't copy source code - it will be mounted as volume
+
+EXPOSE 3001
+
+ENV NODE_ENV=development
+ENV PORT=3001
+
+# Use nodemon for hot-reload
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["npx", "nodemon", "--watch", ".", "--ext", "js,json", "server.js"]

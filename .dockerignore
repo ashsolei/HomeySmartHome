@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env
+.env.*
+*.md
+.DS_Store
+.vscode
+.idea
+node_modules
+npm-debug.log*
+coverage
+.nyc_output
+k8s
+monitoring
+*.test.js
+*.spec.js

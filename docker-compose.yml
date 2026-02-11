@@ -1,0 +1,150 @@
+# ──────────────────────────────────────────────────────────
+# Smart Home Pro — Full-Stack Docker Compose
+# Version: 3.1.0
+#
+# Services:
+#   - smarthomepro   : Homey backend API (93+ modules, port 3000)
+#   - dashboard      : Web dashboard with Socket.IO (port 3001)
+#   - nginx          : Reverse proxy (port 80)
+#
+# Usage:
+#   docker compose up -d --build    # Build and start all services
+#   docker compose logs -f          # Follow all logs
+#   docker compose down             # Stop all services
+#   docker compose ps               # Check status
+# ──────────────────────────────────────────────────────────
+
+services:
+  # ── Homey Backend (93+ system modules, 15 waves) ──
+  smarthomepro:
+    build:
+      context: ./homey-app
+      dockerfile: Dockerfile
+    container_name: smarthomepro
+    restart: unless-stopped
+    expose:
+      - "3000"
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - TZ=${TZ:-Europe/Stockholm}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LATITUDE=${LATITUDE:-59.3293}
+      - LONGITUDE=${LONGITUDE:-18.0686}
+    volumes:
+      - homey_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: '1.5'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - smarthome-net
+
+  # ── Web Dashboard (66+ modules, Socket.IO) ──
+  dashboard:
+    build:
+      context: ./web-dashboard
+      dockerfile: Dockerfile
+    container_name: smarthome-dashboard
+    restart: unless-stopped
+    expose:
+      - "3001"
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - TZ=${TZ:-Europe/Stockholm}
+      - HOMEY_URL=http://smarthomepro:3000
+      - HOMEY_TOKEN=${HOMEY_TOKEN:-}
+    volumes:
+      - dashboard_data:/app/data
+    depends_on:
+      smarthomepro:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - smarthome-net
+
+  # ── Nginx Reverse Proxy ──
+  nginx:
+    image: nginx:alpine
+    container_name: smarthome-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      smarthomepro:
+        condition: service_healthy
+      dashboard:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/nginx-health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.25'
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+    networks:
+      - smarthome-net
+
+volumes:
+  homey_data:
+    driver: local
+  dashboard_data:
+    driver: local
+
+networks:
+  smarthome-net:
+    driver: bridge
