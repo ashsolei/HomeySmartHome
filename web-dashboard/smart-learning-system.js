@@ -22,6 +22,30 @@ class SmartLearningSystem {
     this.startLearning();
   }
 
+  /**
+   * Load existing learning data (patterns, history, rules) from storage.
+   * Initializes with defaults if no prior data exists.
+   */
+  async loadLearningData() {
+    try {
+      // In a real system, this would load from persistent storage
+      // For now, initialize with baseline learning data
+      const categories = ['schedule', 'energy', 'comfort', 'security', 'presence'];
+      for (const cat of categories) {
+        this.patterns.set(cat, {
+          category: cat,
+          dataPoints: [],
+          confidence: 0,
+          lastAnalyzed: null
+        });
+      }
+      console.log('📚 Learning data loaded: 5 pattern categories initialized');
+    } catch (error) {
+      console.error('Failed to load learning data:', error.message);
+      // Non-fatal — continue with empty data
+    }
+  }
+
   // ============================================
   // PATTERN RECOGNITION
   // ============================================

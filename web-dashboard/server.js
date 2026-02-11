@@ -11,6 +11,7 @@ require('dotenv').config();
 const PredictiveAnalytics = require('./predictive-analytics');
 const SecurityMiddleware = require('./security-middleware');
 const PerformanceMonitor = require('./performance-monitor');
+const ModuleLoader = require('./module-loader');
 
 // Configuration (must be before Socket.IO init)
 const PORT = process.env.PORT || 3001;
@@ -61,11 +62,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Health check endpoint (for Docker healthcheck and load balancers)
 app.get('/health', (req, res) => {
+  const moduleSummary = moduleLoader.getSummary();
   res.status(200).json({
     status: 'ok',
     service: 'web-dashboard',
     version: '3.1.0',
     uptime: process.uptime(),
+    modules: moduleSummary,
     timestamp: new Date().toISOString()
   });
 });
@@ -421,8 +424,48 @@ setInterval(async () => {
   }
 }, 5000);
 
+// ============================================
+// MODULE LOADER — Boot all 59+ feature modules
+// ============================================
+
+const moduleLoader = new ModuleLoader();
+
+async function bootModules() {
+  // Build app context for modules that need it
+  const appContext = {
+    homeyClient,
+    io,
+    getDemoData,
+    getDashboardData,
+    analytics,
+    securityMiddleware,
+    performanceMonitor,
+    config: { PORT, HOMEY_URL, HOMEY_TOKEN, ALLOWED_ORIGINS }
+  };
+
+  const result = await moduleLoader.loadAll(appContext, {
+    analytics,
+    security: securityMiddleware,
+    performance: performanceMonitor
+  });
+
+  // Register module API routes and Socket.IO events
+  moduleLoader.registerRoutes(app);
+  moduleLoader.registerSocketEvents(io);
+
+  return result;
+}
+
 // Start server
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, async () => {
   console.log(`🏠 Smart Home Dashboard running at http://localhost:${PORT}`);
   console.log(`📡 Homey connection: ${HOMEY_URL}`);
+
+  // Boot all feature modules after server is listening
+  try {
+    const result = await bootModules();
+    console.log(`📦 ${result.ready}/${result.total} modules ready`);
+  } catch (err) {
+    console.error('Module boot error:', err.message);
+  }
 });
