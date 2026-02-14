@@ -146,6 +146,10 @@ const SmartCircadianLightingSystem = require('./lib/SmartCircadianLightingSystem
 const HomeDigitalWellnessSystem = require('./lib/HomeDigitalWellnessSystem');
 const SmartCompostingGardenSystem = require('./lib/SmartCompostingGardenSystem');
 const AdvancedNeighborhoodIntegrationSystem = require('./lib/AdvancedNeighborhoodIntegrationSystem');
+const HomeWaterLeakProtectionSystem = require('./lib/HomeWaterLeakProtectionSystem');
+const SmartBlindsShutterControlSystem = require('./lib/SmartBlindsShutterControlSystem');
+const SmartFloorHeatingControlSystem = require('./lib/SmartFloorHeatingControlSystem');
+const SmartWeatherStationSystem = require('./lib/SmartWeatherStationSystem');
 
 // ============================================
 // BOOT SEQUENCE
@@ -343,6 +347,10 @@ async function boot() {
   app.homeDigitalWellnessSystem = new HomeDigitalWellnessSystem(homey);
   app.smartCompostingGardenSystem = new SmartCompostingGardenSystem(homey);
   app.advancedNeighborhoodIntegrationSystem = new AdvancedNeighborhoodIntegrationSystem(homey);
+  app.homeWaterLeakProtectionSystem = new HomeWaterLeakProtectionSystem(homey);
+  app.smartBlindsShutterControlSystem = new SmartBlindsShutterControlSystem(homey);
+  app.smartFloorHeatingControlSystem = new SmartFloorHeatingControlSystem(homey);
+  app.smartWeatherStationSystem = new SmartWeatherStationSystem(homey);
 
   // 4. Wire homey.app
   homey.app = app;
@@ -477,6 +485,10 @@ async function boot() {
     { name: 'HomeDigitalWellnessSystem', ref: app.homeDigitalWellnessSystem },
     { name: 'SmartCompostingGardenSystem', ref: app.smartCompostingGardenSystem },
     { name: 'AdvancedNeighborhoodIntegrationSystem', ref: app.advancedNeighborhoodIntegrationSystem },
+    { name: 'HomeWaterLeakProtectionSystem', ref: app.homeWaterLeakProtectionSystem },
+    { name: 'SmartBlindsShutterControlSystem', ref: app.smartBlindsShutterControlSystem },
+    { name: 'SmartFloorHeatingControlSystem', ref: app.smartFloorHeatingControlSystem },
+    { name: 'SmartWeatherStationSystem', ref: app.smartWeatherStationSystem },
   ];
 
   // 6. Initialize all systems with Promise.allSettled for resilience
