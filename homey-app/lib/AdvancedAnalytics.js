@@ -650,7 +650,8 @@ class AdvancedAnalytics {
   }
 
   async getActiveDeviceCount() {
-    const devices = await this.homey.app.deviceManager?.getAllDevices() || [];
+    const devicesObj = await this.homey.app.deviceManager?.getDevices?.() || {};
+    const devices = Object.values(devicesObj);
     return devices.filter(d => d.available).length;
   }
 

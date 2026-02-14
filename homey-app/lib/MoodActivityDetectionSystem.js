@@ -707,7 +707,7 @@ class MoodActivityDetectionSystem {
     await this.triggerMoodAutomation(newMood);
 
     // Emit event
-    this.homey.app.emit('mood_changed', {
+    this.homey.app.emit?.('mood_changed', {
       old: oldMood,
       new: newMood,
       timestamp: Date.now()
@@ -724,7 +724,7 @@ class MoodActivityDetectionSystem {
     await this.triggerActivityAutomation(newActivity);
 
     // Emit event
-    this.homey.app.emit('activity_changed', {
+    this.homey.app.emit?.('activity_changed', {
       old: oldActivity,
       new: newActivity,
       timestamp: Date.now()

@@ -652,7 +652,7 @@ class AdvancedAirPurificationSystem extends EventEmitter {
       }
       
       // Check if in sleep mode time
-      if (purifier.settings.sleepMode.enabled) {
+      if (purifier.settings?.sleepMode?.enabled) {
         const now = new Date();
         const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         const { from, to } = purifier.settings.sleepMode.schedule;

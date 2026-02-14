@@ -127,7 +127,7 @@ class AdvancedAutomationEngine {
   async evaluateConditions(automation, context = {}) {
     const { conditions, conditionLogic, customLogic } = automation;
     
-    if (conditions.length === 0) return true;
+    if (!conditions || conditions.length === 0) return true;
 
     // Evaluate each condition
     const results = await Promise.all(
@@ -427,10 +427,11 @@ class AdvancedAutomationEngine {
    */
   checkConstraints(automation) {
     const { constraints, statistics } = automation;
+    if (!constraints) return true;
     const now = Date.now();
 
     // Cooldown check
-    if (constraints.cooldownMinutes > 0 && statistics.lastExecuted) {
+    if (constraints.cooldownMinutes > 0 && statistics?.lastExecuted) {
       const minutesSinceLastExecution = (now - statistics.lastExecuted) / 60000;
       if (minutesSinceLastExecution < constraints.cooldownMinutes) {
         return false;

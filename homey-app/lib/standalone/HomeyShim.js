@@ -29,6 +29,7 @@ class HomeyShim extends EventEmitter {
     this.speechOutput = this._createSpeechManager();
     this.ledring = this._createLedringManager();
     this.devices = this._createDevicesManager();
+    this.drivers = this._createDriversManager();
     this.zones = this._createZonesManager();
     this.flow = this._createFlowManager();
     this.api = this._createApiManager();
@@ -133,6 +134,20 @@ class HomeyShim extends EventEmitter {
       registerDevice(device) {
         self._devices.set(device.id, device);
       }
+    };
+  }
+
+  // ─── Drivers Manager (legacy compat) ──────────────────────────────
+  _createDriversManager() {
+    const self = this;
+    return {
+      getDevices() {
+        return Array.from(self._devices.values());
+      },
+      getDriver() { return null; },
+      getDrivers() { return {}; },
+      on() {},
+      removeListener() {}
     };
   }
 
