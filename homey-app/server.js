@@ -150,6 +150,8 @@ const HomeWaterLeakProtectionSystem = require('./lib/HomeWaterLeakProtectionSyst
 const SmartBlindsShutterControlSystem = require('./lib/SmartBlindsShutterControlSystem');
 const SmartFloorHeatingControlSystem = require('./lib/SmartFloorHeatingControlSystem');
 const SmartWeatherStationSystem = require('./lib/SmartWeatherStationSystem');
+const SmartHomeVentilationHeatRecoverySystem = require('./lib/SmartHomeVentilationHeatRecoverySystem');
+const SmartRoofSolarMonitoringSystem = require('./lib/SmartRoofSolarMonitoringSystem');
 
 // ============================================
 // BOOT SEQUENCE
@@ -351,6 +353,8 @@ async function boot() {
   app.smartBlindsShutterControlSystem = new SmartBlindsShutterControlSystem(homey);
   app.smartFloorHeatingControlSystem = new SmartFloorHeatingControlSystem(homey);
   app.smartWeatherStationSystem = new SmartWeatherStationSystem(homey);
+  app.smartHomeVentilationHeatRecoverySystem = new SmartHomeVentilationHeatRecoverySystem(homey);
+  app.smartRoofSolarMonitoringSystem = new SmartRoofSolarMonitoringSystem(homey);
 
   // 4. Wire homey.app
   homey.app = app;
@@ -489,6 +493,8 @@ async function boot() {
     { name: 'SmartBlindsShutterControlSystem', ref: app.smartBlindsShutterControlSystem },
     { name: 'SmartFloorHeatingControlSystem', ref: app.smartFloorHeatingControlSystem },
     { name: 'SmartWeatherStationSystem', ref: app.smartWeatherStationSystem },
+    { name: 'SmartHomeVentilationHeatRecoverySystem', ref: app.smartHomeVentilationHeatRecoverySystem },
+    { name: 'SmartRoofSolarMonitoringSystem', ref: app.smartRoofSolarMonitoringSystem },
   ];
 
   // 6. Initialize all systems with Promise.allSettled for resilience
