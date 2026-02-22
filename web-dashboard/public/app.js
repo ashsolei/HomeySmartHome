@@ -1,5 +1,16 @@
 // Smart Home Pro Dashboard - Main Application
 
+// Sanitize strings before inserting into innerHTML to prevent XSS
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 class SmartHomeDashboard {
     constructor() {
         this.socket = null;
@@ -182,18 +193,18 @@ class SmartHomeDashboard {
             const temp = tempDevice?.capabilitiesObj?.measure_temperature?.value;
 
             return `
-                <div class="zone-card" data-zone="${zone.id}">
+                <div class="zone-card" data-zone="${escapeHtml(zone.id)}">
                     <div class="zone-header">
                         <div class="zone-name">
-                            <span class="zone-icon">${zone.icon || '🏠'}</span>
-                            <span>${zone.name}</span>
+                            <span class="zone-icon">${escapeHtml(zone.icon || '🏠')}</span>
+                            <span>${escapeHtml(zone.name)}</span>
                         </div>
                         ${temp ? `<span class="zone-temp">${temp.toFixed(1)}°C</span>` : ''}
                     </div>
                     <div class="zone-devices">
                         ${zoneDevices.map(d => `
-                            <div class="zone-device-indicator ${d.capabilitiesObj?.onoff?.value ? '' : 'off'}" 
-                                 title="${d.name}"></div>
+                            <div class="zone-device-indicator ${d.capabilitiesObj?.onoff?.value ? '' : 'off'}"
+                                 title="${escapeHtml(d.name)}"></div>
                         `).join('')}
                     </div>
                     <div class="zone-stats">
@@ -217,20 +228,20 @@ class SmartHomeDashboard {
             const zone = this.data.zones[device.zone];
 
             return `
-                <div class="device-card ${isOn ? 'active' : ''}" data-device="${device.id}" data-class="${device.class}">
+                <div class="device-card ${isOn ? 'active' : ''}" data-device="${escapeHtml(device.id)}" data-class="${escapeHtml(device.class)}">
                     <div class="device-header">
                         <div class="device-info">
                             <div class="device-icon">
                                 <i class="fas ${this.getDeviceIcon(device.class)}"></i>
                             </div>
                             <div>
-                                <div class="device-name">${device.name}</div>
-                                <div class="device-zone">${zone?.name || 'Okänt rum'}</div>
+                                <div class="device-name">${escapeHtml(device.name)}</div>
+                                <div class="device-zone">${escapeHtml(zone?.name || 'Okänt rum')}</div>
                             </div>
                         </div>
                         ${device.capabilities?.includes('onoff') ? `
-                            <button class="device-toggle ${isOn ? 'active' : ''}" 
-                                    onclick="dashboard.toggleDevice('${device.id}')"></button>
+                            <button class="device-toggle ${isOn ? 'active' : ''}"
+                                    onclick="dashboard.toggleDevice('${escapeHtml(device.id)}')"></button>
                         ` : ''}
                     </div>
                     ${hasDim ? `
@@ -238,7 +249,7 @@ class SmartHomeDashboard {
                             <div class="slider-control">
                                 <label>Ljusstyrka</label>
                                 <input type="range" min="0" max="100" value="${Math.round((dimValue || 0) * 100)}"
-                                       onchange="dashboard.setDeviceDim('${device.id}', this.value)">
+                                       onchange="dashboard.setDeviceDim('${escapeHtml(device.id)}', this.value)">
                                 <span class="slider-value">${Math.round((dimValue || 0) * 100)}%</span>
                             </div>
                         </div>
@@ -274,8 +285,8 @@ class SmartHomeDashboard {
                 <div class="sensor-card">
                     <div class="sensor-status ${isAlert ? 'alert' : ''}"></div>
                     <div class="sensor-info">
-                        <div class="sensor-name">${device.name}</div>
-                        <div class="sensor-location">${zone?.name || 'Okänt rum'}</div>
+                        <div class="sensor-name">${escapeHtml(device.name)}</div>
+                        <div class="sensor-location">${escapeHtml(zone?.name || 'Okänt rum')}</div>
                     </div>
                     <i class="fas ${device.capabilities?.includes('alarm_contact') ? 'fa-door-open' : 'fa-walking'}"></i>
                 </div>
@@ -299,8 +310,8 @@ class SmartHomeDashboard {
 
         container.innerHTML = logs.map(log => `
             <div class="log-item">
-                <span class="log-time">${log.time}</span>
-                <span class="log-message">${log.message}</span>
+                <span class="log-time">${escapeHtml(log.time)}</span>
+                <span class="log-message">${escapeHtml(log.message)}</span>
             </div>
         `).join('');
     }
@@ -329,20 +340,20 @@ class SmartHomeDashboard {
             if (!temp) return '';
 
             return `
-                <div class="climate-card" data-zone="${zone.id}">
+                <div class="climate-card" data-zone="${escapeHtml(zone.id)}">
                     <div class="climate-header">
-                        <div class="climate-zone-name">${zone.name}</div>
+                        <div class="climate-zone-name">${escapeHtml(zone.name)}</div>
                         <div class="climate-current-temp">${temp.toFixed(1)}°</div>
                     </div>
                     <div class="climate-controls">
                         <div class="temp-control">
                             <label>Måltemperatur</label>
                             <div class="temp-adjust">
-                                <button class="temp-btn" onclick="dashboard.adjustTemp('${zone.id}', -0.5)">
+                                <button class="temp-btn" onclick="dashboard.adjustTemp('${escapeHtml(zone.id)}', -0.5)">
                                     <i class="fas fa-minus"></i>
                                 </button>
-                                <span class="temp-value" id="target-${zone.id}">${targetTemp}°</span>
-                                <button class="temp-btn" onclick="dashboard.adjustTemp('${zone.id}', 0.5)">
+                                <span class="temp-value" id="target-${escapeHtml(zone.id)}">${targetTemp}°</span>
+                                <button class="temp-btn" onclick="dashboard.adjustTemp('${escapeHtml(zone.id)}', 0.5)">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
@@ -377,7 +388,7 @@ class SmartHomeDashboard {
             return `
                 <div class="consumer-item">
                     <div class="consumer-info">
-                        <div class="consumer-name">${device.name}</div>
+                        <div class="consumer-name">${escapeHtml(device.name)}</div>
                         <div class="consumer-bar">
                             <div class="consumer-bar-fill" style="width: ${percentage}%"></div>
                         </div>
@@ -642,11 +653,11 @@ class SmartHomeDashboard {
         const item = document.createElement('div');
         item.className = 'activity-item';
         item.innerHTML = `
-            <div class="activity-icon ${type}">
+            <div class="activity-icon ${escapeHtml(type)}">
                 <i class="fas ${type === 'scene' ? 'fa-magic' : type === 'light' ? 'fa-lightbulb' : 'fa-walking'}"></i>
             </div>
             <div class="activity-info">
-                <span class="activity-text">${text}</span>
+                <span class="activity-text">${escapeHtml(text)}</span>
                 <span class="activity-time">just nu</span>
             </div>
         `;
@@ -667,7 +678,7 @@ class SmartHomeDashboard {
         toast.className = `toast ${type}`;
         toast.innerHTML = `
             <i class="fas ${this.getToastIcon(type)}"></i>
-            <span>${message}</span>
+            <span>${escapeHtml(message)}</span>
         `;
         
         container.appendChild(toast);

@@ -1,5 +1,16 @@
 // Advanced Smart Home Dashboard - AI & Analytics
 
+// Sanitize strings before inserting into innerHTML to prevent XSS
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 class AdvancedDashboard {
     constructor() {
         this.socket = null;
@@ -61,18 +72,18 @@ class AdvancedDashboard {
         if (!container || !this.data.insights) return;
 
         container.innerHTML = this.data.insights.map(insight => `
-            <div class="insight-card ${insight.priority}">
-                <div class="insight-icon">${insight.icon}</div>
+            <div class="insight-card ${escapeHtml(insight.priority)}">
+                <div class="insight-icon">${escapeHtml(insight.icon)}</div>
                 <div class="insight-content">
-                    <h4>${insight.title}</h4>
-                    <p>${insight.message}</p>
+                    <h4>${escapeHtml(insight.title)}</h4>
+                    <p>${escapeHtml(insight.message)}</p>
                     ${insight.savings ? `
                         <div class="insight-savings">
                             Potentiell besparing: ${insight.savings[0]?.savingPotential.toFixed(0)} kr/mån
                         </div>
                     ` : ''}
                     ${insight.action ? `
-                        <button class="btn btn-sm btn-primary" onclick="advancedDashboard.handleInsightAction('${insight.action}', ${JSON.stringify(insight).replace(/"/g, '&quot;')})">
+                        <button class="btn btn-sm btn-primary" onclick="advancedDashboard.handleInsightAction('${escapeHtml(insight.action)}', ${JSON.stringify(insight).replace(/"/g, '&quot;')})">
                             Ta åtgärd
                         </button>
                     ` : ''}
@@ -98,10 +109,10 @@ class AdvancedDashboard {
             const icon = trend.direction === 'increasing' ? '📈' : 
                         trend.direction === 'decreasing' ? '📉' : '➡️';
             trendEl.innerHTML = `
-                <span class="trend-icon">${icon}</span>
+                <span class="trend-icon">${escapeHtml(icon)}</span>
                 <span class="trend-text">${Math.abs(trend.change).toFixed(1)}%</span>
             `;
-            trendEl.className = `metric-trend ${trend.direction}`;
+            trendEl.className = `metric-trend ${escapeHtml(trend.direction)}`;
         }
 
         // Efficiency score
@@ -261,10 +272,10 @@ class AdvancedDashboard {
 
         container.innerHTML = analytics.peakHours.slice(0, 5).map(peak => `
             <div class="peak-hour-card">
-                <div class="peak-time">${peak.hour}:00 - ${peak.hour + 1}:00</div>
+                <div class="peak-time">${escapeHtml(peak.hour)}:00 - ${Number(peak.hour) + 1}:00</div>
                 <div class="peak-consumption">${peak.consumption.toFixed(0)} W</div>
                 <div class="peak-percentage">+${peak.percentage.toFixed(0)}% över genomsnitt</div>
-                <button class="btn btn-sm" onclick="advancedDashboard.optimizePeakHour(${peak.hour})">
+                <button class="btn btn-sm" onclick="advancedDashboard.optimizePeakHour(${Number(peak.hour)})">
                     Optimera
                 </button>
             </div>
@@ -279,21 +290,21 @@ class AdvancedDashboard {
         if (!container) return;
 
         container.innerHTML = analytics.savings.map(saving => `
-            <div class="opportunity-card priority-${saving.priority}">
+            <div class="opportunity-card priority-${escapeHtml(saving.priority)}">
                 <div class="opportunity-header">
-                    <h4>${this.getSavingTypeIcon(saving.type)} ${saving.device || 'Allmän optimering'}</h4>
-                    <span class="priority-badge">${this.getPriorityText(saving.priority)}</span>
+                    <h4>${this.getSavingTypeIcon(saving.type)} ${escapeHtml(saving.device || 'Allmän optimering')}</h4>
+                    <span class="priority-badge">${escapeHtml(this.getPriorityText(saving.priority))}</span>
                 </div>
-                <p class="opportunity-description">${this.getSavingDescription(saving)}</p>
+                <p class="opportunity-description">${escapeHtml(this.getSavingDescription(saving))}</p>
                 <div class="opportunity-savings">
                     <span class="savings-amount">💰 ${Math.round(saving.savingPotential)} kr/mån</span>
                     <span class="current-cost">Nuvarande: ${Math.round(saving.currentCost)} kr/mån</span>
                 </div>
                 <div class="opportunity-actions">
-                    <button class="btn btn-primary" onclick="advancedDashboard.applySavingRecommendation('${saving.deviceId}', '${saving.type}')">
+                    <button class="btn btn-primary" onclick="advancedDashboard.applySavingRecommendation('${escapeHtml(saving.deviceId)}', '${escapeHtml(saving.type)}')">
                         Tillämpa
                     </button>
-                    <button class="btn btn-secondary" onclick="advancedDashboard.ignoreSaving('${saving.type}')">
+                    <button class="btn btn-secondary" onclick="advancedDashboard.ignoreSaving('${escapeHtml(saving.type)}')">
                         Ignorera
                     </button>
                 </div>
@@ -353,13 +364,13 @@ class AdvancedDashboard {
         container.innerHTML = recommendations.map((rec, index) => `
             <div class="recommendation-card">
                 <div class="recommendation-header">
-                    <h4>${rec.title}</h4>
-                    <span class="impact-badge impact-${rec.impact.toLowerCase()}">${rec.impact} påverkan</span>
+                    <h4>${escapeHtml(rec.title)}</h4>
+                    <span class="impact-badge impact-${escapeHtml(rec.impact.toLowerCase())}">${escapeHtml(rec.impact)} påverkan</span>
                 </div>
-                <p>${rec.description}</p>
+                <p>${escapeHtml(rec.description)}</p>
                 <div class="recommendation-meta">
-                    <span>💪 Insats: ${rec.effort}</span>
-                    <span>💰 Besparing: ${rec.savings}</span>
+                    <span>💪 Insats: ${escapeHtml(rec.effort)}</span>
+                    <span>💰 Besparing: ${escapeHtml(rec.savings)}</span>
                 </div>
                 <button class="btn btn-primary" onclick="advancedDashboard.applyRecommendation(${index})">
                     Implementera

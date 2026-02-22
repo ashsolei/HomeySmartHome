@@ -28,7 +28,7 @@
     "homey": "file:./lib/standalone/homey-shim-pkg"
   },
   "devDependencies": {
-    "eslint": "^9.0.0"
+    "eslint": "^10.0.0"
   },
   "engines": {
     "node": ">=22.0.0"

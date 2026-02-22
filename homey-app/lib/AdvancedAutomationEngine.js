@@ -569,17 +569,121 @@ class AdvancedAutomationEngine {
   }
 
   evaluateCustomLogic(logic, results) {
-    // Evaluate custom boolean logic expression
+    // Evaluate custom boolean logic expression safely (no eval)
     // Example: "(0 AND 1) OR (2 AND 3)"
     try {
       let expression = logic;
       results.forEach((result, index) => {
-        expression = expression.replace(new RegExp(`\\b${index}\\b`, 'g'), result);
+        expression = expression.replace(new RegExp(`\\b${index}\\b`, 'g'), result ? 'true' : 'false');
       });
-      return eval(expression);
+      return this._safeBooleanEval(expression);
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Safe boolean expression parser that only allows AND, OR, NOT, parentheses,
+   * and boolean values (true/false). No eval() or dynamic code execution.
+   */
+  _safeBooleanEval(expr) {
+    // Tokenize: extract parentheses, boolean keywords, and boolean literals
+    const tokens = [];
+    const tokenRegex = /\s*(true|false|AND|OR|NOT|\(|\))\s*/gi;
+    let match;
+    let lastIndex = 0;
+
+    while ((match = tokenRegex.exec(expr)) !== null) {
+      // Verify no unexpected characters between tokens
+      const gap = expr.substring(lastIndex, match.index).trim();
+      if (gap.length > 0) {
+        throw new Error(`Unexpected token: "${gap}"`);
+      }
+      tokens.push(match[1].toUpperCase());
+      lastIndex = tokenRegex.lastIndex;
+    }
+
+    // Check for trailing unexpected characters
+    const trailing = expr.substring(lastIndex).trim();
+    if (trailing.length > 0) {
+      throw new Error(`Unexpected token: "${trailing}"`);
+    }
+
+    if (tokens.length === 0) return false;
+
+    let pos = 0;
+
+    const peek = () => tokens[pos];
+    const consume = (expected) => {
+      const token = tokens[pos];
+      if (expected && token !== expected) {
+        throw new Error(`Expected "${expected}" but got "${token}"`);
+      }
+      pos++;
+      return token;
+    };
+
+    // Grammar: expr -> orExpr
+    // orExpr  -> andExpr (OR andExpr)*
+    // andExpr -> notExpr (AND notExpr)*
+    // notExpr -> NOT notExpr | primary
+    // primary -> TRUE | FALSE | '(' expr ')'
+
+    const parseOr = () => {
+      let left = parseAnd();
+      while (peek() === 'OR') {
+        consume('OR');
+        const right = parseAnd();
+        left = left || right;
+      }
+      return left;
+    };
+
+    const parseAnd = () => {
+      let left = parseNot();
+      while (peek() === 'AND') {
+        consume('AND');
+        const right = parseNot();
+        left = left && right;
+      }
+      return left;
+    };
+
+    const parseNot = () => {
+      if (peek() === 'NOT') {
+        consume('NOT');
+        return !parseNot();
+      }
+      return parsePrimary();
+    };
+
+    const parsePrimary = () => {
+      const token = peek();
+      if (token === 'TRUE') {
+        consume('TRUE');
+        return true;
+      }
+      if (token === 'FALSE') {
+        consume('FALSE');
+        return false;
+      }
+      if (token === '(') {
+        consume('(');
+        const result = parseOr();
+        consume(')');
+        return result;
+      }
+      throw new Error(`Unexpected token: "${token}"`);
+    };
+
+    const result = parseOr();
+
+    // Ensure all tokens were consumed
+    if (pos < tokens.length) {
+      throw new Error(`Unexpected token at end: "${tokens[pos]}"`);
+    }
+
+    return result;
   }
 
   delay(ms) {

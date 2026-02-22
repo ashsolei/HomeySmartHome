@@ -194,10 +194,8 @@ class SecurityMiddleware {
    * Get client identifier for rate limiting
    */
   getClientIdentifier(req) {
-    // Use X-Forwarded-For if behind proxy, otherwise use remoteAddress
-    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || 
-                req.connection.remoteAddress ||
-                req.socket.remoteAddress;
+    // Use req.ip (respects Express trust proxy setting), fall back to remoteAddress
+    const ip = req.ip || req.connection.remoteAddress;
     
     // Combine with user agent for better uniqueness
     const userAgent = req.headers['user-agent'] || 'unknown';

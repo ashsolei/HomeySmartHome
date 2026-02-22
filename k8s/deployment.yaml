@@ -45,10 +45,22 @@ spec:
         app: smarthomepro
         component: backend
     spec:
+      serviceAccountName: smarthome-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
       containers:
       - name: smarthomepro
         image: ghcr.io/your-repo/smarthomepro:latest
         imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
         ports:
         - containerPort: 3000
           name: http
@@ -88,10 +100,14 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /app/data
+        - name: tmp
+          mountPath: /tmp
       volumes:
       - name: data
         persistentVolumeClaim:
           claimName: smarthomepro-data
+      - name: tmp
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -131,10 +147,22 @@ spec:
         app: dashboard
         component: frontend
     spec:
+      serviceAccountName: smarthome-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
       containers:
       - name: dashboard
         image: ghcr.io/your-repo/dashboard:latest
         imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
         ports:
         - containerPort: 3001
           name: http
@@ -174,10 +202,14 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /app/data
+        - name: tmp
+          mountPath: /tmp
       volumes:
       - name: data
         persistentVolumeClaim:
           claimName: dashboard-data
+      - name: tmp
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -297,3 +329,114 @@ spec:
       target:
         type: Utilization
         averageUtilization: 70
+---
+# Default deny all traffic in namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: smarthome-pro
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# Allow ingress to backend on port 3000 from nginx/ingress only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-ingress
+  namespace: smarthome-pro
+spec:
+  podSelector:
+    matchLabels:
+      app: smarthomepro
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app: dashboard
+      ports:
+        - protocol: TCP
+          port: 3000
+  egress:
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# Allow ingress to dashboard on port 3001 from nginx/ingress only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dashboard-ingress
+  namespace: smarthome-pro
+spec:
+  podSelector:
+    matchLabels:
+      app: dashboard
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3001
+  egress:
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - podSelector:
+            matchLabels:
+              app: smarthomepro
+      ports:
+        - protocol: TCP
+          port: 3000
+---
+# RBAC: ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: smarthome-sa
+  namespace: smarthome-pro
+---
+# RBAC: Role with minimal permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: smarthome-role
+  namespace: smarthome-pro
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "configmaps"]
+    verbs: ["get", "list"]
+---
+# RBAC: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: smarthome-rolebinding
+  namespace: smarthome-pro
+subjects:
+  - kind: ServiceAccount
+    name: smarthome-sa
+    namespace: smarthome-pro
+roleRef:
+  kind: Role
+  name: smarthome-role
+  apiGroup: rbac.authorization.k8s.io
