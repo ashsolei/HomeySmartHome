@@ -53,11 +53,11 @@ jobs:
 
       - name: Audit homey-app
         working-directory: homey-app
-        run: npm audit --audit-level=high || true
+        run: npm audit --audit-level=high
 
       - name: Audit web-dashboard
         working-directory: web-dashboard
-        run: npm audit --audit-level=high || true
+        run: npm audit --audit-level=high
 
   docker-build:
     runs-on: ubuntu-latest

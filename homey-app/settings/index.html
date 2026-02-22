@@ -597,6 +597,17 @@
   </div>
 
   <script>
+    // Sanitize strings before inserting into innerHTML to prevent XSS
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     // Switch between tabs
     function switchTab(tabName) {
       // Hide all tabs
@@ -711,7 +722,7 @@
         const item = document.createElement('div');
         item.className = 'device-item';
         item.innerHTML = `
-          <span class="device-name">${device.name}</span>
+          <span class="device-name">${escapeHtml(device.name)}</span>
           <span class="device-status ${device.online ? 'status-online' : 'status-offline'}">
             ${device.online ? 'Online' : 'Offline'}
           </span>
@@ -739,15 +750,15 @@
           item.className = 'automation-item';
           item.innerHTML = `
             <div>
-              <div class="automation-name">${auto.name}</div>
+              <div class="automation-name">${escapeHtml(auto.name)}</div>
               <div class="automation-stats">
-                <span>Exekveringar: ${auto.executions}</span>
-                <span>Framgång: ${auto.successRate}%</span>
+                <span>Exekveringar: ${escapeHtml(auto.executions)}</span>
+                <span>Framgång: ${escapeHtml(auto.successRate)}%</span>
               </div>
             </div>
             <label class="toggle-switch">
-              <input type="checkbox" ${auto.enabled ? 'checked' : ''} 
-                     onchange="toggleAutomation('${auto.id}', this.checked)">
+              <input type="checkbox" ${auto.enabled ? 'checked' : ''}
+                     onchange="toggleAutomation('${escapeHtml(auto.id)}', this.checked)">
               <span class="slider"></span>
             </label>
           `;
@@ -788,10 +799,10 @@
         
         data.recommendations.forEach(rec => {
           const item = document.createElement('div');
-          item.className = `insight-item ${rec.type}`;
+          item.className = `insight-item ${escapeHtml(rec.type)}`;
           item.innerHTML = `
-            <div class="insight-title">${rec.title}</div>
-            <div class="insight-desc">${rec.description}</div>
+            <div class="insight-title">${escapeHtml(rec.title)}</div>
+            <div class="insight-desc">${escapeHtml(rec.description)}</div>
           `;
           container.appendChild(item);
         });
@@ -842,8 +853,8 @@
               <div id="recent-predictions">
                 ${(data.recentPredictions || []).map(pred => `
                   <div class="insight-item info">
-                    <div class="insight-title">${pred.type || 'Prediction'}</div>
-                    <div class="insight-desc">${pred.message || 'No details'} - Confidence: ${pred.confidence || 0}%</div>
+                    <div class="insight-title">${escapeHtml(pred.type || 'Prediction')}</div>
+                    <div class="insight-desc">${escapeHtml(pred.message || 'No details')} - Confidence: ${escapeHtml(pred.confidence || 0)}%</div>
                   </div>
                 `).join('') || '<p style="color: #718096; padding: 20px;">No recent predictions available</p>'}
               </div>
@@ -921,10 +932,10 @@
                 ${(data.activeRules || []).map(rule => `
                   <div class="automation-item">
                     <div>
-                      <div class="automation-name">${rule.name || 'Unknown Rule'}</div>
+                      <div class="automation-name">${escapeHtml(rule.name || 'Unknown Rule')}</div>
                       <div class="automation-stats">
-                        <span>Executions: ${rule.executionCount || 0}</span>
-                        <span>Success: ${rule.successRate || 0}%</span>
+                        <span>Executions: ${escapeHtml(rule.executionCount || 0)}</span>
+                        <span>Success: ${escapeHtml(rule.successRate || 0)}%</span>
                       </div>
                     </div>
                   </div>
@@ -940,7 +951,7 @@
               <div style="padding: 20px;">
                 <p style="margin-bottom: 10px; color: #718096;">Registered Systems: <strong>${data.registeredSystems || 67}</strong></p>
                 <p style="margin-bottom: 10px; color: #718096;">Active Dependencies: <strong>${data.activeDependencies || 3}</strong></p>
-                <p style="margin-bottom: 10px; color: #718096;">Orchestration Mode: <strong>${data.mode || 'AI Optimal'}</strong></p>
+                <p style="margin-bottom: 10px; color: #718096;">Orchestration Mode: <strong>${escapeHtml(data.mode || 'AI Optimal')}</strong></p>
                 <p style="margin-bottom: 10px; color: #718096;">User Satisfaction: <strong>${data.userSatisfaction || 92}%</strong></p>
               </div>
             </div>

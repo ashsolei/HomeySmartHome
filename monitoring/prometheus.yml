@@ -5,6 +5,9 @@ global:
   external_labels:
     monitor: 'smarthome-pro'
 
+rule_files:
+  - "alerts.yml"
+
 # Alerting configuration (optional)
 alerting:
   alertmanagers:

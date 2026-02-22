@@ -628,9 +628,40 @@ class SmartSchedulingSystem {
   }
 
   async executeScriptAction(action) {
-    // Execute custom JavaScript
-    const func = new Function('homey', action.script);
-    await func(this.homey);
+    // Safe action executor - only supports predefined action types
+    // No dynamic code execution (new Function/eval) allowed
+    if (!action || !action.type) {
+      throw new Error('Script action must have a "type" property');
+    }
+
+    switch (action.type) {
+      case 'emit': {
+        // Emit a Homey event with optional data
+        const eventName = String(action.event || '').replace(/[^a-zA-Z0-9_.\-:]/g, '');
+        if (!eventName) throw new Error('Emit action requires a valid "event" name');
+        this.homey.emit(eventName, action.data || {});
+        break;
+      }
+      case 'setting': {
+        // Set a Homey setting to a value (only string/number/boolean allowed)
+        const key = String(action.key || '');
+        if (!key) throw new Error('Setting action requires a "key"');
+        const valueType = typeof action.value;
+        if (valueType !== 'string' && valueType !== 'number' && valueType !== 'boolean') {
+          throw new Error('Setting value must be a string, number, or boolean');
+        }
+        await this.homey.settings.set(key, action.value);
+        break;
+      }
+      case 'log': {
+        // Log a message
+        const message = String(action.message || '');
+        this.homey.log(`[ScheduledScript] ${message}`);
+        break;
+      }
+      default:
+        throw new Error(`Unsupported script action type: "${action.type}". Allowed types: emit, setting, log`);
+    }
   }
 
   /**

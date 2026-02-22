@@ -563,6 +563,7 @@ async function startServer() {
   }
 
   const server = express();
+  server.set('trust proxy', 1);
 
   // ── Security & Performance Middleware ──
   server.use(helmet({
@@ -589,7 +590,7 @@ async function startServer() {
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests', retryAfter: '15 minutes' },
-    keyGenerator: (req) => req.headers['x-forwarded-for'] || req.ip,
+    keyGenerator: (req) => req.ip,
   });
   server.use('/api/', apiLimiter);
 

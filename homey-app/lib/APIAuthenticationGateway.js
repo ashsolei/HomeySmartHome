@@ -621,7 +621,7 @@ class APIAuthenticationGateway extends EventEmitter {
    * @returns {{ authenticated: boolean, tokenRecord?: TokenRecord, error?: string, statusCode?: number }}
    */
   authenticate(req) {
-    const ip = req.ip || req.headers?.['x-forwarded-for'] || 'unknown';
+    const ip = req.ip || 'unknown';
     const path = req.path || '/';
 
     // 1. IP lockout check

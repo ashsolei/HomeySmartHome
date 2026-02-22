@@ -1,107 +1,80 @@
-# CLAUDE.md
+# CLAUDE.md — SmartHome Pro v3.3.0
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Node.js >=22 monorepo. 93+ backend modules, 65+ dashboard modules, AI-driven automation.
 
-## Project Overview
+## Repository Layout
 
-HomeySmartHome (SmartHome Pro) is a Node.js monorepo (v3.3.0) for a comprehensive smart home platform with 118+ backend system modules and 65+ dashboard modules. It runs on **Node.js >=22.0.0**.
-
-## Repository Structure
-
-- **homey-app/** — Backend Express.js server (port 3000) with 118 system modules in `lib/`
-- **web-dashboard/** — Frontend Express.js + Socket.IO server (port 3001) with dashboard modules in `public/`
-- **nginx/** — Reverse proxy config (rate limiting, security headers, WebSocket upgrade)
-- **k8s/** — Kubernetes manifests (deployments, HPA, ingress)
-- **monitoring/** — Prometheus + Grafana configuration
-- **automations/** — Pre-built automation library (JSON + docs)
+| Path | Description | Port |
+|---|---|---|
+| `homey-app/` | Backend Express + Homey SDK app, 93 modules in `lib/` | 3000 |
+| `web-dashboard/` | Express + Socket.IO dashboard, static assets in `public/` | 3001 |
+| `nginx/` | Reverse proxy — rate limiting, security headers, WS upgrade | — |
+| `k8s/` | All manifests in `deployment.yaml` (namespace: `smarthome-pro`) | — |
+| `monitoring/` | `prometheus.yml` + `grafana/datasources/` | — |
+| `automations/` | Pre-built automation library (JSON + docs) | — |
 
 ## Common Commands
 
-### Development
 ```bash
-# Install dependencies (run in each service directory)
-cd homey-app && npm ci
-cd web-dashboard && npm ci
+cd homey-app && npm ci && cd ../web-dashboard && npm ci   # install
 
-# Start backend (standalone)
-cd homey-app && npm start          # production
-cd homey-app && npm run start:dev  # with nodemon hot-reload
+cd homey-app && npm run start:dev        # nodemon, port 3000
+cd web-dashboard && npm run dev          # nodemon, port 3001
 
-# Start dashboard
-cd web-dashboard && npm start      # production
-cd web-dashboard && npm run dev    # with nodemon hot-reload
-```
+docker compose up -d --build            # prod: backend + dashboard + nginx
+docker compose -f docker-compose.dev.yml up -d --build   # + redis + prometheus + grafana
 
-### Docker
-```bash
-# Production (3 services: backend, dashboard, nginx)
-docker compose up -d --build
+./deploy.sh start | stop | restart | status | logs | test | clean
 
-# Development (5 services: adds redis, prometheus, grafana + hot-reload)
-docker compose -f docker-compose.dev.yml up -d --build
-
-# Deploy script (start/stop/restart/status/logs/test/clean)
-./deploy.sh start
-./deploy.sh status
-./deploy.sh logs
-```
-
-### Testing & Linting
-```bash
-# All tests and linting from root
-npm run test:all
-npm run lint:all
-
-# Individual services
-cd homey-app && npm test
-cd homey-app && npm run lint
-cd web-dashboard && npm test
-cd web-dashboard && npm run lint
-```
-
-### Docker Build (individual)
-```bash
-cd homey-app && npm run docker:build
-cd web-dashboard && npm run docker:build
+npm run test:all && npm run lint:all    # from repo root
 ```
 
 ## Architecture
 
-### Backend (homey-app)
-- **app.js** (~100KB) — Main Homey SDK app entry, initializes all system modules
-- **server.js** (~865 lines) — Standalone Express server with HomeyShim emulation for running outside the Homey platform
-- **api.js** (~125KB) — REST API route definitions (120+ endpoints)
-- **lib/** — 118 system modules, each a self-contained class (e.g., `SmartHomeTheaterSystem.js`, `SolarEnergyOptimizationSystem.js`). Modules follow a consistent pattern: constructor with Homey reference, initialization method, and domain-specific logic.
-- **test-suite.js** — Custom TestRunner with HTTP assertion helpers
+**Backend** (`homey-app/`): `app.js` (Homey SDK entry) — `server.js` (standalone HomeyShim)
+— `api.js` (120+ endpoints) — `lib/*.js` (all modules as `Smart*System`/`Advanced*System`)
 
-### Dashboard (web-dashboard)
-- **server.js** (~530 lines) — Express + Socket.IO with dynamic ModuleLoader, PredictiveAnalytics, and PerformanceMonitor
-- **public/** — Static frontend assets (HTML/CSS/JS dashboard modules)
+**Dashboard** (`web-dashboard/server.js`): Express + Socket.IO 4.x, `PredictiveAnalytics`,
+`PerformanceMonitor`, `ModuleLoader`. Auth via `socket.handshake.auth.token` (required in prod).
+Event naming convention: `module:action` (e.g. `energy:update`).
 
-### Key Health/Monitoring Endpoints
-- `/health` — Docker healthcheck (both services)
-- `/ready` — Kubernetes readiness probe (backend)
-- `/api/v1/stats` — System statistics
-- `/metrics` — Prometheus text format metrics
+**Module pattern** — every file in `homey-app/lib/`:
+```js
+class SmartExampleSystem {
+  constructor(homey) { this.homey = homey; }
+  async initialize() { /* register flows, start intervals */ }
+}
+module.exports = SmartExampleSystem;
+```
+Register new modules in `app.js`, `server.js`, and `api.js`.
 
-### Infrastructure
-- **CI/CD:** GitHub Actions (`.github/workflows/ci-cd.yml`) — lint, test, security audit, Docker build to GHCR
-- **Container images:** Multi-stage Alpine builds, non-root user, dumb-init PID 1
-- **Monitoring:** Prometheus scrapes `/metrics`, Grafana dashboards pre-configured
+## Health & Observability
 
-## Environment Configuration
+- `GET /health` — liveness probe (both services)
+- `GET /ready` — readiness probe (backend only)
+- `GET /metrics` — Prometheus text format (both services)
+- `GET /api/v1/stats` — system statistics JSON
 
-Key env vars (see `.env.example`):
-- `TZ=Europe/Stockholm`, `LATITUDE/LONGITUDE` — Stockholm defaults
-- `HOMEY_TOKEN` — Homey API authentication
-- `ALLOWED_ORIGINS` — CORS whitelist (comma-separated)
-- `JWT_SECRET` — Dashboard auth
-- `LOG_LEVEL` — Logging verbosity
+## Key Environment Variables
+
+| Variable | Default | Notes |
+|---|---|---|
+| `HOMEY_TOKEN` | — | Homey API auth |
+| `JWT_SECRET` | — | Dashboard auth |
+| `ALLOWED_ORIGINS` | `http://localhost,...` | CORS whitelist |
+| `TZ` | `Europe/Stockholm` | Stockholm locale |
+| `LOG_LEVEL` | `info` | |
+| `ENABLE_RATE_LIMITING` | `true` | 100 req/min default |
 
 ## Conventions
 
-- All system modules live in `homey-app/lib/` as `Smart*System.js` or `Advanced*System.js` classes
-- Express security stack: Helmet + CORS + express-rate-limit on all services
-- Both services use graceful shutdown handlers (SIGTERM/SIGINT)
-- ESLint v9 for linting (flat config)
-- Swedish locale context (Stockholm timezone, coordinates) but code/comments in English
+- Middleware order is fixed: cors → json → helmet → compression → SecurityMiddleware → PerformanceMonitor
+- ESLint v9 flat config — run `npm run lint:all` before committing
+- Code and comments in English; Swedish locale context (Stockholm TZ/coordinates)
+- CI/CD: GitHub Actions → GHCR; multi-stage Alpine, non-root user, dumb-init PID 1
+
+## Specialized Agents
+
+`.claude/agents/homey-module-dev` — module arch, Socket.IO, middleware
+`.claude/agents/k8s-ops` — K8s manifests, HPA, ingress, probes
+`.claude/agents/monitoring-expert` — Prometheus, Grafana, alerting
