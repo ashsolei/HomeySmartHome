@@ -1,13 +1,15 @@
 'use strict';
 
+const BaseSystem = require('./BaseSystem');
+
 /**
  * Advanced Automation Engine
  * Provides intelligent automation with learning capabilities, predictive actions,
  * and complex condition evaluation
  */
-class AdvancedAutomationEngine {
+class AdvancedAutomationEngine extends BaseSystem {
   constructor(homey) {
-    this.homey = homey;
+    super(homey);
     this.automations = new Map();
     this.executionHistory = [];
     this.patterns = new Map();
@@ -16,6 +18,7 @@ class AdvancedAutomationEngine {
   }
 
   async initialize() {
+    await super.initialize();
     this.log('Initializing Advanced Automation Engine...');
     
     // Load saved automations
@@ -708,9 +711,9 @@ class AdvancedAutomationEngine {
 
   startEngine() {
     // Monitor triggers and execute automations
-    this.engineInterval = setInterval(async () => {
+    this.engineInterval = this.registerInterval(setInterval(async () => {
       await this.checkAndExecuteAutomations();
-    }, 30000); // Check every 30 seconds
+    }, 30000)); // Check every 30 seconds
   }
 
   async checkAndExecuteAutomations() {
@@ -726,13 +729,6 @@ class AdvancedAutomationEngine {
     }
   }
 
-  log(...args) {
-    console.log('[AdvancedAutomationEngine]', ...args);
-  }
-
-  error(...args) {
-    console.error('[AdvancedAutomationEngine]', ...args);
-  }
 }
 
 module.exports = AdvancedAutomationEngine;

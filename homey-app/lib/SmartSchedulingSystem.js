@@ -1,12 +1,14 @@
 'use strict';
 
+const BaseSystem = require('./BaseSystem');
+
 /**
  * Smart Scheduling System
  * Intelligent task scheduling with conflict resolution and optimization
  */
-class SmartSchedulingSystem {
+class SmartSchedulingSystem extends BaseSystem {
   constructor(homey) {
-    this.homey = homey;
+    super(homey);
     this.tasks = new Map();
     this.schedules = new Map();
     this.executionQueue = [];
@@ -14,6 +16,7 @@ class SmartSchedulingSystem {
   }
 
   async initialize() {
+    await super.initialize();
     this.log('Initializing Smart Scheduling System...');
     
     // Load tasks
@@ -42,19 +45,19 @@ class SmartSchedulingSystem {
    */
   async startScheduler() {
     // Check for due tasks every minute
-    this.schedulerInterval = setInterval(async () => {
+    this.schedulerInterval = this.registerInterval(setInterval(async () => {
       await this.checkDueTasks();
-    }, 60000);
+    }, 60000));
 
     // Process execution queue every 10 seconds
-    this.queueInterval = setInterval(async () => {
+    this.queueInterval = this.registerInterval(setInterval(async () => {
       await this.processQueue();
-    }, 10000);
+    }, 10000));
 
     // Optimize schedules daily
-    this.optimizationInterval = setInterval(async () => {
+    this.optimizationInterval = this.registerInterval(setInterval(async () => {
       await this.optimizeSchedules();
-    }, 86400000);
+    }, 86400000));
 
     // Initial check
     await this.checkDueTasks();
@@ -815,13 +818,6 @@ class SmartSchedulingSystem {
     await this.homey.settings.set('executionHistory', this.executionHistory.slice(-1000));
   }
 
-  log(...args) {
-    console.log('[SmartSchedulingSystem]', ...args);
-  }
-
-  error(...args) {
-    console.error('[SmartSchedulingSystem]', ...args);
-  }
 }
 
 module.exports = SmartSchedulingSystem;

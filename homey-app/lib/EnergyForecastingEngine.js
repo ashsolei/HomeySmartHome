@@ -1,12 +1,14 @@
 'use strict';
 
+const BaseSystem = require('./BaseSystem');
+
 /**
  * Energy Forecasting Engine
  * Advanced energy prediction, cost forecasting, and optimization
  */
-class EnergyForecastingEngine {
+class EnergyForecastingEngine extends BaseSystem {
   constructor(homey) {
-    this.homey = homey;
+    super(homey);
     this.historicalData = [];
     this.forecastModels = new Map();
     this.energyPrices = [];
@@ -15,6 +17,7 @@ class EnergyForecastingEngine {
   }
 
   async initialize() {
+    await super.initialize();
     this.log('Initializing Energy Forecasting Engine...');
     
     // Load historical data
@@ -40,24 +43,24 @@ class EnergyForecastingEngine {
    */
   async startDataCollection() {
     // Collect energy data every 5 minutes
-    this.dataCollectionInterval = setInterval(async () => {
+    this.dataCollectionInterval = this.registerInterval(setInterval(async () => {
       await this.collectEnergyData();
-    }, 300000);
+    }, 300000));
 
     // Update forecasts every hour
-    this.forecastInterval = setInterval(async () => {
+    this.forecastInterval = this.registerInterval(setInterval(async () => {
       await this.updateForecasts();
-    }, 3600000);
+    }, 3600000));
 
     // Train models daily
-    this.trainingInterval = setInterval(async () => {
+    this.trainingInterval = this.registerInterval(setInterval(async () => {
       await this.trainModels();
-    }, 86400000);
+    }, 86400000));
 
     // Fetch energy prices every hour
-    this.priceUpdateInterval = setInterval(async () => {
+    this.priceUpdateInterval = this.registerInterval(setInterval(async () => {
       await this.fetchEnergyPrices();
-    }, 3600000);
+    }, 3600000));
   }
 
   /**
@@ -751,13 +754,6 @@ class EnergyForecastingEngine {
     await this.homey.settings.set('energyHistoricalData', this.historicalData.slice(-10000));
   }
 
-  log(...args) {
-    console.log('[EnergyForecastingEngine]', ...args);
-  }
-
-  error(...args) {
-    console.error('[EnergyForecastingEngine]', ...args);
-  }
 }
 
 module.exports = EnergyForecastingEngine;

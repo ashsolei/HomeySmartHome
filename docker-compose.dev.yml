@@ -30,7 +30,7 @@ services:
       - PORT=3000
       - TZ=${TZ:-Europe/Stockholm}
       - LOG_LEVEL=debug
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-smarthome-dev-redis}@redis:6379
     volumes:
       - ./homey-app:/app
       - /app/node_modules
@@ -55,7 +55,7 @@ services:
       - TZ=${TZ:-Europe/Stockholm}
       - HOMEY_URL=http://smarthomepro-dev:3000
       - HOMEY_TOKEN=${HOMEY_TOKEN:-}
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-smarthome-dev-redis}@redis:6379
     volumes:
       - ./web-dashboard:/app
       - /app/node_modules
@@ -73,7 +73,7 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:6379:6379"  # localhost only
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:-smarthome-dev-redis}
     volumes:
       - redis_data:/data
     networks:
@@ -103,7 +103,7 @@ services:
     ports:
       - "3002:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-changeme}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:?Set GRAFANA_PASSWORD in .env}
       - GF_SERVER_ROOT_URL=http://localhost:3002
     volumes:
       - ./monitoring/grafana:/etc/grafana/provisioning:ro

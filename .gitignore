@@ -33,3 +33,8 @@ nohup.out
 build_test.sh
 run_build.sh
 run_tests.sh
+
+# Symlinked from AgentHub (source of truth)
+.github/copilot/agents/
+.github/skills/
+.claude/agents/

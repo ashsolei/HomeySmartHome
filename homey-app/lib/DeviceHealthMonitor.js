@@ -1,12 +1,14 @@
 'use strict';
 
+const BaseSystem = require('./BaseSystem');
+
 /**
  * Device Health Monitor
  * Real-time health tracking, predictive maintenance, and anomaly detection
  */
-class DeviceHealthMonitor {
+class DeviceHealthMonitor extends BaseSystem {
   constructor(homey) {
-    this.homey = homey;
+    super(homey);
     this.deviceHealth = new Map();
     this.healthHistory = new Map();
     this.anomalies = [];
@@ -15,6 +17,7 @@ class DeviceHealthMonitor {
   }
 
   async initialize() {
+    await super.initialize();
     this.log('Initializing Device Health Monitor...');
     
     // Load health data
@@ -58,19 +61,19 @@ class DeviceHealthMonitor {
     });
 
     // Periodic health checks
-    this.healthCheckInterval = setInterval(async () => {
+    this.healthCheckInterval = this.registerInterval(setInterval(async () => {
       await this.performHealthChecks();
-    }, 300000); // Every 5 minutes
+    }, 300000)); // Every 5 minutes
 
     // Daily diagnostics
-    this.diagnosticsInterval = setInterval(async () => {
+    this.diagnosticsInterval = this.registerInterval(setInterval(async () => {
       await this.runDiagnostics();
-    }, 86400000); // Every 24 hours
+    }, 86400000)); // Every 24 hours
 
     // Hourly anomaly detection
-    this.anomalyInterval = setInterval(async () => {
+    this.anomalyInterval = this.registerInterval(setInterval(async () => {
       await this.detectAnomalies();
-    }, 3600000); // Every hour
+    }, 3600000)); // Every hour
   }
 
   /**
@@ -792,13 +795,6 @@ class DeviceHealthMonitor {
     await this.homey.settings.set('maintenanceSchedule', data);
   }
 
-  log(...args) {
-    console.log('[DeviceHealthMonitor]', ...args);
-  }
-
-  error(...args) {
-    console.error('[DeviceHealthMonitor]', ...args);
-  }
 }
 
 module.exports = DeviceHealthMonitor;

@@ -603,6 +603,76 @@ async function startServer() {
   });
   server.use('/api/v1/stats', strictLimiter);
 
+  // ── CSRF Protection (double-submit HMAC pattern, no external dependencies) ──
+  //
+  // How it works:
+  //   1. Client calls GET /api/v1/csrf-token → receives { csrfToken }.
+  //   2. Client sends the token back in the X-CSRF-Token header on every
+  //      POST / PUT / DELETE / PATCH request.
+  //   3. The middleware verifies the token using HMAC-SHA256 with the server
+  //      secret.  Forged or missing tokens receive 403.
+  //
+  // Excluded paths: /health, /ready, /metrics (probes, no cookies involved).
+  const CSRF_SECRET = process.env.CSRF_SECRET || process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+  const CSRF_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+  /**
+   * Generate a time-bound HMAC CSRF token.
+   * Format: <expiry_ms>.<hmac_hex>
+   */
+  function generateCsrfToken() {
+    const expiry = Date.now() + CSRF_TOKEN_TTL_MS;
+    const payload = String(expiry);
+    const hmac = crypto.createHmac('sha256', CSRF_SECRET).update(payload).digest('hex');
+    return `${payload}.${hmac}`;
+  }
+
+  /**
+   * Validate a CSRF token.  Returns true only if the signature is correct
+   * and the token has not expired.
+   */
+  function validateCsrfToken(token) {
+    if (!token || typeof token !== 'string') return false;
+    const dotIdx = token.lastIndexOf('.');
+    if (dotIdx === -1) return false;
+
+    const payload = token.slice(0, dotIdx);
+    const providedHmac = token.slice(dotIdx + 1);
+    const expectedHmac = crypto.createHmac('sha256', CSRF_SECRET).update(payload).digest('hex');
+
+    // Constant-time comparison to prevent timing attacks
+    if (!crypto.timingSafeEqual(Buffer.from(providedHmac, 'hex').slice(0, 32), Buffer.from(expectedHmac, 'hex').slice(0, 32))) {
+      return false;
+    }
+    const expiry = parseInt(payload, 10);
+    return !Number.isNaN(expiry) && Date.now() < expiry;
+  }
+
+  // CSRF token issuance endpoint — must be registered BEFORE the validation middleware
+  server.get('/api/v1/csrf-token', (_req, res) => {
+    res.json({ csrfToken: generateCsrfToken() });
+  });
+
+  // CSRF validation middleware — applies only to mutating methods on /api/ routes
+  const CSRF_SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+  const CSRF_EXEMPT_PATHS = new Set(['/health', '/ready', '/metrics', '/health/systems']);
+
+  server.use('/api/', (req, res, next) => {
+    // Safe methods and exempted paths skip validation
+    if (CSRF_SAFE_METHODS.has(req.method)) return next();
+    if (CSRF_EXEMPT_PATHS.has(req.path)) return next();
+
+    const token = req.headers['x-csrf-token'];
+    if (!validateCsrfToken(token)) {
+      return res.status(403).json({
+        error: 'CSRF token missing or invalid',
+        message: 'Obtain a token from GET /api/v1/csrf-token and include it in the X-CSRF-Token header',
+        timestamp: new Date().toISOString(),
+      });
+    }
+    next();
+  });
+
   // Request ID + structured logging
   server.use((req, res, next) => {
     req.id = req.headers['x-request-id'] || crypto.randomUUID();
@@ -767,6 +837,13 @@ async function startServer() {
         });
         res.json(result);
       } catch (err) {
+        // Validation errors thrown by API handlers carry a statusCode property
+        if (err.statusCode >= 400 && err.statusCode < 500) {
+          return res.status(err.statusCode).json({
+            error: err.message,
+            timestamp: new Date().toISOString(),
+          });
+        }
         console.error(`[API Error] ${fnName}:`, err.message);
         const isProduction = process.env.NODE_ENV === 'production';
         res.status(500).json({
