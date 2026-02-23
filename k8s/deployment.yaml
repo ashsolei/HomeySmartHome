@@ -16,15 +16,33 @@ data:
   MAX_REQUESTS_PER_MINUTE: "100"
   ENABLE_METRICS: "true"
 ---
-apiVersion: v1
-kind: Secret
+# SealedSecret — managed by bitnami/sealed-secrets controller.
+# To update secrets, run:
+#   kubectl create secret generic smarthome-secrets \
+#     --from-literal=HOMEY_TOKEN=<value> \
+#     --from-literal=JWT_SECRET=<value> \
+#     --dry-run=client -o yaml \
+#     | kubeseal --controller-namespace kube-system \
+#                --controller-name sealed-secrets \
+#                --format yaml > k8s/sealedsecret-smarthome.yaml
+# Then apply: kubectl apply -f k8s/sealedsecret-smarthome.yaml
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
 metadata:
   name: smarthome-secrets
   namespace: smarthome-pro
-type: Opaque
-stringData:
-  HOMEY_TOKEN: "your_homey_token_here"
-  JWT_SECRET: "change_this_to_a_random_secret"
+  annotations:
+    sealedsecrets.bitnami.com/managed: "true"
+spec:
+  encryptedData:
+    # Replace these placeholder values with actual sealed ciphertext produced by kubeseal.
+    HOMEY_TOKEN: "REPLACE_WITH_KUBESEAL_ENCRYPTED_VALUE"
+    JWT_SECRET: "REPLACE_WITH_KUBESEAL_ENCRYPTED_VALUE"
+  template:
+    metadata:
+      name: smarthome-secrets
+      namespace: smarthome-pro
+    type: Opaque
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -51,10 +69,20 @@ spec:
         runAsUser: 1001
         runAsGroup: 1001
         fsGroup: 1001
+      # Prefer spreading backend replicas across different nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: smarthomepro
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: smarthomepro
-        image: ghcr.io/your-repo/smarthomepro:latest
-        imagePullPolicy: Always
+        image: ghcr.io/your-repo/smarthomepro:3.3.0
+        imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -66,7 +94,7 @@ spec:
           name: http
         - containerPort: 9090
           name: metrics
-        envFrom:
+        envFrom: # nosonar(kubernetes:S6907) — shared ConfigMap intentionally referenced by both deployments
         - configMapRef:
             name: smarthome-config
         - secretRef:
@@ -78,9 +106,19 @@ spec:
           requests:
             memory: "256Mi"
             cpu: "500m"
+            ephemeral-storage: "256Mi"
           limits:
             memory: "768Mi"
             cpu: "1500m"
+            ephemeral-storage: "512Mi"
+        # Startup probe — allows up to 5 min (30 × 10s) for the container to become live
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          failureThreshold: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
         livenessProbe:
           httpGet:
             path: /health
@@ -153,10 +191,20 @@ spec:
         runAsUser: 1001
         runAsGroup: 1001
         fsGroup: 1001
+      # Prefer spreading dashboard replicas across different nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: dashboard
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: dashboard
-        image: ghcr.io/your-repo/dashboard:latest
-        imagePullPolicy: Always
+        image: ghcr.io/your-repo/dashboard:3.3.0
+        imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -166,7 +214,7 @@ spec:
         ports:
         - containerPort: 3001
           name: http
-        envFrom:
+        envFrom: # nosonar(kubernetes:S6907) — shared ConfigMap intentionally referenced by both deployments
         - configMapRef:
             name: smarthome-config
         - secretRef:
@@ -180,9 +228,19 @@ spec:
           requests:
             memory: "128Mi"
             cpu: "250m"
+            ephemeral-storage: "128Mi"
           limits:
             memory: "256Mi"
             cpu: "500m"
+            ephemeral-storage: "256Mi"
+        # Startup probe — allows up to 5 min (30 × 10s) for the container to become live
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          failureThreshold: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
         livenessProbe:
           httpGet:
             path: /health
@@ -309,6 +367,14 @@ spec:
       target:
         type: Utilization
         averageUtilization: 80
+  # Custom metric — scale on per-pod request rate (requires Prometheus Adapter or KEDA)
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -440,3 +506,44 @@ roleRef:
   kind: Role
   name: smarthome-role
   apiGroup: rbac.authorization.k8s.io
+---
+# ResourceQuota — cap total resource consumption in the smarthome-pro namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: smarthome-quota
+  namespace: smarthome-pro
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: "4Gi"
+    limits.cpu: "8"
+    limits.memory: "8Gi"
+    pods: "20"
+    services: "10"
+    secrets: "20"
+    configmaps: "20"
+---
+# PodDisruptionBudget — ensure at least 1 backend replica stays available during disruptions
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: smarthomepro-pdb
+  namespace: smarthome-pro
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: smarthomepro
+---
+# PodDisruptionBudget — ensure at least 1 dashboard replica stays available during disruptions
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: dashboard-pdb
+  namespace: smarthome-pro
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: dashboard

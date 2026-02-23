@@ -614,13 +614,20 @@ class APIAuthenticationGateway extends EventEmitter {
    * Main authentication middleware.  Validates the token, enforces rate
    * limits and IP lockout, and records an audit entry.
    *
-   * @param {Object} req       - Incoming request-like object.
+   * IMPORTANT: IP address is sourced exclusively from `req.ip`, which Express
+   * populates after applying the `trust proxy` setting.  Never read
+   * X-Forwarded-For directly from headers — that would allow clients to spoof
+   * their IP and bypass lockout / rate-limit enforcement.
+   *
+   * @param {Object} req       - Express request object (must have trust proxy applied upstream).
    * @param {Object} req.headers - HTTP headers.
    * @param {string} req.path    - Request path.
-   * @param {string} [req.ip]    - Client IP address.
+   * @param {string} [req.ip]    - Client IP resolved by Express (honours trust proxy).
    * @returns {{ authenticated: boolean, tokenRecord?: TokenRecord, error?: string, statusCode?: number }}
    */
   authenticate(req) {
+    // Use only the Express-resolved req.ip.  Do NOT fall back to parsing
+    // X-Forwarded-For from headers, as untrusted clients can forge that header.
     const ip = req.ip || 'unknown';
     const path = req.path || '/';
 

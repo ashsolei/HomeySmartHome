@@ -1,0 +1,36 @@
+name: CodeQL SAST
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Run weekly to catch newly disclosed vulnerabilities in unchanged code
+  schedule:
+    - cron: '30 6 * * 1'
+
+jobs:
+  analyze:
+    name: Analyze JavaScript
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          # Use the default security-and-quality query suite for broad coverage
+          queries: security-and-quality
+
+      # CodeQL auto-builds are sufficient for JavaScript (interpreted language)
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:javascript

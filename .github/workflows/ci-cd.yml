@@ -33,13 +33,24 @@ jobs:
         run: |
           npm ci
           npm run lint --if-present
-          npm test --if-present
+          npm test --if-present 2>&1 | tee /tmp/homey-app-test-results.txt; exit ${PIPESTATUS[0]}
 
       - name: Install & test web-dashboard
         working-directory: web-dashboard
         run: |
           npm ci
-          npm test --if-present
+          npm test --if-present 2>&1 | tee /tmp/web-dashboard-test-results.txt; exit ${PIPESTATUS[0]}
+
+      # INF-20: Archive test artifacts
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.node-version }}
+          path: |
+            /tmp/homey-app-test-results.txt
+            /tmp/web-dashboard-test-results.txt
+          retention-days: 30
 
   security-audit:
     runs-on: ubuntu-latest
@@ -65,6 +76,10 @@ jobs:
     permissions:
       contents: read
       packages: write
+      # Required for OIDC token used by cosign keyless signing
+      id-token: write
+      # Required for Trivy to post results to the Security tab
+      security-events: write
     steps:
       - uses: actions/checkout@v4
 
@@ -78,27 +93,154 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build & push homey-app
+      # INF-19: Install cosign for keyless image signing
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.0
+
+      # ── homey-app ────────────────────────────────────────────────────────────
+
+      - name: Build homey-app image (local load for scanning)
         uses: docker/build-push-action@v6
         with:
           context: ./homey-app
-          push: ${{ github.ref == 'refs/heads/main' }}
+          # Load into the local Docker daemon so Trivy can scan before pushing
+          load: true
+          push: false
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthomepro:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthomepro:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build & push web-dashboard
+      # INF-10: Trivy scan — homey-app
+      - name: Scan homey-app image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthomepro:${{ github.sha }}
+          format: sarif
+          output: trivy-homey-app.sarif
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: true
+
+      - name: Upload Trivy results for homey-app
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-homey-app.sarif
+          category: trivy-homey-app
+
+      - name: Push homey-app image
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./homey-app
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthomepro:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthomepro:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # INF-19: Sign homey-app image with cosign (keyless, OIDC)
+      - name: Sign homey-app image
+        if: github.ref == 'refs/heads/main'
+        env:
+          COSIGN_EXPERIMENTAL: '1'
+        run: |
+          cosign sign --yes \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthomepro:${{ github.sha }}
+
+      # INF-19: Attach SBOM attestation for homey-app
+      - name: Generate SBOM for homey-app
+        if: github.ref == 'refs/heads/main'
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthomepro:${{ github.sha }}
+          format: spdx-json
+          output-file: homey-app-sbom.spdx.json
+
+      - name: Attest SBOM for homey-app
+        if: github.ref == 'refs/heads/main'
+        env:
+          COSIGN_EXPERIMENTAL: '1'
+        run: |
+          cosign attest --yes \
+            --predicate homey-app-sbom.spdx.json \
+            --type spdxjson \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthomepro:${{ github.sha }}
+
+      # ── web-dashboard ────────────────────────────────────────────────────────
+
+      - name: Build web-dashboard image (local load for scanning)
         uses: docker/build-push-action@v6
         with:
           context: ./web-dashboard
-          push: ${{ github.ref == 'refs/heads/main' }}
+          load: true
+          push: false
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthome-dashboard:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthome-dashboard:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # INF-10: Trivy scan — web-dashboard
+      - name: Scan web-dashboard image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthome-dashboard:${{ github.sha }}
+          format: sarif
+          output: trivy-dashboard.sarif
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: true
+
+      - name: Upload Trivy results for web-dashboard
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-dashboard.sarif
+          category: trivy-dashboard
+
+      - name: Push web-dashboard image
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./web-dashboard
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthome-dashboard:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthome-dashboard:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # INF-19: Sign web-dashboard image with cosign (keyless, OIDC)
+      - name: Sign web-dashboard image
+        if: github.ref == 'refs/heads/main'
+        env:
+          COSIGN_EXPERIMENTAL: '1'
+        run: |
+          cosign sign --yes \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthome-dashboard:${{ github.sha }}
+
+      # INF-19: Attach SBOM attestation for web-dashboard
+      - name: Generate SBOM for web-dashboard
+        if: github.ref == 'refs/heads/main'
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthome-dashboard:${{ github.sha }}
+          format: spdx-json
+          output-file: dashboard-sbom.spdx.json
+
+      - name: Attest SBOM for web-dashboard
+        if: github.ref == 'refs/heads/main'
+        env:
+          COSIGN_EXPERIMENTAL: '1'
+        run: |
+          cosign attest --yes \
+            --predicate dashboard-sbom.spdx.json \
+            --type spdxjson \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/smarthome-dashboard:${{ github.sha }}
 
   docker-compose-test:
     runs-on: ubuntu-latest

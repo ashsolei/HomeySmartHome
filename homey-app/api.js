@@ -1,5 +1,34 @@
 'use strict';
 
+/**
+ * Parse an integer query parameter with bounds checking.
+ *
+ * @param {string|undefined} value     - Raw query string value (may be undefined).
+ * @param {number}           defaultVal - Value to use when `value` is absent.
+ * @param {number}           min        - Inclusive lower bound.
+ * @param {number}           max        - Inclusive upper bound.
+ * @param {string}           [name]     - Parameter name used in error messages.
+ * @returns {number}
+ * @throws {Error} With statusCode 400 when the value is not a valid integer or is out of bounds.
+ */
+function parseQueryInt(value, defaultVal, min, max, name = 'parameter') {
+  // Use default when the query param is absent or empty
+  if (value === undefined || value === null || value === '') return defaultVal;
+
+  const parsed = parseInt(value, 10);
+  if (Number.isNaN(parsed)) {
+    const err = new Error(`Invalid ${name}: "${value}" is not a valid integer`);
+    err.statusCode = 400;
+    throw err;
+  }
+  if (parsed < min || parsed > max) {
+    const err = new Error(`Invalid ${name}: must be between ${min} and ${max}, got ${parsed}`);
+    err.statusCode = 400;
+    throw err;
+  }
+  return parsed;
+}
+
 module.exports = {
   async getDashboardData({ homey }) {
     return await homey.app.getDashboardData();
@@ -358,7 +387,7 @@ module.exports = {
   },
 
   async getNotificationHistory({ homey, query }) {
-    const limit = parseInt(query.limit) || 50;
+    const limit = parseQueryInt(query.limit, 50, 1, 1000, 'limit');
     const history = homey.app.advancedNotificationManager.deliveredNotifications.slice(-limit);
     return history;
   },
@@ -413,13 +442,13 @@ module.exports = {
   // ============================================
 
   async getEnergyForecast({ homey, query }) {
-    const hours = parseInt(query.hours) || 24;
+    const hours = parseQueryInt(query.hours, 24, 1, 8760, 'hours');
     const forecast = await homey.app.energyForecastingEngine.forecastNextHours(hours);
     return forecast;
   },
 
   async getCostForecast({ homey, query }) {
-    const hours = parseInt(query.hours) || 24;
+    const hours = parseQueryInt(query.hours, 24, 1, 8760, 'hours');
     const forecast = await homey.app.energyForecastingEngine.forecastCost(hours);
     return forecast;
   },
@@ -1624,10 +1653,8 @@ module.exports = {
   },
 
   async getViewingSessions({ homey, query }) {
-    return homey.app.smartHomeTheaterSystem.getViewingSessions(
-      query.theaterId,
-      query.limit ? parseInt(query.limit) : 20
-    );
+    const limit = parseQueryInt(query.limit, 20, 1, 1000, 'limit');
+    return homey.app.smartHomeTheaterSystem.getViewingSessions(query.theaterId, limit);
   },
 
   async getCurrentTheaterSession({ homey }) {
@@ -1676,9 +1703,8 @@ module.exports = {
   },
 
   async getKitchenSessions({ homey, query }) {
-    return homey.app.advancedKitchenAutomationSystem.getCookingSessions(
-      query.limit ? parseInt(query.limit) : 20
-    );
+    const limit = parseQueryInt(query.limit, 20, 1, 1000, 'limit');
+    return homey.app.advancedKitchenAutomationSystem.getCookingSessions(limit);
   },
 
   async getKitchenStats({ homey }) {
