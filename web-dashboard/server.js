@@ -101,6 +101,17 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Readiness probe endpoint — reports ready only once ModuleLoader is initialized
+app.get('/ready', (req, res) => {
+  const backendUrl = process.env.HOMEY_URL || 'http://localhost:3000';
+  const isReady = moduleLoader && typeof moduleLoader.getSummary === 'function';
+  if (isReady) {
+    res.json({ status: 'ready', backend: backendUrl, timestamp: new Date().toISOString() });
+  } else {
+    res.status(503).json({ status: 'not_ready', reason: 'Module loader not initialized' });
+  }
+});
+
 // Metrics endpoint for Prometheus
 app.get('/metrics', (req, res) => {
   res.setHeader('Content-Type', 'text/plain');

@@ -4572,5 +4572,49 @@ module.exports = {
       return homey.app.homeSecurityDroneSystem.recallDrone(body.droneId);
     }
     return {};
+  },
+
+  // ============================================
+  // WEBHOOK INTEGRATION (FEAT-08)
+  // Compatible with IFTTT/Zapier and other external automation platforms.
+  // ============================================
+
+  async triggerWebhook({ homey, body }) {
+    const { event, data } = body;
+    const allowedEvents = ['scene.activate', 'device.toggle', 'automation.trigger'];
+    if (!event || !allowedEvents.includes(event)) {
+      return { error: 'Invalid event type', allowedEvents };
+    }
+    // Route the event to the appropriate system
+    if (event === 'scene.activate' && data?.sceneId) {
+      await homey.app.sceneLearningSystem?.activateScene(data.sceneId);
+    } else if (event === 'device.toggle' && data?.deviceId) {
+      await homey.app.advancedAutomationEngine?.executeAction({
+        type: 'device', deviceId: data.deviceId, capability: data.capability || 'onoff', value: data.value
+      });
+    } else if (event === 'automation.trigger' && data?.automationId) {
+      await homey.app.advancedAutomationEngine?.triggerAutomation(data.automationId);
+    }
+    // Record the webhook call in the audit log
+    if (homey.app.auditLogSystem) {
+      homey.app.auditLogSystem.record('webhook.' + event, { source: 'external', ...data });
+    }
+    return { success: true, event, timestamp: new Date().toISOString() };
+  },
+
+  async getWebhookEvents({ homey }) {
+    return {
+      events: [
+        { name: 'scene.activate', description: 'Activate a scene', requiredFields: ['sceneId'] },
+        { name: 'device.toggle', description: 'Toggle a device', requiredFields: ['deviceId'] },
+        { name: 'automation.trigger', description: 'Trigger an automation', requiredFields: ['automationId'] },
+      ],
+      usage: {
+        method: 'POST',
+        path: '/api/webhook/trigger',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer <token>' },
+        body: { event: '<event_name>', data: { /* event-specific fields */ } }
+      }
+    };
   }
 };

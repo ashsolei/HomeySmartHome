@@ -714,6 +714,32 @@ async function startServer() {
   // ── Health Endpoints ──
   const pkg = require('./package.json');
 
+  /**
+   * Returns a summary of module health for the circuit-breaker / graceful-degradation
+   * pattern (FEAT-03).  Uses the module-scope degradedModules Set and the systemCount
+   * returned from boot() so the function is pure and testable without a live server.
+   */
+  function getSystemHealth() {
+    const total = systemCount;
+    const degraded = degradedModules.size;
+    const healthy = total - degraded;
+    let status;
+    if (degraded === 0) {
+      status = 'healthy';
+    } else if (degraded > total / 2) {
+      status = 'critical';
+    } else {
+      status = 'degraded';
+    }
+    return {
+      total,
+      healthy,
+      degraded,
+      degradedModules: Array.from(degradedModules),
+      status,
+    };
+  }
+
   server.get('/health', (_req, res) => {
     res.json({
       status: 'ok',
@@ -721,6 +747,7 @@ async function startServer() {
       uptime: process.uptime(),
       systemCount,
       degraded: degradedModules.size,
+      systemHealth: getSystemHealth(),
       timestamp: new Date().toISOString()
     });
   });
@@ -788,17 +815,49 @@ async function startServer() {
     }
   }
 
+  /**
+   * Checks downstream dependencies and self-health for the readiness probe (FEAT-10).
+   *
+   * Returns:
+   *   {
+   *     redis: 'ok' | 'unavailable' | 'not_configured',
+   *     self: 'ok',
+   *     degradedPercentage: number   // 0–100, percentage of degraded modules
+   *   }
+   */
+  async function checkDownstreamHealth() {
+    const redisResult = await checkRedis();
+    let redisStatus;
+    if (redisResult.skipped) {
+      redisStatus = 'not_configured';
+    } else if (redisResult.ok) {
+      redisStatus = 'ok';
+    } else {
+      redisStatus = 'unavailable';
+    }
+
+    const totalSystems = Object.keys(systemStatuses).length;
+    const degradedPercentage = totalSystems > 0
+      ? Math.round((degradedModules.size / totalSystems) * 100)
+      : 0;
+
+    return {
+      redis: redisStatus,
+      self: 'ok',
+      degradedPercentage,
+    };
+  }
+
   // Readiness probe — cascade health check (FEAT-10)
   server.get('/ready', async (_req, res) => {
-    const checks = {};
+    const downstream = await checkDownstreamHealth();
 
-    // Check 1: > 50 % of all systems must be initialized successfully
-    const failedCount = degradedModules.size;
+    // Not ready when more than 50 % of systems are degraded
     const totalSystems = Object.keys(systemStatuses).length;
+    const failedCount = degradedModules.size;
     const systemsHealthy = totalSystems > 0 && failedCount < totalSystems * 0.5;
-    checks.systems = { ok: systemsHealthy, total: totalSystems, failed: failedCount };
 
-    // Check 2: every critical module must be ok
+    // Every critical module must be ok
     const criticalStatus = {};
     let criticalOk = true;
     for (const mod of CRITICAL_MODULES) {
@@ -807,17 +866,17 @@ async function startServer() {
       criticalStatus[mod] = isOk ? 'ok' : (info ? info.status : 'missing');
       if (!isOk) criticalOk = false;
     }
-    checks.criticalModules = { ok: criticalOk, modules: criticalStatus };
 
-    // Check 3: Redis (skipped gracefully when REDIS_URL is not set)
-    const redisResult = await checkRedis();
-    checks.redis = redisResult;
+    // Redis failure (when configured) blocks readiness
+    const redisOk = downstream.redis !== 'unavailable';
 
-    const isReady = systemsHealthy && criticalOk && redisResult.ok;
+    const isReady = systemsHealthy && criticalOk && redisOk;
 
     res.status(isReady ? 200 : 503).json({
       ready: isReady,
-      checks,
+      downstream,
+      criticalModules: { ok: criticalOk, modules: criticalStatus },
+      systems: { ok: systemsHealthy, total: totalSystems, failed: failedCount },
       timestamp: new Date().toISOString()
     });
   });
