@@ -16,10 +16,9 @@ class DeviceHealthMonitor extends BaseSystem {
     this.diagnosticResults = new Map();
   }
 
-  async initialize() {
-    await super.initialize();
+  async onInitialize() {
     this.log('Initializing Device Health Monitor...');
-    
+
     // Load health data
     const savedHealth = await this.homey.settings.get('deviceHealth') || {};
     Object.entries(savedHealth).forEach(([id, health]) => {
@@ -40,7 +39,7 @@ class DeviceHealthMonitor extends BaseSystem {
 
     // Start monitoring
     await this.startMonitoring();
-    
+
     this.log('Device Health Monitor initialized');
   }
 
@@ -61,19 +60,19 @@ class DeviceHealthMonitor extends BaseSystem {
     });
 
     // Periodic health checks
-    this.healthCheckInterval = this.registerInterval(setInterval(async () => {
+    this.healthCheckInterval = this.wrapInterval(async () => {
       await this.performHealthChecks();
-    }, 300000)); // Every 5 minutes
+    }, 300000); // Every 5 minutes
 
     // Daily diagnostics
-    this.diagnosticsInterval = this.registerInterval(setInterval(async () => {
+    this.diagnosticsInterval = this.wrapInterval(async () => {
       await this.runDiagnostics();
-    }, 86400000)); // Every 24 hours
+    }, 86400000); // Every 24 hours
 
     // Hourly anomaly detection
-    this.anomalyInterval = this.registerInterval(setInterval(async () => {
+    this.anomalyInterval = this.wrapInterval(async () => {
       await this.detectAnomalies();
-    }, 3600000)); // Every hour
+    }, 3600000); // Every hour
   }
 
   /**

@@ -117,6 +117,44 @@ const DEFAULT_ROUTE_PERMISSIONS = [
  */
 class APIAuthenticationGateway extends EventEmitter {
   /**
+   * Role definitions for FEAT-07 multi-user role system.
+   *
+   * Maps the human-readable role names (admin / user / guest) used in
+   * `requireRole()` and `checkPermission()` to their numeric level and the
+   * set of allowed permission strings.  Levels are compared so that a higher
+   * level automatically subsumes all lower-level permissions.
+   *
+   * Relationship to the internal RBAC tokens:
+   *   admin  → token role ADMIN
+   *   user   → token role USER
+   *   guest  → token role VIEWER
+   *
+   * @type {Object<string, {level: number, permissions: string[]}>}
+   */
+  static ROLES = {
+    admin: { level: 3, permissions: ['read', 'write', 'delete', 'admin'] },
+    user:  { level: 2, permissions: ['read', 'write'] },
+    guest: { level: 1, permissions: ['read'] },
+  };
+
+  /**
+   * Map an internal token role (ADMIN / USER / VIEWER / SYSTEM) to the
+   * equivalent FEAT-07 role name (admin / user / guest).
+   *
+   * @private
+   * @param {Role} tokenRole
+   * @returns {string} Lowercase role name.
+   */
+  static _tokenRoleToFeat07Role(tokenRole) {
+    switch (tokenRole) {
+      case 'ADMIN':
+      case 'SYSTEM': return 'admin';
+      case 'USER':   return 'user';
+      default:       return 'guest';
+    }
+  }
+
+  /**
    * @private – use {@link APIAuthenticationGateway.getInstance} instead.
    */
   constructor() {
@@ -471,6 +509,103 @@ class APIAuthenticationGateway extends EventEmitter {
     }
   }
 
+  /**
+   * Build an Express `(req, res, next)` middleware that enforces a minimum
+   * FEAT-07 role level on the route it is attached to.
+   *
+   * Role resolution order:
+   *  1. If the request was already authenticated (req.tokenRecord is set), the
+   *     role comes from the token.
+   *  2. If no token is present AND the environment is not production, the
+   *     request is treated as ADMIN so development flows are unaffected.
+   *  3. Otherwise the request is treated as 'guest'.
+   *
+   * The check is purely additive: it never overrides a 401 that authentication
+   * middleware may have already issued.  Call this middleware AFTER the
+   * authentication middleware on routes that require elevated access.
+   *
+   * @param {string} minimumRole - One of 'admin', 'user', or 'guest'.
+   * @returns {function(Object, Object, function): void} Express middleware.
+   *
+   * @example
+   *   const gw = APIAuthenticationGateway.getInstance();
+   *   router.post('/devices/control', gw.requireRole('user'), handler);
+   *   router.delete('/settings',      gw.requireRole('admin'), handler);
+   */
+  requireRole(minimumRole) {
+    const requiredDef = APIAuthenticationGateway.ROLES[minimumRole];
+    if (!requiredDef) {
+      throw new Error(`requireRole: unknown role "${minimumRole}". Valid roles: ${Object.keys(APIAuthenticationGateway.ROLES).join(', ')}`);
+    }
+
+    return (req, res, next) => {
+      // Determine the effective FEAT-07 role for this request.
+      let effectiveRole;
+
+      if (req.tokenRecord && req.tokenRecord.role) {
+        // Authenticated — derive from token
+        effectiveRole = APIAuthenticationGateway._tokenRoleToFeat07Role(req.tokenRecord.role);
+      } else if (process.env.NODE_ENV !== 'production') {
+        // Dev/test environment with no token — default to admin so existing
+        // functionality is not broken.
+        effectiveRole = 'admin';
+      } else {
+        effectiveRole = 'guest';
+      }
+
+      const actualDef = APIAuthenticationGateway.ROLES[effectiveRole] || APIAuthenticationGateway.ROLES.guest;
+
+      if (actualDef.level >= requiredDef.level) {
+        return next();
+      }
+
+      const ip = req.ip || 'unknown';
+      const path = req.path || '/';
+      this.addAuditEntry({
+        event: 'authz-failure',
+        ip,
+        path,
+        userId: req.tokenRecord ? req.tokenRecord.userId : null,
+        success: false,
+        reason: `Role ${effectiveRole} insufficient for route; ${minimumRole} required`,
+      });
+
+      return res.status(403).json({
+        error: `Insufficient permissions: ${minimumRole} role required`,
+        timestamp: new Date().toISOString(),
+      });
+    };
+  }
+
+  /**
+   * Check whether the authenticated user on `req` holds a specific permission
+   * string as defined in {@link APIAuthenticationGateway.ROLES}.
+   *
+   * @param {Object} req        - Express request object (must have req.tokenRecord set by auth middleware,
+   *                              or will fall back to dev-admin / guest).
+   * @param {string} permission - One of 'read', 'write', 'delete', 'admin'.
+   * @returns {boolean}
+   *
+   * @example
+   *   if (!gateway.checkPermission(req, 'delete')) {
+   *     return res.status(403).json({ error: 'Delete permission required' });
+   *   }
+   */
+  checkPermission(req, permission) {
+    let effectiveRole;
+
+    if (req.tokenRecord && req.tokenRecord.role) {
+      effectiveRole = APIAuthenticationGateway._tokenRoleToFeat07Role(req.tokenRecord.role);
+    } else if (process.env.NODE_ENV !== 'production') {
+      effectiveRole = 'admin';
+    } else {
+      effectiveRole = 'guest';
+    }
+
+    const roleDef = APIAuthenticationGateway.ROLES[effectiveRole] || APIAuthenticationGateway.ROLES.guest;
+    return roleDef.permissions.includes(permission);
+  }
+
   /* ------------------------------------------------------------------
    *  Audit Logging
    * ----------------------------------------------------------------*/
@@ -723,7 +858,7 @@ class APIAuthenticationGateway extends EventEmitter {
    *   if (!result.success) return res.status(result.statusCode).json({ error: result.error });
    */
   createMiddleware(options = {}) {
-    const { requiredRole, rateLimit, skipAuth = false } = options;
+    const { requiredRole, skipAuth = false } = options;
 
     return (req) => {
       const secHeaders = this.getSecurityHeaders();

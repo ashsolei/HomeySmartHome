@@ -1,13 +1,15 @@
 'use strict';
 
+const { BaseSystem } = require('./utils/BaseSystem');
+
 /**
  * Geofencing Engine
  * Advanced location-based automation with multi-zone support,
  * predictive arrival/departure, and smart radius adjustment
  */
-class GeofencingEngine {
+class GeofencingEngine extends BaseSystem {
   constructor(homey) {
-    this.homey = homey;
+    super(homey, 'GeofencingEngine');
     this.geofences = new Map();
     this.userLocations = new Map();
     this.locationHistory = [];
@@ -15,9 +17,9 @@ class GeofencingEngine {
     this.activeGeofences = new Set();
   }
 
-  async initialize() {
+  async onInitialize() {
     this.log('Initializing Geofencing Engine...');
-    
+
     // Load saved geofences
     const saved = await this.homey.settings.get('geofences') || {};
     Object.entries(saved).forEach(([id, fence]) => {
@@ -35,7 +37,7 @@ class GeofencingEngine {
 
     // Start location monitoring
     await this.startLocationMonitoring();
-    
+
     this.log('Geofencing Engine initialized');
   }
 
@@ -45,7 +47,7 @@ class GeofencingEngine {
   async createDefaultHomeGeofence() {
     try {
       const homeLocation = await this.homey.geolocation.getLocation();
-      
+
       await this.createGeofence({
         id: 'home',
         name: { en: 'Home', sv: 'Hemma' },
@@ -84,26 +86,26 @@ class GeofencingEngine {
       },
       radius: config.radius || 100,
       adaptive: config.adaptive !== false,
-      
+
       actions: {
         onEnter: config.actions?.onEnter || [],
         onExit: config.actions?.onExit || [],
         onDwell: config.actions?.onDwell || [], // After being inside for X minutes
         onApproach: config.actions?.onApproach || [] // When approaching (predictive)
       },
-      
+
       settings: {
         dwellTime: config.dwellTime || 300000, // 5 minutes
         approachDistance: config.approachDistance || 500, // 500 meters
         cooldown: config.cooldown || 300000, // 5 minutes between triggers
         requireConfirm: config.requireConfirm || false
       },
-      
+
       schedule: config.schedule || null, // Only active during certain times
       conditions: config.conditions || [], // Additional conditions to check
-      
+
       users: config.users || ['all'], // Which users this applies to
-      
+
       statistics: {
         entries: 0,
         exits: 0,
@@ -111,14 +113,14 @@ class GeofencingEngine {
         lastExited: null,
         averageDwellTime: 0
       },
-      
+
       created: Date.now(),
       enabled: config.enabled !== false
     };
 
     this.geofences.set(geofence.id, geofence);
     await this.saveGeofences();
-    
+
     return geofence;
   }
 
@@ -126,10 +128,10 @@ class GeofencingEngine {
    * Start monitoring user locations
    */
   async startLocationMonitoring() {
-    // Monitor location changes
-    this.monitoringInterval = setInterval(async () => {
+    // Check all geofences every 30 seconds
+    this.monitoringInterval = this.wrapInterval(async () => {
       await this.checkGeofences();
-    }, 30000); // Check every 30 seconds
+    }, 30000);
 
     // Try to get initial location
     await this.updateUserLocation('default');
@@ -142,9 +144,9 @@ class GeofencingEngine {
     try {
       // Get location from Homey or use provided
       const userLocation = location || await this.homey.geolocation.getLocation();
-      
+
       const previousLocation = this.userLocations.get(userId);
-      
+
       this.userLocations.set(userId, {
         latitude: userLocation.latitude,
         longitude: userLocation.longitude,
@@ -167,7 +169,7 @@ class GeofencingEngine {
 
       // Analyze travel patterns
       await this.analyzeTravelPattern(userId, userLocation);
-      
+
       await this.saveLocationHistory();
     } catch (error) {
       this.error('Error updating location:', error);
@@ -181,13 +183,13 @@ class GeofencingEngine {
     for (const [userId, location] of this.userLocations) {
       for (const [id, geofence] of this.geofences) {
         if (!geofence.enabled) continue;
-        
+
         // Check if user applies
         if (!this.userApplies(userId, geofence)) continue;
-        
+
         // Check schedule
         if (!this.checkSchedule(geofence)) continue;
-        
+
         // Calculate distance
         const distance = this.calculateDistance(
           location.latitude,
@@ -277,11 +279,11 @@ class GeofencingEngine {
     geofence.statistics.exits++;
     const dwellTime = Date.now() - geofence.statistics.lastEntered;
     geofence.statistics.lastExited = Date.now();
-    
+
     // Update average dwell time
     if (geofence.statistics.entries > 0) {
-      geofence.statistics.averageDwellTime = 
-        (geofence.statistics.averageDwellTime * (geofence.statistics.entries - 1) + dwellTime) / 
+      geofence.statistics.averageDwellTime =
+        (geofence.statistics.averageDwellTime * (geofence.statistics.entries - 1) + dwellTime) /
         geofence.statistics.entries;
     }
 
@@ -310,11 +312,11 @@ class GeofencingEngine {
    */
   async handleDwell(userId, geofence) {
     const dwellTime = Date.now() - geofence.statistics.lastEntered;
-    
+
     // Check if dwell threshold is met and actions haven't been executed yet
     if (dwellTime >= geofence.settings.dwellTime && geofence.actions.onDwell.length > 0) {
       const dwellKey = `dwell_${userId}_${geofence.id}_${geofence.statistics.lastEntered}`;
-      
+
       if (!this.activeGeofences.has(dwellKey)) {
         for (const action of geofence.actions.onDwell) {
           try {
@@ -323,7 +325,7 @@ class GeofencingEngine {
             this.error('Error executing dwell action:', error);
           }
         }
-        
+
         this.activeGeofences.add(dwellKey);
       }
     }
@@ -334,7 +336,7 @@ class GeofencingEngine {
    */
   async handleApproach(userId, geofence, distance) {
     const approachKey = `approach_${userId}_${geofence.id}`;
-    
+
     // Only trigger once per approach
     if (this.activeGeofences.has(approachKey)) {
       return;
@@ -349,12 +351,12 @@ class GeofencingEngine {
     // Execute approach actions
     for (const action of geofence.actions.onApproach) {
       try {
-        await this.executeGeofenceAction(action, { 
-          userId, 
-          geofence, 
-          event: 'approach', 
+        await this.executeGeofenceAction(action, {
+          userId,
+          geofence,
+          event: 'approach',
           distance,
-          eta 
+          eta
         });
       } catch (error) {
         this.error('Error executing approach action:', error);
@@ -365,11 +367,11 @@ class GeofencingEngine {
     await this.triggerGeofenceFlow('approaching', geofence, userId, { distance, eta });
 
     this.activeGeofences.add(approachKey);
-    
-    // Clear approach flag after some time
-    setTimeout(() => {
+
+    // Clear approach flag after 5 minutes
+    this.wrapTimeout(() => {
       this.activeGeofences.delete(approachKey);
-    }, 300000); // 5 minutes
+    }, 300000);
   }
 
   /**
@@ -384,7 +386,7 @@ class GeofencingEngine {
     if (recentHistory.length < 2) return false;
 
     // Calculate if distance is decreasing
-    const distances = recentHistory.map(h => 
+    const distances = recentHistory.map(h =>
       this.calculateDistance(
         h.location.latitude,
         h.location.longitude,
@@ -437,7 +439,7 @@ class GeofencingEngine {
     for (let i = 1; i < recentLocations.length; i++) {
       const prev = recentLocations[i - 1];
       const curr = recentLocations[i];
-      
+
       const distance = this.calculateDistance(
         prev.location.latitude,
         prev.location.longitude,
@@ -446,7 +448,7 @@ class GeofencingEngine {
       );
 
       const timeDiff = (curr.timestamp - prev.timestamp) / 1000; // seconds
-      
+
       if (timeDiff > 0) {
         totalSpeed += distance / timeDiff;
         speedCount++;
@@ -492,10 +494,10 @@ class GeofencingEngine {
     const minRadius = 50;
     const maxRadius = 500;
     const accuracyFactor = Math.max(location.accuracy || 50, minRadius);
-    
+
     // Calculate optimal radius
     let optimalRadius = accuracyFactor * 1.5;
-    
+
     // Consider historical false triggers
     const recentHistory = this.locationHistory
       .filter(h => h.userId === userId)
@@ -530,11 +532,11 @@ class GeofencingEngine {
       );
 
       const isInside = distance <= geofence.radius;
-      
+
       if (wasInside !== null && wasInside !== isInside) {
         crossings++;
       }
-      
+
       wasInside = isInside;
     }
 
@@ -549,22 +551,23 @@ class GeofencingEngine {
       case 'scene':
         await this.homey.app.sceneManager.activateScene(action.sceneId);
         break;
-      
+
       case 'automation':
         await this.homey.app.automationEngine.executeAutomation(action.automationId, context);
         break;
-      
+
       case 'notification':
         await this.homey.notifications.createNotification({
           excerpt: action.message
         });
         break;
-      
-      case 'device':
+
+      case 'device': {
         const device = await this.homey.devices.getDevice({ id: action.deviceId });
         await device.setCapabilityValue(action.capability, action.value);
         break;
-      
+      }
+
       case 'delay':
         await this.delay(action.milliseconds);
         break;
@@ -599,7 +602,7 @@ class GeofencingEngine {
     const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
               Math.cos(φ1) * Math.cos(φ2) *
               Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return R * c; // Distance in meters
@@ -616,7 +619,7 @@ class GeofencingEngine {
     );
 
     const timeDiff = (Date.now() - previousLocation.timestamp) / 1000; // seconds
-    
+
     return timeDiff > 0 ? distance / timeDiff : 0;
   }
 
@@ -647,9 +650,9 @@ class GeofencingEngine {
 
   checkCooldown(geofence, event) {
     const lastEvent = event === 'enter' ? geofence.statistics.lastEntered : geofence.statistics.lastExited;
-    
+
     if (!lastEvent) return true;
-    
+
     const timeSince = Date.now() - lastEvent;
     return timeSince >= geofence.settings.cooldown;
   }
@@ -698,14 +701,6 @@ class GeofencingEngine {
 
   async saveTravelPatterns() {
     await this.homey.settings.set('travelPatterns', Array.from(this.travelPatterns.entries()));
-  }
-
-  log(...args) {
-    console.log('[GeofencingEngine]', ...args);
-  }
-
-  error(...args) {
-    console.error('[GeofencingEngine]', ...args);
   }
 }
 

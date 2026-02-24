@@ -16,25 +16,24 @@ class EnergyForecastingEngine extends BaseSystem {
     this.optimizationRules = [];
   }
 
-  async initialize() {
-    await super.initialize();
+  async onInitialize() {
     this.log('Initializing Energy Forecasting Engine...');
-    
+
     // Load historical data
     this.historicalData = await this.homey.settings.get('energyHistoricalData') || [];
-    
+
     // Load energy prices
     this.energyPrices = await this.homey.settings.get('energyPrices') || [];
-    
+
     // Load optimization rules
     this.optimizationRules = await this.homey.settings.get('optimizationRules') || [];
 
     // Start data collection
     await this.startDataCollection();
-    
+
     // Train initial models
     await this.trainModels();
-    
+
     this.log('Energy Forecasting Engine initialized');
   }
 
@@ -43,24 +42,24 @@ class EnergyForecastingEngine extends BaseSystem {
    */
   async startDataCollection() {
     // Collect energy data every 5 minutes
-    this.dataCollectionInterval = this.registerInterval(setInterval(async () => {
+    this.dataCollectionInterval = this.wrapInterval(async () => {
       await this.collectEnergyData();
-    }, 300000));
+    }, 300000);
 
     // Update forecasts every hour
-    this.forecastInterval = this.registerInterval(setInterval(async () => {
+    this.forecastInterval = this.wrapInterval(async () => {
       await this.updateForecasts();
-    }, 3600000));
+    }, 3600000);
 
     // Train models daily
-    this.trainingInterval = this.registerInterval(setInterval(async () => {
+    this.trainingInterval = this.wrapInterval(async () => {
       await this.trainModels();
-    }, 86400000));
+    }, 86400000);
 
     // Fetch energy prices every hour
-    this.priceUpdateInterval = this.registerInterval(setInterval(async () => {
+    this.priceUpdateInterval = this.wrapInterval(async () => {
       await this.fetchEnergyPrices();
-    }, 3600000));
+    }, 3600000);
   }
 
   /**

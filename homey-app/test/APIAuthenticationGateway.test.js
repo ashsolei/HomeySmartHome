@@ -577,5 +577,227 @@ describe('APIAuthenticationGateway — addPublicPath / removePublicPath', () => 
   });
 });
 
+// ---------------------------------------------------------------------------
+// FEAT-07: static ROLES config
+// ---------------------------------------------------------------------------
+
+describe('APIAuthenticationGateway — ROLES config (FEAT-07)', () => {
+  it('exposes admin, user, and guest roles', () => {
+    const roles = APIAuthenticationGateway.ROLES;
+    assert(roles.admin, 'admin role should exist');
+    assert(roles.user,  'user role should exist');
+    assert(roles.guest, 'guest role should exist');
+  });
+
+  it('admin has level 3 and all permissions', () => {
+    const { level, permissions } = APIAuthenticationGateway.ROLES.admin;
+    assertEqual(level, 3);
+    assert(permissions.includes('read'),   'admin must have read');
+    assert(permissions.includes('write'),  'admin must have write');
+    assert(permissions.includes('delete'), 'admin must have delete');
+    assert(permissions.includes('admin'),  'admin must have admin');
+  });
+
+  it('user has level 2 and read+write permissions only', () => {
+    const { level, permissions } = APIAuthenticationGateway.ROLES.user;
+    assertEqual(level, 2);
+    assert(permissions.includes('read'),           'user must have read');
+    assert(permissions.includes('write'),          'user must have write');
+    assert(!permissions.includes('delete'),        'user must NOT have delete');
+    assert(!permissions.includes('admin'),         'user must NOT have admin');
+  });
+
+  it('guest has level 1 and read permission only', () => {
+    const { level, permissions } = APIAuthenticationGateway.ROLES.guest;
+    assertEqual(level, 1);
+    assert(permissions.includes('read'),           'guest must have read');
+    assert(!permissions.includes('write'),         'guest must NOT have write');
+    assert(!permissions.includes('delete'),        'guest must NOT have delete');
+    assert(!permissions.includes('admin'),         'guest must NOT have admin');
+  });
+
+  it('admin level is higher than user which is higher than guest', () => {
+    const { ROLES } = APIAuthenticationGateway;
+    assert(ROLES.admin.level > ROLES.user.level,  'admin > user');
+    assert(ROLES.user.level  > ROLES.guest.level, 'user > guest');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FEAT-07: requireRole() middleware factory
+// ---------------------------------------------------------------------------
+
+describe('APIAuthenticationGateway — requireRole (FEAT-07)', () => {
+  // Helper: build a mock Express res with a json() spy
+  function mockRes() {
+    const res = { _status: 200, _body: null };
+    res.status = (code) => { res._status = code; return res; };
+    res.json   = (body) => { res._body = body; return res; };
+    return res;
+  }
+
+  it('throws for an unknown role name', () => {
+    const gw = freshGateway();
+    assertThrows(() => gw.requireRole('superuser'), 'unknown role');
+    gw.destroy();
+    APIAuthenticationGateway.resetInstance();
+  });
+
+  it('allows request when token role meets minimum (user token, user required)', () => {
+    const gw = freshGateway();
+    const { token } = gw.createToken('u1', 'USER');
+    const req = mockReq({ path: '/api/devices/control', headers: { authorization: `Bearer ${token}` } });
+    // Simulate auth middleware having set tokenRecord
+    const authResult = gw.authenticate(req);
+    req.tokenRecord = authResult.tokenRecord;
+
+    let nextCalled = false;
+    const res = mockRes();
+    gw.requireRole('user')(req, res, () => { nextCalled = true; });
+
+    assert(nextCalled, 'next() should have been called for sufficient role');
+    gw.destroy();
+    APIAuthenticationGateway.resetInstance();
+  });
+
+  it('allows admin token on a user-required route', () => {
+    const gw = freshGateway();
+    const { token } = gw.createToken('admin1', 'ADMIN');
+    const req = mockReq({ path: '/api/devices/control', headers: { authorization: `Bearer ${token}` } });
+    const authResult = gw.authenticate(req);
+    req.tokenRecord = authResult.tokenRecord;
+
+    let nextCalled = false;
+    const res = mockRes();
+    gw.requireRole('user')(req, res, () => { nextCalled = true; });
+
+    assert(nextCalled, 'admin should pass a user-required route');
+    gw.destroy();
+    APIAuthenticationGateway.resetInstance();
+  });
+
+  it('blocks VIEWER token on a user-required route with 403', () => {
+    const gw = freshGateway();
+    const { token } = gw.createToken('viewer1', 'VIEWER');
+    const req = mockReq({ path: '/api/devices/control', headers: { authorization: `Bearer ${token}` } });
+    const authResult = gw.authenticate(req);
+    req.tokenRecord = authResult.tokenRecord;
+
+    let nextCalled = false;
+    const res = mockRes();
+    gw.requireRole('user')(req, res, () => { nextCalled = true; });
+
+    assert(!nextCalled,           'next() should NOT be called for insufficient role');
+    assertEqual(res._status, 403, 'should respond 403');
+    assert(res._body && res._body.error.includes('user'), '403 body should name the required role');
+    gw.destroy();
+    APIAuthenticationGateway.resetInstance();
+  });
+
+  it('blocks USER token on an admin-required route with 403', () => {
+    const gw = freshGateway();
+    const { token } = gw.createToken('user1', 'USER');
+    const req = mockReq({ path: '/api/settings', headers: { authorization: `Bearer ${token}` } });
+    const authResult = gw.authenticate(req);
+    req.tokenRecord = authResult.tokenRecord;
+
+    let nextCalled = false;
+    const res = mockRes();
+    gw.requireRole('admin')(req, res, () => { nextCalled = true; });
+
+    assert(!nextCalled,           'next() should NOT be called for insufficient role');
+    assertEqual(res._status, 403, 'should respond 403 for user on admin-required route');
+    gw.destroy();
+    APIAuthenticationGateway.resetInstance();
+  });
+
+  it('defaults to admin in non-production when no token is present', () => {
+    // Ensure we are NOT in production mode for this test
+    const savedEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'development';
+
+    const gw = freshGateway();
+    const req = mockReq({ path: '/api/settings' });
+    // No tokenRecord on req (unauthenticated in dev)
+
+    let nextCalled = false;
+    const res = mockRes();
+    gw.requireRole('admin')(req, res, () => { nextCalled = true; });
+
+    process.env.NODE_ENV = savedEnv;
+
+    assert(nextCalled, 'dev requests without token should default to admin and pass');
+    gw.destroy();
+    APIAuthenticationGateway.resetInstance();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FEAT-07: checkPermission()
+// ---------------------------------------------------------------------------
+
+describe('APIAuthenticationGateway — checkPermission (FEAT-07)', () => {
+  it('ADMIN token grants all permissions', () => {
+    const gw = freshGateway();
+    const { token } = gw.createToken('admin1', 'ADMIN');
+    const req = mockReq({ headers: { authorization: `Bearer ${token}` } });
+    const authResult = gw.authenticate(req);
+    req.tokenRecord = authResult.tokenRecord;
+
+    assert(gw.checkPermission(req, 'read'),   'admin should have read');
+    assert(gw.checkPermission(req, 'write'),  'admin should have write');
+    assert(gw.checkPermission(req, 'delete'), 'admin should have delete');
+    assert(gw.checkPermission(req, 'admin'),  'admin should have admin');
+    gw.destroy();
+    APIAuthenticationGateway.resetInstance();
+  });
+
+  it('USER token has read and write but not delete or admin', () => {
+    const gw = freshGateway();
+    const { token } = gw.createToken('user1', 'USER');
+    const req = mockReq({ headers: { authorization: `Bearer ${token}` } });
+    const authResult = gw.authenticate(req);
+    req.tokenRecord = authResult.tokenRecord;
+
+    assert(gw.checkPermission(req, 'read'),             'user should have read');
+    assert(gw.checkPermission(req, 'write'),            'user should have write');
+    assert(!gw.checkPermission(req, 'delete'),          'user should NOT have delete');
+    assert(!gw.checkPermission(req, 'admin'),           'user should NOT have admin');
+    gw.destroy();
+    APIAuthenticationGateway.resetInstance();
+  });
+
+  it('VIEWER token has read only', () => {
+    const gw = freshGateway();
+    const { token } = gw.createToken('viewer1', 'VIEWER');
+    const req = mockReq({ headers: { authorization: `Bearer ${token}` } });
+    const authResult = gw.authenticate(req);
+    req.tokenRecord = authResult.tokenRecord;
+
+    assert(gw.checkPermission(req, 'read'),            'viewer should have read');
+    assert(!gw.checkPermission(req, 'write'),          'viewer should NOT have write');
+    assert(!gw.checkPermission(req, 'delete'),         'viewer should NOT have delete');
+    assert(!gw.checkPermission(req, 'admin'),          'viewer should NOT have admin');
+    gw.destroy();
+    APIAuthenticationGateway.resetInstance();
+  });
+
+  it('defaults to admin permissions in non-production with no token', () => {
+    const savedEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'development';
+
+    const gw = freshGateway();
+    const req = mockReq({});
+    // No tokenRecord
+
+    assert(gw.checkPermission(req, 'delete'), 'dev mode no-token should have delete');
+    assert(gw.checkPermission(req, 'admin'),  'dev mode no-token should have admin');
+
+    process.env.NODE_ENV = savedEnv;
+    gw.destroy();
+    APIAuthenticationGateway.resetInstance();
+  });
+});
+
 // Run
 run();
