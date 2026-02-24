@@ -40,6 +40,124 @@ function initDarkMode() {
     }
 }
 
+/**
+ * EnergyAnalytics — in-memory circular buffer tracking the last 24 energy
+ * snapshots (one per ~5-minute window). Derives trend, daily average, peak,
+ * and a rough cost estimate from the recorded data points.
+ */
+class EnergyAnalytics {
+    /**
+     * @param {number} [capacity=24] - Maximum data points to retain.
+     * @param {number} [pricePerKwh=1.5] - Electricity price used for cost estimate (SEK/kWh).
+     */
+    constructor(capacity = 24, pricePerKwh = 1.5) {
+        this._capacity = capacity;
+        this._pricePerKwh = pricePerKwh;
+        /** @type {Array<{watts: number, timestamp: number}>} Circular buffer */
+        this._buffer = [];
+        this._head = 0; // next write position
+        this._count = 0;
+    }
+
+    /**
+     * Record a new 5-minute snapshot of current power consumption.
+     *
+     * @param {{ current: number }} data - Energy update payload (watts).
+     */
+    recordDataPoint(data) {
+        const watts = Number(data && data.current) || 0;
+        const entry = { watts, timestamp: Date.now() };
+
+        if (this._count < this._capacity) {
+            this._buffer[this._head] = entry;
+            this._count++;
+        } else {
+            // Overwrite oldest slot
+            this._buffer[this._head] = entry;
+        }
+        this._head = (this._head + 1) % this._capacity;
+    }
+
+    /**
+     * Return the readings in chronological order (oldest first).
+     *
+     * @returns {Array<{watts: number, timestamp: number}>}
+     */
+    _orderedReadings() {
+        if (this._count === 0) return [];
+        if (this._count < this._capacity) {
+            return this._buffer.slice(0, this._count);
+        }
+        // Buffer is full: oldest entry is at current _head
+        return [
+            ...this._buffer.slice(this._head),
+            ...this._buffer.slice(0, this._head),
+        ];
+    }
+
+    /**
+     * Compute analytics from the buffered readings.
+     *
+     * @returns {{
+     *   current: number,
+     *   average: number,
+     *   peak: number,
+     *   trend: 'increasing'|'decreasing'|'stable'|'unknown',
+     *   estimatedDailyCostSEK: number,
+     *   sampleCount: number
+     * }}
+     */
+    getAnalytics() {
+        const readings = this._orderedReadings();
+
+        if (readings.length === 0) {
+            return {
+                current: 0,
+                average: 0,
+                peak: 0,
+                trend: 'unknown',
+                estimatedDailyCostSEK: 0,
+                sampleCount: 0,
+            };
+        }
+
+        const watts = readings.map(r => r.watts);
+        const current = watts[watts.length - 1];
+        const average = Math.round(watts.reduce((sum, w) => sum + w, 0) / watts.length);
+        const peak = Math.max(...watts);
+
+        // Trend: compare the mean of the last quarter with the first quarter
+        const trend = this._computeTrend(watts);
+
+        // Rough daily cost: average watts * 24h / 1000 kWh * price
+        const estimatedDailyCostSEK = parseFloat(
+            ((average * 24) / 1000 * this._pricePerKwh).toFixed(2)
+        );
+
+        return { current, average, peak, trend, estimatedDailyCostSEK, sampleCount: readings.length };
+    }
+
+    /**
+     * Determine whether power usage is trending up, down, or flat.
+     *
+     * @private
+     * @param {number[]} watts - Ordered watt readings.
+     * @returns {'increasing'|'decreasing'|'stable'}
+     */
+    _computeTrend(watts) {
+        if (watts.length < 4) return 'stable';
+
+        const slice = Math.max(1, Math.floor(watts.length / 4));
+        const earlyMean = watts.slice(0, slice).reduce((s, w) => s + w, 0) / slice;
+        const lateMean = watts.slice(-slice).reduce((s, w) => s + w, 0) / slice;
+        const delta = lateMean - earlyMean;
+
+        if (delta > earlyMean * 0.05) return 'increasing';
+        if (delta < -earlyMean * 0.05) return 'decreasing';
+        return 'stable';
+    }
+}
+
 class SmartHomeDashboard {
     constructor() {
         this.socket = null;
