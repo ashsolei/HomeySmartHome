@@ -1,6 +1,6 @@
 'use strict';
 
-const BaseSystem = require('./BaseSystem');
+const { BaseSystem } = require('./utils/BaseSystem');
 
 /**
  * Energy Forecasting Engine

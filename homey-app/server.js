@@ -1,5 +1,6 @@
 'use strict';
 require('dotenv').config();
+const logger = require('./lib/logger');
 
 /**
  * Smart Home Pro — Standalone Express Server
@@ -153,20 +154,26 @@ const SmartWeatherStationSystem = require('./lib/SmartWeatherStationSystem');
 const SmartHomeVentilationHeatRecoverySystem = require('./lib/SmartHomeVentilationHeatRecoverySystem');
 const SmartRoofSolarMonitoringSystem = require('./lib/SmartRoofSolarMonitoringSystem');
 
+// Wave 17 — Audit & Backup
+const AuditLogSystem = require('./lib/AuditLogSystem');
+const BackupRestoreSystem = require('./lib/BackupRestoreSystem');
+
 // ============================================
 // BOOT SEQUENCE
 // ============================================
 
 const startTime = Date.now();
 const systemStatuses = {};
+// Tracks modules that failed to initialize (circuit breaker state)
+const degradedModules = new Set();
 
 // ── Process error handlers ──
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('[FATAL] Unhandled Promise Rejection:', reason);
+  logger.error({ reason, promise: String(promise) }, 'Unhandled Promise Rejection');
 });
 
 process.on('uncaughtException', (err) => {
-  console.error('[FATAL] Uncaught Exception:', err);
+  logger.fatal({ err }, 'Uncaught Exception');
   process.exit(1);
 });
 
@@ -175,6 +182,7 @@ async function boot() {
   console.log('║   Smart Home Pro — Standalone Server Boot    ║');
   console.log('╚══════════════════════════════════════════════╝');
   console.log('');
+  logger.info('Boot sequence started');
 
   // 1. Create HomeyShim instance
   const homey = new HomeyShim();
@@ -188,8 +196,8 @@ async function boot() {
     nightMode: false,
     energySavingMode: false,
     presenceData: {},
-    log: (...args) => console.log('[App]', ...args),
-    error: (...args) => console.error('[App]', ...args),
+    log: (...args) => logger.info({ source: 'app' }, args.join(' ')),
+    error: (...args) => logger.error({ source: 'app' }, args.join(' ')),
 
     // getDashboardData mirrors what's in app.js
     async getDashboardData() {
@@ -356,6 +364,10 @@ async function boot() {
   app.smartHomeVentilationHeatRecoverySystem = new SmartHomeVentilationHeatRecoverySystem(homey);
   app.smartRoofSolarMonitoringSystem = new SmartRoofSolarMonitoringSystem(homey);
 
+  // ── Wave 17: Audit & Backup ──
+  app.auditLogSystem = new AuditLogSystem(homey);
+  app.backupRestoreSystem = new BackupRestoreSystem(homey);
+
   // 4. Wire homey.app
   homey.app = app;
 
@@ -495,10 +507,13 @@ async function boot() {
     { name: 'SmartWeatherStationSystem', ref: app.smartWeatherStationSystem },
     { name: 'SmartHomeVentilationHeatRecoverySystem', ref: app.smartHomeVentilationHeatRecoverySystem },
     { name: 'SmartRoofSolarMonitoringSystem', ref: app.smartRoofSolarMonitoringSystem },
+    // Wave 17
+    { name: 'AuditLogSystem', ref: app.auditLogSystem },
+    { name: 'BackupRestoreSystem', ref: app.backupRestoreSystem },
   ];
 
   // 6. Initialize all systems with Promise.allSettled for resilience
-  console.log(`\nInitializing ${allSystems.length} systems…`);
+  logger.info({ systemCount: allSystems.length }, 'Initializing systems');
 
   const INIT_TIMEOUT = 30000; // 30 seconds per system max
 
@@ -519,28 +534,27 @@ async function boot() {
       return Promise.resolve();
     }
     return withTimeout(ref.initialize(), name, INIT_TIMEOUT)
-      .then(() => { systemStatuses[name] = { status: 'ok' }; })
+      .then(() => {
+        systemStatuses[name] = { status: 'ok' };
+        logger.info({ module: name, status: 'ok' }, 'Module initialized');
+      })
       .catch((err) => {
         systemStatuses[name] = { status: 'failed', error: err.message };
-        throw err; // rethrow so allSettled marks it as rejected
+        degradedModules.add(name);
+        logger.warn({ module: name, err: err.message }, 'Module failed to initialize — continuing in degraded mode');
+        // Do NOT rethrow: circuit breaker pattern — one module failure must not crash boot
       });
   });
 
-  const results = await Promise.allSettled(initPromises);
+  await Promise.allSettled(initPromises);
 
-  const succeeded = results.filter(r => r.status === 'fulfilled').length;
-  const failed = results.filter(r => r.status === 'rejected').length;
+  const succeeded = Object.values(systemStatuses).filter(s => s.status === 'ok').length;
+  const failed = degradedModules.size;
 
-  console.log(`\n✅ ${succeeded} systems initialized successfully`);
+  logger.info({ succeeded, failed }, 'System initialization complete');
   if (failed > 0) {
-    console.log(`⚠️  ${failed} systems failed to initialize:`);
-    for (const [name, info] of Object.entries(systemStatuses)) {
-      if (info.status === 'failed') {
-        console.log(`   ✗ ${name}: ${info.error}`);
-      }
-    }
+    logger.warn({ degradedModules: [...degradedModules] }, 'Some modules are degraded');
   }
-  console.log('');
 
   return { homey, app, systemCount: allSystems.length };
 }
@@ -557,7 +571,7 @@ async function startServer() {
   if (process.env.NODE_ENV === 'production') {
     for (const key of requiredInProd) {
       if (!process.env[key]) {
-        console.warn(`⚠ WARNING: ${key} is not set. Using insecure defaults.`);
+        logger.warn({ variable: key }, 'Required environment variable is not set — using insecure defaults');
       }
     }
   }
@@ -680,15 +694,14 @@ async function startServer() {
     const start = Date.now();
     res.on('finish', () => {
       const duration = Date.now() - start;
-      console.log(JSON.stringify({
-        timestamp: new Date().toISOString(),
+      logger.info({
         requestId: req.id,
         method: req.method,
         url: req.url,
         status: res.statusCode,
         duration,
         ip: req.ip
-      }));
+      }, 'request completed');
     });
     next();
   });
@@ -702,6 +715,7 @@ async function startServer() {
       version: pkg.version,
       uptime: process.uptime(),
       systemCount,
+      degraded: degradedModules.size,
       timestamp: new Date().toISOString()
     });
   });
@@ -710,14 +724,95 @@ async function startServer() {
     res.json(systemStatuses);
   });
 
-  // Readiness probe for Kubernetes / Docker
-  server.get('/ready', (_req, res) => {
-    const failedCount = Object.values(systemStatuses).filter(s => s.status === 'failed').length;
+  // Returns modules that failed to initialize — circuit breaker exposure (FEAT-03)
+  server.get('/health/degraded', (_req, res) => {
+    res.json({
+      degradedCount: degradedModules.size,
+      modules: [...degradedModules],
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // Critical modules whose failure renders the service not-ready (FEAT-10)
+  const CRITICAL_MODULES = [
+    'DeviceManager',
+    'AutomationManager',
+    'SecurityManager',
+  ];
+
+  /**
+   * Ping Redis at REDIS_URL using a raw TCP connection (no redis npm package needed).
+   * Returns { ok: true } on success, { ok: false, reason } on failure.
+   * If REDIS_URL is unset the check is skipped and treated as passing.
+   */
+  async function checkRedis() {
+    const redisUrl = process.env.REDIS_URL;
+    if (!redisUrl) {
+      return { ok: true, skipped: true, reason: 'REDIS_URL not configured' };
+    }
+    try {
+      const { URL: NodeURL } = require('url');
+      const net = require('net');
+      const parsed = new NodeURL(redisUrl);
+      const host = parsed.hostname;
+      const port = parseInt(parsed.port || '6379', 10);
+
+      await new Promise((resolve, reject) => {
+        const socket = net.createConnection({ host, port }, () => {
+          socket.write('*1\r\n$4\r\nPING\r\n');
+        });
+        socket.setTimeout(3000);
+        socket.on('data', (data) => {
+          socket.destroy();
+          if (data.toString().includes('PONG')) {
+            resolve();
+          } else {
+            reject(new Error(`Unexpected Redis response: ${data.toString().trim()}`));
+          }
+        });
+        socket.on('timeout', () => {
+          socket.destroy();
+          reject(new Error('Redis ping timed out after 3s'));
+        });
+        socket.on('error', reject);
+      });
+
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, reason: err.message };
+    }
+  }
+
+  // Readiness probe — cascade health check (FEAT-10)
+  server.get('/ready', async (_req, res) => {
+    const checks = {};
+
+    // Check 1: > 50 % of all systems must be initialized successfully
+    const failedCount = degradedModules.size;
     const totalSystems = Object.keys(systemStatuses).length;
-    const isReady = totalSystems > 0 && failedCount < totalSystems * 0.5;
+    const systemsHealthy = totalSystems > 0 && failedCount < totalSystems * 0.5;
+    checks.systems = { ok: systemsHealthy, total: totalSystems, failed: failedCount };
+
+    // Check 2: every critical module must be ok
+    const criticalStatus = {};
+    let criticalOk = true;
+    for (const mod of CRITICAL_MODULES) {
+      const info = systemStatuses[mod];
+      const isOk = info && info.status === 'ok';
+      criticalStatus[mod] = isOk ? 'ok' : (info ? info.status : 'missing');
+      if (!isOk) criticalOk = false;
+    }
+    checks.criticalModules = { ok: criticalOk, modules: criticalStatus };
+
+    // Check 3: Redis (skipped gracefully when REDIS_URL is not set)
+    const redisResult = await checkRedis();
+    checks.redis = redisResult;
+
+    const isReady = systemsHealthy && criticalOk && redisResult.ok;
+
     res.status(isReady ? 200 : 503).json({
       ready: isReady,
-      systems: { total: totalSystems, failed: failedCount },
+      checks,
       timestamp: new Date().toISOString()
     });
   });
@@ -818,7 +913,7 @@ async function startServer() {
   for (const [fnName, def] of Object.entries(apiDefs)) {
     const handler = apiHandlers[fnName];
     if (!handler || typeof handler !== 'function') {
-      console.log(`  ⚠ No handler found for API: ${fnName}`);
+      logger.warn({ endpoint: fnName }, 'No handler found for API endpoint — skipping');
       continue;
     }
 
@@ -844,7 +939,7 @@ async function startServer() {
             timestamp: new Date().toISOString(),
           });
         }
-        console.error(`[API Error] ${fnName}:`, err.message);
+        logger.error({ endpoint: fnName, err: err.message }, 'API handler error');
         const isProduction = process.env.NODE_ENV === 'production';
         res.status(500).json({
           error: 'Internal server error',
@@ -857,9 +952,16 @@ async function startServer() {
     routeCount++;
   }
 
-  console.log(`📡 ${routeCount} API routes registered from app.json definitions`);
+  logger.info({ routeCount }, 'API routes registered from app.json definitions');
 
-  // ── Error handling middleware ──
+  // ── OpenAPI / Swagger documentation ──
+  const { specs, swaggerUi } = require('./lib/swagger');
+  server.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs));
+  // Serve raw spec as JSON for external tooling
+  server.get('/api/docs.json', (_req, res) => res.json(specs));
+  console.log('API docs available at /api/docs');
+
+    // ── Error handling middleware ──
   server.use((err, _req, res, _next) => {
     console.error(`[Unhandled Error] ${err.message}`);
     res.status(500).json({
