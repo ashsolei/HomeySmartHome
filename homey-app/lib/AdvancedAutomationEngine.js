@@ -59,7 +59,7 @@ class AdvancedAutomationEngine extends BaseSystem {
     }
 
     // Load learning data
-    this.executionHistory = await this.homey.settings.get('executionHistory') || [];
+    this.executionHistory = await this.homey.settings.get('automationEngine:executionHistory') || [];
     this.patterns = new Map(await this.homey.settings.get('patterns') || []);
 
     // Start automation engine
@@ -522,7 +522,7 @@ class AdvancedAutomationEngine extends BaseSystem {
       this.executionHistory.shift();
     }
 
-    this.homey.settings.set('executionHistory', this.executionHistory);
+    this.homey.settings.set('automationEngine:executionHistory', this.executionHistory);
   }
 
   async controlDevice(deviceId, capability, value) {
@@ -711,9 +711,9 @@ class AdvancedAutomationEngine extends BaseSystem {
 
   startEngine() {
     // Monitor triggers and execute automations
-    this.engineInterval = this.registerInterval(setInterval(async () => {
+    this.engineInterval = this.wrapInterval(async () => {
       await this.checkAndExecuteAutomations();
-    }, 30000)); // Check every 30 seconds
+    }, 30000); // Check every 30 seconds
   }
 
   async checkAndExecuteAutomations() {

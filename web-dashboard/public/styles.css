@@ -1063,6 +1063,44 @@ body {
 .toast.warning { border-left: 4px solid var(--warning); }
 .toast.info { border-left: 4px solid var(--info); }
 
+/* ── Dark Mode ─────────────────────────────────────────────────── */
+/* Overrides the default theme variables with a deeper navy palette. */
+body.dark-mode {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-card: #16213e;
+    --bg-hover: #0f3460;
+
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b8cc;
+    --text-muted: #7a8499;
+
+    --border: #2d3548;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+}
+
+/* Dark mode toggle button in the header */
+#dark-mode-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 1rem;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+#dark-mode-toggle:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .sidebar {
