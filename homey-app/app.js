@@ -161,6 +161,19 @@ const SmartHVACZoneControlSystem = require('./lib/SmartHVACZoneControlSystem');
 const AdvancedSleepEnvironmentSystem = require('./lib/AdvancedSleepEnvironmentSystem');
 // Domain: security
 const HomeSecurityDroneSystem = require('./lib/HomeSecurityDroneSystem');
+// Wave 16 - Circadian, Wellness, Composting, Neighborhood, Water Leak, Blinds, Floor Heating, Weather Station, Ventilation, Roof Solar
+const SmartCircadianLightingSystem = require('./lib/SmartCircadianLightingSystem');
+const HomeDigitalWellnessSystem = require('./lib/HomeDigitalWellnessSystem');
+const SmartCompostingGardenSystem = require('./lib/SmartCompostingGardenSystem');
+const AdvancedNeighborhoodIntegrationSystem = require('./lib/AdvancedNeighborhoodIntegrationSystem');
+const HomeWaterLeakProtectionSystem = require('./lib/HomeWaterLeakProtectionSystem');
+const SmartBlindsShutterControlSystem = require('./lib/SmartBlindsShutterControlSystem');
+const SmartFloorHeatingControlSystem = require('./lib/SmartFloorHeatingControlSystem');
+const SmartWeatherStationSystem = require('./lib/SmartWeatherStationSystem');
+const SmartHomeVentilationHeatRecoverySystem = require('./lib/SmartHomeVentilationHeatRecoverySystem');
+const SmartRoofSolarMonitoringSystem = require('./lib/SmartRoofSolarMonitoringSystem');
+// Wave 17 - Audit
+const AuditLogSystem = require('./lib/AuditLogSystem');
 
 class SmartHomeProApp extends Homey.App {
   
@@ -341,6 +354,21 @@ class SmartHomeProApp extends Homey.App {
     this.advancedSleepEnvironmentSystem = new AdvancedSleepEnvironmentSystem(this.homey);
     this.smartHVACZoneControlSystem = new SmartHVACZoneControlSystem(this.homey);
     this.homeSecurityDroneSystem = new HomeSecurityDroneSystem(this.homey);
+    // Wave 13 - missing instantiation
+    this.smartHomePredictiveCleaningSystem = new SmartHomePredictiveCleaningSystem(this.homey);
+    // Wave 16 - Circadian, Wellness, Composting, etc.
+    this.smartCircadianLightingSystem = new SmartCircadianLightingSystem(this.homey);
+    this.homeDigitalWellnessSystem = new HomeDigitalWellnessSystem(this.homey);
+    this.smartCompostingGardenSystem = new SmartCompostingGardenSystem(this.homey);
+    this.advancedNeighborhoodIntegrationSystem = new AdvancedNeighborhoodIntegrationSystem(this.homey);
+    this.homeWaterLeakProtectionSystem = new HomeWaterLeakProtectionSystem(this.homey);
+    this.smartBlindsShutterControlSystem = new SmartBlindsShutterControlSystem(this.homey);
+    this.smartFloorHeatingControlSystem = new SmartFloorHeatingControlSystem(this.homey);
+    this.smartWeatherStationSystem = new SmartWeatherStationSystem(this.homey);
+    this.smartHomeVentilationHeatRecoverySystem = new SmartHomeVentilationHeatRecoverySystem(this.homey);
+    this.smartRoofSolarMonitoringSystem = new SmartRoofSolarMonitoringSystem(this.homey);
+    // Wave 17
+    this.auditLogSystem = new AuditLogSystem(this.homey);
 
     await Promise.all([
       this.deviceManager.initialize(),
@@ -450,7 +478,21 @@ class SmartHomeProApp extends Homey.App {
       this.smartFireplaceManagementSystem.initialize(),
       this.advancedSleepEnvironmentSystem.initialize(),
       this.smartHVACZoneControlSystem.initialize(),
-      this.homeSecurityDroneSystem.initialize()
+      this.homeSecurityDroneSystem.initialize(),
+      // Wave 16
+      this.smartCircadianLightingSystem.initialize(),
+      this.homeDigitalWellnessSystem.initialize(),
+      this.smartCompostingGardenSystem.initialize(),
+      this.advancedNeighborhoodIntegrationSystem.initialize(),
+      this.homeWaterLeakProtectionSystem.initialize(),
+      this.smartBlindsShutterControlSystem.initialize(),
+      this.smartFloorHeatingControlSystem.initialize(),
+      this.smartWeatherStationSystem.initialize(),
+      this.smartHomeVentilationHeatRecoverySystem.initialize(),
+      this.smartRoofSolarMonitoringSystem.initialize(),
+      // Wave 17
+      this.auditLogSystem.initialize(),
+      this.smartHomePredictiveCleaningSystem.initialize()
     ]);
     
     // Wave 11 post-initialization setup
@@ -503,7 +545,7 @@ class SmartHomeProApp extends Homey.App {
   
   registerAllSystemsForHealthMonitoring() {
     const systems = {
-      'AdvancedAutomationEngine': this.advancedAutomationEngine,
+      'AdvancedAutomationEngine': this.automationEngine,
       'IntelligentDashboard': this.intelligentDashboard,
       'IntelligenceManager': this.intelligenceManager,
       'AdvancedAnalytics': this.advancedAnalytics,
@@ -525,15 +567,13 @@ class SmartHomeProApp extends Homey.App {
       'WineCellarManagement': this.wineCellarManagementSystem,
       'MoodActivityDetection': this.moodActivityDetectionSystem,
       'AmbientIntelligence': this.ambientIntelligenceSystem,
-      'GardenAutomation': this.gardenAutomationSystem,
+      'GardenPlantCare': this.gardenPlantCareSystem,
       'SmartWasteManagement': this.smartWasteManagementSystem,
       'AdvancedWakeUpRoutine': this.advancedWakeUpRoutineSystem,
-      'EVChargingOptimization': this.evChargingOptimizationSystem,
       'HomeGymFitness': this.homeGymFitnessSystem,
-      'WeatherAdaptiveHome': this.weatherAdaptiveHomeSystem,
-      'SmartPetManagement': this.smartPetManagementSystem,
-      'AdvancedSleepOptimization': this.advancedSleepOptimizationSystem,
-      'AdvancedWaterLeakPrevention': this.advancedWaterLeakPreventionSystem,
+      'AdvancedWeatherIntegration': this.advancedWeatherIntegration,
+      'PetCareAutomation': this.petCareAutomationSystem,
+      'HomeWaterLeakProtection': this.homeWaterLeakProtectionSystem,
       'MailboxPackageTracking': this.mailboxPackageTrackingSystem,
       'AdvancedAirPurification': this.advancedAirPurificationSystem,
       'SmartFurnitureControl': this.smartFurnitureControlSystem,
@@ -598,7 +638,20 @@ class SmartHomeProApp extends Homey.App {
       'SmartFireplaceManagement': this.smartFireplaceManagementSystem,
       'AdvancedSleepEnvironment': this.advancedSleepEnvironmentSystem,
       'SmartHVACZoneControl': this.smartHVACZoneControlSystem,
-      'HomeSecurityDrone': this.homeSecurityDroneSystem
+      'HomeSecurityDrone': this.homeSecurityDroneSystem,
+      // Wave 16
+      'SmartCircadianLighting': this.smartCircadianLightingSystem,
+      'HomeDigitalWellness': this.homeDigitalWellnessSystem,
+      'SmartCompostingGarden': this.smartCompostingGardenSystem,
+      'AdvancedNeighborhoodIntegration': this.advancedNeighborhoodIntegrationSystem,
+      'SmartBlindsShutterControl': this.smartBlindsShutterControlSystem,
+      'SmartFloorHeatingControl': this.smartFloorHeatingControlSystem,
+      'SmartWeatherStation': this.smartWeatherStationSystem,
+      'SmartHomeVentilationHeatRecovery': this.smartHomeVentilationHeatRecoverySystem,
+      'SmartRoofSolarMonitoring': this.smartRoofSolarMonitoringSystem,
+      // Wave 17
+      'AuditLogSystem': this.auditLogSystem,
+      'SmartHomePredictiveCleaning': this.smartHomePredictiveCleaningSystem
     };
     
     for (const [name, ref] of Object.entries(systems)) {

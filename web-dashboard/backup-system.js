@@ -692,7 +692,7 @@ class BackupSystem {
 
   calculateBackupSize(data) {
     const json = JSON.stringify(data);
-    const bytes = new Blob([json]).size;
+    const bytes = Buffer.byteLength(json, 'utf8');
     
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;

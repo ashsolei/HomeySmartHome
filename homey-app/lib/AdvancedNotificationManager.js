@@ -639,7 +639,10 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Create notification rule
+   * Create a new notification routing rule and persist it.
+   *
+   * @param {Partial<NotificationRule> & {name: string}} rule - Rule configuration
+   * @returns {Promise<NotificationRule>} The stored rule with generated `id` and `created`
    */
   async createRule(rule) {
     const ruleId = rule.id || this.generateRuleId();
@@ -654,7 +657,12 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Update notification rule
+   * Apply partial updates to an existing notification rule.
+   *
+   * @param {string} ruleId - Rule identifier
+   * @param {Partial<NotificationRule>} updates - Fields to update
+   * @returns {Promise<NotificationRule>} Updated rule
+   * @throws {Error} When the rule ID is not found
    */
   async updateRule(ruleId, updates) {
     const rule = this.notificationRules.get(ruleId);
@@ -669,7 +677,10 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Delete notification rule
+   * Delete a notification rule by ID.
+   *
+   * @param {string} ruleId - Rule identifier
+   * @returns {Promise<boolean>} `true` if the rule existed and was deleted
    */
   async deleteRule(ruleId) {
     const deleted = this.notificationRules.delete(ruleId);
@@ -680,7 +691,10 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Set Do Not Disturb schedule
+   * Add a Do Not Disturb schedule entry.
+   *
+   * @param {{start: string, end: string, days?: number[], enabled?: boolean}} schedule - DND schedule (times in 'HH:MM' format, days 0=Sun–6=Sat)
+   * @returns {Promise<void>}
    */
   async setDNDSchedule(schedule) {
     this.doNotDisturbSchedules.push({
@@ -693,7 +707,9 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Check if currently in Do Not Disturb
+   * Check whether any active DND schedule applies at the current time.
+   *
+   * @returns {boolean}
    */
   isDoNotDisturb() {
     const now = new Date();
@@ -760,7 +776,10 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Get notification statistics
+   * Get delivery statistics for today, this week, the delivery queue, and
+   * breakdowns by priority, category, and channel.
+   *
+   * @returns {Promise<{total: number, today: number, thisWeek: number, queued: number, byPriority: object, byCategory: object, byChannel: object}>}
    */
   async getStatistics() {
     const now = Date.now();

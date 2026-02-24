@@ -6,12 +6,18 @@
  * Keeps an in-memory circular buffer capped at _maxEntries records.
  */
 class AuditLogSystem {
+  /**
+   * @param {import('homey').Homey} homey - Homey app instance
+   */
   constructor(homey) {
     this.homey = homey;
     this._log = [];
     this._maxEntries = 10000;
   }
 
+  /**
+   * @returns {Promise<void>}
+   */
   async initialize() {
     this.log('AuditLogSystem initialized');
   }

@@ -74,7 +74,10 @@ class GeofencingEngine extends BaseSystem {
   }
 
   /**
-   * Create a new geofence
+   * Create a new geofence zone with optional enter/exit actions.
+   *
+   * @param {{id?: string, name: {en: string, sv?: string}, location: {latitude: number, longitude: number}, radius?: number, adaptive?: boolean, actions?: {onEnter?: object[], onExit?: object[]}}} config - Geofence configuration
+   * @returns {Promise<object>} The created geofence object
    */
   async createGeofence(config) {
     const geofence = {
