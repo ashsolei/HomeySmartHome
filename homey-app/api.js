@@ -1,5 +1,446 @@
 'use strict';
 
+// =============================================================================
+// OpenAPI 3.0 annotations — consumed by swagger-jsdoc via lib/swagger.js
+// Route paths mirror what server.js registers: /api<def.path>
+// =============================================================================
+
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Liveness probe
+ *     description: Returns service health status. Used by Docker/Kubernetes as a liveness probe.
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Service is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ *                 version:
+ *                   type: string
+ *                   example: "3.3.0"
+ *                 uptime:
+ *                   type: number
+ *                   example: 42.1
+ *                 systemCount:
+ *                   type: integer
+ *                   example: 93
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ */
+
+/**
+ * @swagger
+ * /ready:
+ *   get:
+ *     summary: Readiness probe
+ *     description: Returns 200 when enough systems have initialised successfully; 503 otherwise.
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Service is ready to handle traffic
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ready:
+ *                   type: boolean
+ *                   example: true
+ *                 systems:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     failed:
+ *                       type: integer
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       503:
+ *         description: Too many systems failed to initialise
+ */
+
+/**
+ * @swagger
+ * /v1/stats:
+ *   get:
+ *     summary: System statistics
+ *     description: Returns detailed runtime statistics including memory usage and system init counts.
+ *     tags: [Monitoring]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Statistics object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 platform:
+ *                   type: string
+ *                   example: "Smart Home Pro (Standalone)"
+ *                 version:
+ *                   type: string
+ *                   example: "3.3.0"
+ *                 uptime:
+ *                   type: number
+ *                 systems:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     ok:
+ *                       type: integer
+ *                     failed:
+ *                       type: integer
+ *                     skipped:
+ *                       type: integer
+ *                 memory:
+ *                   type: object
+ *                   properties:
+ *                     rss:
+ *                       type: string
+ *                       example: "128.5 MB"
+ *                     heapUsed:
+ *                       type: string
+ *                     heapTotal:
+ *                       type: string
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ */
+
+/**
+ * @swagger
+ * /v1/csrf-token:
+ *   get:
+ *     summary: Obtain a CSRF token
+ *     description: >
+ *       Issues a time-bound HMAC-SHA256 CSRF token.
+ *       Include the returned token in the `X-CSRF-Token` header for all
+ *       POST / PUT / DELETE / PATCH requests to `/api/` routes.
+ *       Tokens are valid for 1 hour.
+ *     tags: [Security]
+ *     responses:
+ *       200:
+ *         description: CSRF token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 csrfToken:
+ *                   type: string
+ *                   example: "1700000000000.abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+ */
+
+/**
+ * @swagger
+ * /dashboard:
+ *   get:
+ *     summary: Full dashboard data snapshot
+ *     description: Aggregates presence, energy, climate, security, scenes, and device summary into one response.
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard data object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 presence:
+ *                   type: object
+ *                 energy:
+ *                   type: object
+ *                 climate:
+ *                   type: object
+ *                 security:
+ *                   type: object
+ *                 scenes:
+ *                   type: object
+ *                 activeScene:
+ *                   type: string
+ *                   nullable: true
+ *                 devices:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       500:
+ *         $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /devices:
+ *   get:
+ *     summary: List all devices
+ *     description: Returns a summary of every device registered in the system.
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of device summaries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   zone:
+ *                     type: string
+ *                   capabilities:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ */
+
+/**
+ * @swagger
+ * /scene/{sceneId}:
+ *   post:
+ *     summary: Execute a scene
+ *     description: Activates the scene identified by `sceneId`.
+ *     tags: [Scenes]
+ *     security:
+ *       - bearerAuth: []
+ *       - csrfToken: []
+ *     parameters:
+ *       - in: path
+ *         name: sceneId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The scene identifier
+ *     responses:
+ *       200:
+ *         description: Scene executed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 sceneId:
+ *                   type: string
+ *       403:
+ *         description: Invalid or missing CSRF token
+ *       500:
+ *         $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /device/{deviceId}:
+ *   post:
+ *     summary: Set a device capability value
+ *     description: Updates a single capability of a device (e.g. turn on a light, set a thermostat).
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *       - csrfToken: []
+ *     parameters:
+ *       - in: path
+ *         name: deviceId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The device identifier
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [capability, value]
+ *             properties:
+ *               capability:
+ *                 type: string
+ *                 example: onoff
+ *               value:
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Device updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 deviceId:
+ *                   type: string
+ *                 capability:
+ *                   type: string
+ *                 value: {}
+ *       403:
+ *         description: Invalid or missing CSRF token
+ *       500:
+ *         $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /v1/energy/status:
+ *   get:
+ *     summary: Current energy consumption
+ *     description: Returns real-time energy data from the EnergyManager.
+ *     tags: [Energy]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Energy consumption data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 current:
+ *                   type: number
+ *                   example: 3.2
+ *                 unit:
+ *                   type: string
+ *                   example: kW
+ *                 devices:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       500:
+ *         $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /automations:
+ *   get:
+ *     summary: List scenes and routines
+ *     description: Returns all stored scenes, routines, and the currently active scene.
+ *     tags: [Automations]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Automation definitions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 scenes:
+ *                   type: object
+ *                 routines:
+ *                   type: object
+ *                 activeScene:
+ *                   type: string
+ *                   nullable: true
+ */
+
+/**
+ * @swagger
+ * /v1/security/status:
+ *   get:
+ *     summary: Security system status
+ *     description: Returns the current security mode and alarm states.
+ *     tags: [Security]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Security status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mode:
+ *                   type: string
+ *                   enum: [disarmed, armed_home, armed_away, alarm]
+ *                   example: disarmed
+ *                 zones:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ */
+
+/**
+ * @swagger
+ * /v1/climate/status:
+ *   get:
+ *     summary: Climate / zone temperatures
+ *     description: Returns temperature and humidity data for all climate zones.
+ *     tags: [Climate]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Climate zone status array
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   zoneId:
+ *                     type: string
+ *                   temperature:
+ *                     type: number
+ *                     example: 21.5
+ *                   humidity:
+ *                     type: number
+ *                     example: 45
+ *                   setpoint:
+ *                     type: number
+ */
+
+/**
+ * @swagger
+ * /v1/presence/status:
+ *   get:
+ *     summary: Presence / occupancy status
+ *     description: Returns which users/zones are currently occupied, as tracked by the PresenceManager.
+ *     tags: [Presence]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Presence data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties:
+ *                 type: object
+ *                 properties:
+ *                   present:
+ *                     type: boolean
+ *                   lastSeen:
+ *                     type: string
+ *                     format: date-time
+ */
+
 /**
  * Parse an integer query parameter with bounds checking.
  *
@@ -27,6 +468,24 @@ function parseQueryInt(value, defaultVal, min, max, name = 'parameter') {
     throw err;
   }
   return parsed;
+}
+
+/**
+ * Build a sanitized copy of a settings object, allowing only explicitly
+ * whitelisted keys. Prevents prototype pollution from user-supplied input.
+ *
+ * @param {object}   input       - Raw user-supplied settings object.
+ * @param {string[]} allowedKeys - Keys permitted to appear in the output.
+ * @returns {object} A new object containing only the allowed keys.
+ */
+function sanitizeSettings(input, allowedKeys) {
+  const safe = {};
+  for (const key of allowedKeys) {
+    if (Object.prototype.hasOwnProperty.call(input, key)) {
+      safe[key] = input[key];
+    }
+  }
+  return safe;
 }
 
 module.exports = {
@@ -2860,9 +3319,18 @@ module.exports = {
   
   async updateVisionSettings({ homey, body }) {
     const { settings } = body;
-    
-    Object.assign(homey.app.deepLearningVisionSystem.settings, settings);
-    
+
+    const safe = sanitizeSettings(settings, [
+      'enabled',
+      'sensitivity',
+      'notifications',
+      'detectionThreshold',
+      'faceRecognition',
+      'motionDetection',
+      'objectDetection',
+    ]);
+    Object.assign(homey.app.deepLearningVisionSystem.settings, safe);
+
     return { success: true, settings: homey.app.deepLearningVisionSystem.settings };
   },
   
@@ -2908,9 +3376,18 @@ module.exports = {
   
   async updateNLPSettings({ homey, body }) {
     const { settings } = body;
-    
-    Object.assign(homey.app.naturalLanguageAutomationEngine.settings, settings);
-    
+
+    const safe = sanitizeSettings(settings, [
+      'enabled',
+      'language',
+      'model',
+      'confidenceThreshold',
+      'maxContextLength',
+      'learningEnabled',
+      'responseTimeout',
+    ]);
+    Object.assign(homey.app.naturalLanguageAutomationEngine.settings, safe);
+
     return { success: true, settings: homey.app.naturalLanguageAutomationEngine.settings };
   },
 

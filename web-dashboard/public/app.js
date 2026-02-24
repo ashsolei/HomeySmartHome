@@ -699,15 +699,22 @@ class SmartHomeDashboard {
         return icons[type] || icons.info;
     }
 
-    showModal(title, content, onConfirm) {
+    showModal(title, content, onConfirm, isHtml = false) {
         const modal = document.getElementById('modal');
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
         const confirmBtn = document.querySelector('.modal-confirm');
 
         modalTitle.textContent = title;
-        modalBody.innerHTML = content;
-        
+
+        // Use textContent by default to prevent XSS.
+        // Pass isHtml=true only when content has been pre-sanitized by the caller.
+        if (isHtml) {
+            modalBody.innerHTML = content;
+        } else {
+            modalBody.textContent = content;
+        }
+
         confirmBtn.onclick = () => {
             if (onConfirm) onConfirm();
             this.closeModal();
