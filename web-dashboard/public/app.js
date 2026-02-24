@@ -11,6 +11,35 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+// Dark mode toggle — persists preference in localStorage
+function toggleDarkMode() {
+    const isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+
+    const btn = document.getElementById('dark-mode-toggle');
+    if (btn) {
+        btn.setAttribute('aria-pressed', String(isDark));
+        btn.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        btn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+    }
+}
+
+// Apply saved dark mode preference on page load
+function initDarkMode() {
+    const saved = localStorage.getItem('darkMode');
+    if (saved === 'enabled') {
+        document.body.classList.add('dark-mode');
+    }
+    // Sync button state to whatever was just applied
+    const isDark = document.body.classList.contains('dark-mode');
+    const btn = document.getElementById('dark-mode-toggle');
+    if (btn) {
+        btn.setAttribute('aria-pressed', String(isDark));
+        btn.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        btn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+    }
+}
+
 class SmartHomeDashboard {
     constructor() {
         this.socket = null;
@@ -26,6 +55,7 @@ class SmartHomeDashboard {
     }
 
     async init() {
+        initDarkMode();
         await this.loadData();
         this.connectSocket();
         this.setupEventListeners();

@@ -156,7 +156,6 @@ const SmartRoofSolarMonitoringSystem = require('./lib/SmartRoofSolarMonitoringSy
 
 // Wave 17 — Audit & Backup
 const AuditLogSystem = require('./lib/AuditLogSystem');
-const BackupRestoreSystem = require('./lib/BackupRestoreSystem');
 
 // ============================================
 // BOOT SEQUENCE
@@ -178,10 +177,9 @@ process.on('uncaughtException', (err) => {
 });
 
 async function boot() {
-  console.log('╔══════════════════════════════════════════════╗');
-  console.log('║   Smart Home Pro — Standalone Server Boot    ║');
-  console.log('╚══════════════════════════════════════════════╝');
-  console.log('');
+  logger.info('╔══════════════════════════════════════════════╗');
+  logger.info('║   Smart Home Pro — Standalone Server Boot    ║');
+  logger.info('╚══════════════════════════════════════════════╝');
   logger.info('Boot sequence started');
 
   // 1. Create HomeyShim instance
@@ -366,7 +364,6 @@ async function boot() {
 
   // ── Wave 17: Audit & Backup ──
   app.auditLogSystem = new AuditLogSystem(homey);
-  app.backupRestoreSystem = new BackupRestoreSystem(homey);
 
   // 4. Wire homey.app
   homey.app = app;
@@ -509,7 +506,6 @@ async function boot() {
     { name: 'SmartRoofSolarMonitoringSystem', ref: app.smartRoofSolarMonitoringSystem },
     // Wave 17
     { name: 'AuditLogSystem', ref: app.auditLogSystem },
-    { name: 'BackupRestoreSystem', ref: app.backupRestoreSystem },
   ];
 
   // 6. Initialize all systems with Promise.allSettled for resilience
@@ -654,8 +650,17 @@ async function startServer() {
     const providedHmac = token.slice(dotIdx + 1);
     const expectedHmac = crypto.createHmac('sha256', CSRF_SECRET).update(payload).digest('hex');
 
-    // Constant-time comparison to prevent timing attacks
-    if (!crypto.timingSafeEqual(Buffer.from(providedHmac, 'hex').slice(0, 32), Buffer.from(expectedHmac, 'hex').slice(0, 32))) {
+    // Constant-time comparison to prevent timing attacks.
+    // providedHmac may contain non-hex characters, which causes Buffer.from(…, 'hex')
+    // to silently truncate and produce a differently-sized buffer — crashing
+    // timingSafeEqual with "Input buffers must have the same byte length".
+    // We guard with a strict format check first, then wrap in try/catch.
+    if (!/^[0-9a-f]{64}$/i.test(providedHmac)) return false;
+    try {
+      if (!crypto.timingSafeEqual(Buffer.from(providedHmac, 'hex'), Buffer.from(expectedHmac, 'hex'))) {
+        return false;
+      }
+    } catch {
       return false;
     }
     const expiry = parseInt(payload, 10);
@@ -959,11 +964,11 @@ async function startServer() {
   server.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs));
   // Serve raw spec as JSON for external tooling
   server.get('/api/docs.json', (_req, res) => res.json(specs));
-  console.log('API docs available at /api/docs');
+  logger.info('API docs available at /api/docs');
 
     // ── Error handling middleware ──
   server.use((err, _req, res, _next) => {
-    console.error(`[Unhandled Error] ${err.message}`);
+    logger.error({ err }, 'Unhandled middleware error');
     res.status(500).json({
       error: 'Internal server error',
       timestamp: new Date().toISOString()
@@ -981,35 +986,35 @@ async function startServer() {
 
   // ── Graceful shutdown ──
   const gracefulShutdown = async (signal) => {
-    console.log(`\n${signal} received — shutting down gracefully…`);
+    logger.info({ signal }, 'Signal received — shutting down gracefully');
 
     // Collect all destroyable systems from the app object
     const destroyables = Object.entries(smartApp)
       .filter(([_, sys]) => sys && typeof sys === 'object' && typeof sys.destroy === 'function')
       .map(([name, sys]) => ({ name, sys }));
 
-    console.log(`Destroying ${destroyables.length} systems…`);
+    logger.info({ count: destroyables.length }, 'Destroying systems');
 
     // Destroy the event scheduler first (async with timeout)
     if (smartApp.unifiedEventScheduler && smartApp.unifiedEventScheduler.destroy) {
       try {
         await smartApp.unifiedEventScheduler.destroy(5000);
       } catch (e) {
-        console.error('Error destroying UnifiedEventScheduler:', e.message);
+        logger.error({ err: e.message }, 'Error destroying UnifiedEventScheduler');
       }
     }
 
-    // Destroy remaining systems
-    for (const { name, sys } of destroyables) {
-      if (sys === smartApp.unifiedEventScheduler) continue; // already handled
-      try {
-        sys.destroy();
-      } catch (e) {
-        console.error(`Error destroying ${name}:`, e.message);
-      }
-    }
+    // Destroy remaining systems (BaseSystem.destroy is async — must be awaited)
+    const remainingDestroyPromises = destroyables
+      .filter(({ sys }) => sys !== smartApp.unifiedEventScheduler)
+      .map(({ name, sys }) =>
+        Promise.resolve(sys.destroy()).catch((e) => {
+          logger.error({ module: name, err: e.message }, 'Error during system destroy');
+        })
+      );
+    await Promise.allSettled(remainingDestroyPromises);
 
-    console.log('Cleanup complete. Exiting.');
+    logger.info('Cleanup complete. Exiting.');
     process.exit(0);
   };
 
@@ -1020,26 +1025,20 @@ async function startServer() {
   const PORT = process.env.PORT || 3000;
   server.listen(PORT, () => {
     const bootSeconds = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log('');
-    console.log('╔══════════════════════════════════════════════╗');
-    console.log(`║  🏠 Smart Home Pro v${pkg.version} on port ${String(PORT).padEnd(5)}  ║`);
-    console.log(`║  ⏱  Boot time: ${bootSeconds.padEnd(30)}║`);
-    console.log(`║  📊 Systems: ${String(systemCount).padEnd(32)}║`);
-    console.log(`║  📡 API routes: ${String(routeCount).padEnd(29)}║`);
-    console.log(`║  🛡️  Rate limiting: enabled${' '.repeat(19)}║`);
-    console.log('╚══════════════════════════════════════════════╝');
-    console.log('');
-    console.log(`Health:   http://localhost:${PORT}/health`);
-    console.log(`Ready:    http://localhost:${PORT}/ready`);
-    console.log(`Stats:    http://localhost:${PORT}/api/v1/stats`);
-    console.log(`Info:     http://localhost:${PORT}/api/v1/info`);
-    console.log(`Systems:  http://localhost:${PORT}/health/systems`);
-    console.log('');
+    logger.info('╔══════════════════════════════════════════════╗');
+    logger.info(`Smart Home Pro v${pkg.version} listening on port ${PORT}`);
+    logger.info({ port: PORT, version: pkg.version, bootSeconds, systemCount, routeCount }, 'Server started');
+    logger.info(`Health:   http://localhost:${PORT}/health`);
+    logger.info(`Ready:    http://localhost:${PORT}/ready`);
+    logger.info(`Stats:    http://localhost:${PORT}/api/v1/stats`);
+    logger.info(`Info:     http://localhost:${PORT}/api/v1/info`);
+    logger.info(`Systems:  http://localhost:${PORT}/health/systems`);
+    logger.info('╚══════════════════════════════════════════════╝');
   });
 }
 
 // ── Entry point ──
 startServer().catch((err) => {
-  console.error('Fatal error during server boot:', err);
+  logger.fatal({ err }, 'Fatal error during server boot');
   process.exit(1);
 });

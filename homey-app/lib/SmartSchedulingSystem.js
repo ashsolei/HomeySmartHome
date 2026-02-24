@@ -32,7 +32,7 @@ class SmartSchedulingSystem extends BaseSystem {
     });
 
     // Load execution history
-    this.executionHistory = await this.homey.settings.get('executionHistory') || [];
+    this.executionHistory = await this.homey.settings.get('schedulingSystem:executionHistory') || [];
 
     // Start scheduler
     await this.startScheduler();
@@ -45,19 +45,19 @@ class SmartSchedulingSystem extends BaseSystem {
    */
   async startScheduler() {
     // Check for due tasks every minute
-    this.schedulerInterval = this.registerInterval(setInterval(async () => {
+    this.schedulerInterval = this.wrapInterval(async () => {
       await this.checkDueTasks();
-    }, 60000));
+    }, 60000);
 
     // Process execution queue every 10 seconds
-    this.queueInterval = this.registerInterval(setInterval(async () => {
+    this.queueInterval = this.wrapInterval(async () => {
       await this.processQueue();
-    }, 10000));
+    }, 10000);
 
     // Optimize schedules daily
-    this.optimizationInterval = this.registerInterval(setInterval(async () => {
+    this.optimizationInterval = this.wrapInterval(async () => {
       await this.optimizeSchedules();
-    }, 86400000));
+    }, 86400000);
 
     // Initial check
     await this.checkDueTasks();
@@ -815,7 +815,7 @@ class SmartSchedulingSystem extends BaseSystem {
       data[id] = task;
     });
     await this.homey.settings.set('scheduledTasks', data);
-    await this.homey.settings.set('executionHistory', this.executionHistory.slice(-1000));
+    await this.homey.settings.set('schedulingSystem:executionHistory', this.executionHistory.slice(-1000));
   }
 
 }

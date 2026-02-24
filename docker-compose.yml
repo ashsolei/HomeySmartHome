@@ -36,6 +36,8 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - LATITUDE=${LATITUDE:-59.3293}
       - LONGITUDE=${LONGITUDE:-18.0686}
+      - HOMEY_TOKEN=${HOMEY_TOKEN:?HOMEY_TOKEN is required}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
     volumes:
       - homey_data:/app/data
     healthcheck:
@@ -79,7 +81,7 @@ services:
       - PORT=3001
       - TZ=${TZ:-Europe/Stockholm}
       - HOMEY_URL=http://smarthomepro:3000
-      - HOMEY_TOKEN=${HOMEY_TOKEN:-}
+      - HOMEY_TOKEN=${HOMEY_TOKEN:?HOMEY_TOKEN is required}
     volumes:
       - dashboard_data:/app/data
     depends_on:
