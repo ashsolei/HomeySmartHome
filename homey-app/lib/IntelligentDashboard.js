@@ -1,10 +1,57 @@
 'use strict';
 
 /**
- * Intelligent Dashboard System
- * Provides real-time monitoring, analytics, and intelligent insights
+ * @typedef {object} WidgetConfig
+ * @property {string} id - Unique widget identifier
+ * @property {string} type - Widget type (e.g. 'energy_chart', 'status_card')
+ * @property {'small'|'medium'|'large'} size - Display size
+ * @property {{x: number, y: number, w: number, h: number}} position - Grid position and span
+ * @property {object} config - Widget-type-specific configuration
+ */
+
+/**
+ * @typedef {object} DashboardConfig
+ * @property {string} [id] - Dashboard ID (auto-generated if omitted)
+ * @property {{en: string, sv?: string}|string} name - Dashboard display name
+ * @property {string} [icon='dashboard'] - Dashboard icon name
+ * @property {WidgetConfig[]} [widgets=[]] - List of widgets
+ * @property {number} [refreshInterval=30000] - Auto-refresh interval in ms
+ * @property {'light'|'dark'|'auto'} [theme='auto'] - Color theme
+ * @property {'grid'|'list'} [layout='grid'] - Layout mode
+ * @property {number} [columns=12] - Number of grid columns
+ */
+
+/**
+ * @typedef {object} Dashboard
+ * @property {string} id - Unique identifier
+ * @property {{en: string, sv?: string}|string} name - Display name
+ * @property {string} icon - Icon name
+ * @property {WidgetConfig[]} widgets - Widget list
+ * @property {{refreshInterval: number, theme: string, layout: string, columns: number}} settings - Display settings
+ * @property {number} created - Creation timestamp (ms)
+ * @property {number} modified - Last-modified timestamp (ms)
+ */
+
+/**
+ * @typedef {object} WidgetDataResult
+ * @property {string} widgetId - Widget identifier
+ * @property {string} type - Widget type
+ * @property {object} [data] - Widget data payload (present on success)
+ * @property {string} [error] - Error message (present on failure)
+ * @property {number} timestamp - Timestamp of the result (ms)
+ */
+
+/**
+ * Intelligent Dashboard System.
+ *
+ * Manages named dashboard layouts made up of typed widgets, fetches live data
+ * for each widget on demand, and maintains a lightweight real-time data cache
+ * (energy, presence, security) refreshed every 5 seconds.
  */
 class IntelligentDashboard {
+  /**
+   * @param {import('homey').Homey} homey - Homey app instance
+   */
   constructor(homey) {
     this.homey = homey;
     this.widgets = new Map();
@@ -13,6 +60,12 @@ class IntelligentDashboard {
     this.updateInterval = null;
   }
 
+  /**
+   * Initialize the dashboard system: restore saved layouts from settings and
+   * start the real-time data update interval.
+   *
+   * @returns {Promise<void>}
+   */
   async initialize() {
     this.log('Initializing Intelligent Dashboard...');
     
@@ -272,7 +325,11 @@ class IntelligentDashboard {
   }
 
   /**
-   * Create a custom dashboard
+   * Create a new dashboard from the supplied configuration, persist it to
+   * Homey settings, and return the stored dashboard object.
+   *
+   * @param {DashboardConfig} config - Dashboard configuration
+   * @returns {Promise<Dashboard>}
    */
   async createDashboard(config) {
     const dashboard = {
@@ -297,7 +354,12 @@ class IntelligentDashboard {
   }
 
   /**
-   * Get dashboard data for a specific dashboard
+   * Fetch all widget data for the specified dashboard in parallel and return
+   * the assembled result.
+   *
+   * @param {string} dashboardId - Dashboard identifier
+   * @returns {Promise<{dashboard: Dashboard, data: WidgetDataResult[], timestamp: number}>}
+   * @throws {Error} When the dashboard ID is not found
    */
   async getDashboardData(dashboardId) {
     const dashboard = this.dashboardLayouts.get(dashboardId);
@@ -317,7 +379,12 @@ class IntelligentDashboard {
   }
 
   /**
-   * Get data for a specific widget
+   * Dispatch to the appropriate data-provider method for the given widget and
+   * return a normalised result envelope.  On error the envelope contains an
+   * `error` field instead of `data`.
+   *
+   * @param {WidgetConfig} widget - Widget descriptor
+   * @returns {Promise<WidgetDataResult>}
    */
   async getWidgetData(widget) {
     const { type, config } = widget;
@@ -596,6 +663,12 @@ class IntelligentDashboard {
   // REAL-TIME UPDATES
   // ============================================
 
+  /**
+   * Start a 5-second interval that refreshes the in-memory real-time data
+   * cache (energy, presence, security).
+   *
+   * @returns {void}
+   */
   startRealTimeUpdates() {
     this.updateInterval = setInterval(async () => {
       await this.updateRealTimeData();
@@ -609,6 +682,12 @@ class IntelligentDashboard {
     this.realTimeData.set('security', await this.getSecurityStatus());
   }
 
+  /**
+   * Return the most-recently cached real-time value for a given key.
+   *
+   * @param {'energy'|'presence'|'security'|string} key - Data key
+   * @returns {*} Cached value, or `undefined` if not yet populated
+   */
   getRealTimeData(key) {
     return this.realTimeData.get(key);
   }

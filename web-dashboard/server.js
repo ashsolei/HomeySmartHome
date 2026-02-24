@@ -293,6 +293,25 @@ app.get('/api/energy', async (req, res) => {
   res.json(getDemoData().energy);
 });
 
+// Energy analytics snapshot — returns current demo values with SEK cost estimate
+app.get('/api/energy/analytics', (req, res) => {
+  const energy = getDemoData().energy;
+  const pricePerKwh = 1.5; // SEK/kWh
+  const estimatedDailyCostSEK = parseFloat(
+    ((energy.current * 24) / 1000 * pricePerKwh).toFixed(2)
+  );
+  res.json({
+    current: energy.current,
+    today: energy.today,
+    thisMonth: energy.thisMonth,
+    trend: energy.trend,
+    estimatedDailyCostSEK,
+    pricePerKwh,
+    currency: 'SEK',
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.get('/api/security', async (req, res) => {
   res.json(getDemoData().security);
 });
@@ -460,6 +479,8 @@ const periodicUpdateInterval = setInterval(async () => {
     const data = getDemoData();
     // Simulate real-time changes
     data.energy.current = 800 + Math.floor(Math.random() * 100);
+    // Emit on both the canonical `energy:update` and the legacy name
+    io.emit('energy:update', data.energy);
     io.emit('energy-update', data.energy);
   } catch (error) {
     console.error('Update error:', error);

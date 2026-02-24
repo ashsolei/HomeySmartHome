@@ -1,10 +1,47 @@
 'use strict';
 
 /**
- * Advanced Notification Manager
- * Intelligent notification routing, priority management, and smart delivery
+ * @typedef {1|2|3|4|5} PriorityLevel
+ * INFO=1, LOW=2, NORMAL=3, HIGH=4, CRITICAL=5
+ */
+
+/**
+ * @typedef {object} NotificationInput
+ * @property {string} [title] - Short notification title
+ * @property {string} [message] - Full notification message
+ * @property {string} [category='general'] - Category (e.g. 'security', 'energy', 'device')
+ * @property {string} [source='system'] - Originating module/source
+ * @property {PriorityLevel} [priority] - Override priority (auto-detected if omitted)
+ * @property {string} [deviceId] - Related device identifier
+ * @property {string} [zoneId] - Related zone identifier
+ */
+
+/**
+ * @typedef {object} NotificationRule
+ * @property {string} id - Unique rule identifier
+ * @property {string} name - Human-readable rule name
+ * @property {{category?: string, keywords?: string[], deviceId?: string, zoneId?: string}} conditions - Match conditions
+ * @property {PriorityLevel} priority - Resulting priority if rule matches
+ * @property {string[]} channels - Forced delivery channels (e.g. ['push', 'speech'])
+ * @property {boolean} [ignoreDND=false] - Ignore Do Not Disturb if true
+ * @property {boolean} [allowGrouping=true] - Allow grouping with similar notifications
+ * @property {boolean} [canDelay=false] - Whether delivery can be deferred
+ * @property {boolean} [enabled=true] - Whether the rule is active
+ * @property {number} [created] - Creation timestamp (ms)
+ */
+
+/**
+ * Advanced Notification Manager.
+ *
+ * Provides intelligent notification routing with priority determination,
+ * rule-based channel selection, smart delivery (DND / quiet hours / presence /
+ * notification-fatigue awareness), grouping of similar notifications, and a
+ * deferred queue for notifications that should not be delivered immediately.
  */
 class AdvancedNotificationManager {
+  /**
+   * @param {import('homey').Homey} homey - Homey app instance
+   */
   constructor(homey) {
     this.homey = homey;
     this.notificationQueue = [];
@@ -21,6 +58,12 @@ class AdvancedNotificationManager {
     };
   }
 
+  /**
+   * Load persisted preferences, rules, and notification history, then start
+   * the queue-processor interval and register default rules.
+   *
+   * @returns {Promise<void>}
+   */
   async initialize() {
     this.log('Initializing Advanced Notification Manager...');
     
@@ -135,7 +178,12 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Send notification (main entry point)
+   * Main entry point for sending a notification.  Enriches the notification
+   * with metadata, determines priority, applies rules, and either delivers
+   * immediately or queues for later.
+   *
+   * @param {NotificationInput} notification - Notification to send
+   * @returns {Promise<{success: boolean, notificationId: string, delivered: boolean, queued: boolean}>}
    */
   async send(notification) {
     // Enrich notification
@@ -234,7 +282,11 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Analyze content for urgency
+   * Analyse notification title and message for urgency keywords and return a
+   * normalised urgency score in [0, 1].
+   *
+   * @param {object} notification - Partially enriched notification
+   * @returns {number} Urgency score (0 = none, 1 = critical)
    */
   analyzeUrgency(notification) {
     const content = `${notification.title || ''} ${notification.message || ''}`.toLowerCase();
@@ -382,7 +434,11 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Select appropriate channels for notification
+   * Select which delivery channels to use for a notification, respecting
+   * matching rule overrides and per-channel priority thresholds.
+   *
+   * @param {object} notification - Enriched notification with `rules` and `priority`
+   * @returns {string[]} Array of channel names (e.g. ['push', 'speech'])
    */
   selectChannels(notification) {
     const channels = [];

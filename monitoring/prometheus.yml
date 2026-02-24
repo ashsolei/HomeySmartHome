@@ -8,11 +8,15 @@ global:
 rule_files:
   - "alerts.yml"
 
-# Alerting configuration (optional)
 alerting:
   alertmanagers:
     - static_configs:
-        - targets: []
+        # Alertmanager service in the smarthome-pro namespace (K8s) or
+        # docker-compose service name (local dev).
+        - targets:
+            - 'alertmanager:9093'
+      # Prometheus will time out if Alertmanager is unreachable after 10s.
+      timeout: 10s
 
 # Scrape configurations
 scrape_configs:

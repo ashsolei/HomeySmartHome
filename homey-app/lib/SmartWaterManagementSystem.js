@@ -2,9 +2,15 @@
 
 /**
  * Smart Water Management System
- * Advanced water consumption monitoring, leak detection, and irrigation control
+ *
+ * Advanced water consumption monitoring, automated leak detection, and
+ * smart irrigation scheduling with weather-based skipping. Manages water
+ * meters, leak detectors, and irrigation zones discovered from Homey devices.
  */
 class SmartWaterManagementSystem {
+  /**
+   * @param {import('homey').Homey} homey - Homey application instance
+   */
   constructor(homey) {
     this.homey = homey;
     this.waterMeters = new Map();
@@ -16,6 +22,12 @@ class SmartWaterManagementSystem {
     this.waterSavingMode = false;
   }
 
+  /**
+   * Load persisted meter and zone data, discover water devices, set up default
+   * irrigation zones, and start all monitoring intervals.
+   *
+   * @returns {Promise<void>}
+   */
   async initialize() {
     this.log('Initializing Smart Water Management System...');
     
@@ -43,7 +55,10 @@ class SmartWaterManagementSystem {
   }
 
   /**
-   * Discover water-related devices
+   * Scan all Homey devices and classify them as water meters, leak detectors,
+   * or irrigation zones based on device name keywords and capabilities.
+   *
+   * @returns {Promise<void>}
    */
   async discoverWaterDevices() {
     const devices = this.homey.drivers.getDevices();
@@ -166,7 +181,10 @@ class SmartWaterManagementSystem {
   }
 
   /**
-   * Start monitoring
+   * Start all monitoring intervals: consumption (5 min), leak detection (1 min),
+   * irrigation schedule (10 min), and daily report (24 h). Also runs initial checks.
+   *
+   * @returns {Promise<void>}
    */
   async startMonitoring() {
     // Water consumption monitoring (every 5 minutes)
@@ -195,7 +213,10 @@ class SmartWaterManagementSystem {
   }
 
   /**
-   * Monitor water consumption
+   * Read all water meters, compute flow rates, store a consumption snapshot,
+   * flag anomalies, and analyse usage trends.
+   *
+   * @returns {Promise<{timestamp: number, total: number, meters: object[], flowRate: number, anomaly: boolean}>}
    */
   async monitorWaterConsumption() {
     const consumption = {
@@ -283,7 +304,10 @@ class SmartWaterManagementSystem {
   }
 
   /**
-   * Detect leaks
+   * Poll all leak detectors for the `alarm_water` capability and handle new or
+   * resolved leak events. Also checks for hidden leaks during night hours.
+   *
+   * @returns {Promise<void>}
    */
   async detectLeaks() {
     for (const [id, detector] of this.leakDetectors) {
@@ -381,7 +405,9 @@ class SmartWaterManagementSystem {
   }
 
   /**
-   * Get current flow rate
+   * Return the sum of current flow rates across all registered water meters.
+   *
+   * @returns {Promise<number>} Total flow rate in litres per minute
    */
   async getCurrentFlowRate() {
     let totalFlow = 0;
@@ -531,7 +557,11 @@ class SmartWaterManagementSystem {
   }
 
   /**
-   * Start irrigation
+   * Start irrigation for the specified zone and schedule automatic shutoff.
+   *
+   * @param {string} zoneId - Irrigation zone identifier
+   * @param {number} duration - Irrigation duration in minutes
+   * @returns {Promise<void>}
    */
   async startIrrigation(zoneId, duration) {
     const zone = this.irrigationZones.get(zoneId);
@@ -559,7 +589,10 @@ class SmartWaterManagementSystem {
   }
 
   /**
-   * Stop irrigation
+   * Stop irrigation for the specified zone.
+   *
+   * @param {string} zoneId - Irrigation zone identifier
+   * @returns {Promise<void>}
    */
   async stopIrrigation(zoneId) {
     const zone = this.irrigationZones.get(zoneId);
@@ -621,7 +654,11 @@ class SmartWaterManagementSystem {
   }
 
   /**
-   * Set water saving mode
+   * Enable or disable water saving mode. When enabled, all irrigation schedule
+   * durations are reduced by 25%.
+   *
+   * @param {boolean} enabled - `true` to enable, `false` to disable
+   * @returns {Promise<void>}
    */
   async setWaterSavingMode(enabled) {
     this.waterSavingMode = enabled;
@@ -642,7 +679,9 @@ class SmartWaterManagementSystem {
   }
 
   /**
-   * Get statistics
+   * Return a snapshot of the water management system state and recent metrics.
+   *
+   * @returns {{waterMeters: number, leakDetectors: number, irrigationZones: number, activeLeaks: number, totalConsumptionToday: string, recentAlerts: object[], consumptionHistory: object[], waterSavingMode: boolean}}
    */
   getStatistics() {
     const last24Hours = this.consumptionHistory.filter(

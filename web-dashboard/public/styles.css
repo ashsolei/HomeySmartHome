@@ -1101,6 +1101,92 @@ body.dark-mode {
     background: rgba(99, 102, 241, 0.1);
 }
 
+/* ── Energy Analytics Panel ──────────────────────────────────────── */
+
+.energy-analytics-section {
+    /* inherits .dashboard-section */
+}
+
+.energy-analytics-updated {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.energy-analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.energy-analytics-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--bg-hover);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+}
+
+.energy-analytics-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.energy-analytics-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Trend indicator colours */
+.energy-trend-indicator.trend-up     { color: var(--danger); }
+.energy-trend-indicator.trend-down   { color: var(--success); }
+.energy-trend-indicator.trend-stable { color: var(--text-secondary); }
+
+/* SVG Chart */
+.energy-analytics-chart-wrap {
+    width: 100%;
+    height: 150px;
+    position: relative;
+}
+
+.energy-analytics-chart {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+}
+
+/* SVG internal elements — styled via CSS classes set in JS */
+.ea-grid-line {
+    stroke: var(--border);
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+}
+
+.ea-axis-label {
+    fill: var(--text-muted);
+    font-size: 11px;
+    font-family: 'Inter', sans-serif;
+}
+
+.ea-line {
+    fill: none;
+    stroke: var(--warning);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ea-dot {
+    fill: var(--warning);
+    stroke: var(--bg-card);
+    stroke-width: 2;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .sidebar {
@@ -1130,6 +1216,10 @@ body.dark-mode {
     .quick-stats {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .energy-analytics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 480px) {
@@ -1143,5 +1233,9 @@ body.dark-mode {
     
     .security-modes {
         grid-template-columns: 1fr;
+    }
+
+    .energy-analytics-grid {
+        grid-template-columns: 1fr 1fr;
     }
 }

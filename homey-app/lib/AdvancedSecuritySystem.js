@@ -1,11 +1,60 @@
 'use strict';
 
 /**
+ * @typedef {'disarmed'|'armed_home'|'armed_away'|'armed_night'} SecurityMode
+ */
+
+/**
+ * @typedef {object} GeofenceConfig
+ * @property {boolean} enabled - Whether geofencing is active
+ * @property {number} latitude - Home latitude in decimal degrees
+ * @property {number} longitude - Home longitude in decimal degrees
+ * @property {number} radiusMeters - Geofence radius in metres
+ * @property {boolean} autoArmOnLeave - Arm automatically when all users leave
+ * @property {boolean} autoDisarmOnArrive - Disarm when a user arrives home
+ */
+
+/**
+ * @typedef {object} VisitorSchedule
+ * @property {string} visitorId - Unique visitor identifier
+ * @property {string} name - Display name
+ * @property {number[]} allowedDays - Week days allowed (0=Sun … 6=Sat)
+ * @property {string} startTime - Earliest allowed time in 'HH:MM' format
+ * @property {string} endTime - Latest allowed time in 'HH:MM' format
+ * @property {number} startDate - Schedule start timestamp (ms)
+ * @property {number} endDate - Schedule end timestamp (ms)
+ * @property {boolean} active - Whether the schedule is currently active
+ */
+
+/**
+ * @typedef {object} AuditEntry
+ * @property {string} id - Unique audit record ID
+ * @property {string} action - Action category (e.g. 'zone_arm', 'mode_change')
+ * @property {string} userId - User who performed the action
+ * @property {object} details - Action-specific details
+ * @property {number} timestamp - Unix timestamp in milliseconds
+ */
+
+/**
+ * @typedef {object} SensorHealthReport
+ * @property {number} healthy - Count of healthy sensors
+ * @property {number} warning - Count of sensors in warning state
+ * @property {number} critical - Count of critical sensors
+ * @property {number} unreachable - Count of unreachable sensors
+ * @property {object[]} sensors - Per-sensor health details
+ */
+
+/**
  * Advanced Security System
+ *
  * Comprehensive security with intrusion detection, geofencing, multi-zone arming,
- * visitor scheduling, silent alarms, simulation mode, audit trail, and escalation
+ * visitor scheduling, silent alarms, simulation mode, sensor health monitoring,
+ * audit trail, duress-code detection, and configurable alarm escalation.
  */
 class AdvancedSecuritySystem {
+  /**
+   * @param {import('homey').Homey} homey - Homey application instance
+   */
   constructor(homey) {
     this.homey = homey;
     this.cameras = new Map();
@@ -77,6 +126,12 @@ class AdvancedSecuritySystem {
     this.activeEscalations = new Map();
   }
 
+  /**
+   * Load persisted settings, discover security devices, set up zones, and start
+   * all monitoring and sensor-health intervals.
+   *
+   * @returns {Promise<void>}
+   */
   async initialize() {
     this.log('Initializing Advanced Security System...');
 
@@ -107,6 +162,13 @@ class AdvancedSecuritySystem {
     this.log('Advanced Security System initialized');
   }
 
+  /**
+   * Scan all Homey devices and populate the cameras, motion sensors,
+   * door/window sensor, and lock maps based on device name keywords and
+   * capabilities.
+   *
+   * @returns {Promise<void>}
+   */
   async discoverSecurityDevices() {
     const devices = this.homey.drivers.getDevices();
 
@@ -223,6 +285,12 @@ class AdvancedSecuritySystem {
 
   // ── Geofence-Based Auto Arm/Disarm ────────────────────────────────────
 
+  /**
+   * Update the geofence configuration and persist the change.
+   *
+   * @param {Partial<GeofenceConfig>} config - Partial geofence settings to merge
+   * @returns {GeofenceConfig} The merged geofence configuration
+   */
   configureGeofence(config) {
     Object.assign(this.geofenceConfig, config);
     this.log(`Geofence configured: radius=${this.geofenceConfig.radiusMeters}m`);
@@ -230,6 +298,15 @@ class AdvancedSecuritySystem {
     return this.geofenceConfig;
   }
 
+  /**
+   * Update a user's location and trigger automatic arm/disarm based on the
+   * geofence configuration.
+   *
+   * @param {string} userId - Identifier of the user whose location changed
+   * @param {number} latitude - Current latitude in decimal degrees
+   * @param {number} longitude - Current longitude in decimal degrees
+   * @returns {Promise<void>}
+   */
   async updateUserLocation(userId, latitude, longitude) {
     this.geofenceConfig.userLocations.set(userId, { latitude, longitude, updatedAt: Date.now() });
 
@@ -326,6 +403,14 @@ class AdvancedSecuritySystem {
 
   // ── Multi-Zone Armed Status ───────────────────────────────────────────
 
+  /**
+   * Arm a security zone and record the action in the audit trail.
+   *
+   * @param {string} zoneId - Zone identifier (e.g. 'perimeter', 'interior')
+   * @param {string} [userId='system'] - User performing the action
+   * @returns {Promise<{zoneId: string, armed: true}>}
+   * @throws {Error} When the zone ID is not found
+   */
   async armZone(zoneId, userId = 'system') {
     const zone = this.zones.get(zoneId);
     if (!zone) throw new Error(`Zone not found: ${zoneId}`);
@@ -338,6 +423,14 @@ class AdvancedSecuritySystem {
     return { zoneId, armed: true };
   }
 
+  /**
+   * Disarm a security zone and record the action in the audit trail.
+   *
+   * @param {string} zoneId - Zone identifier
+   * @param {string} [userId='system'] - User performing the action
+   * @returns {Promise<{zoneId: string, armed: false}>}
+   * @throws {Error} When the zone ID is not found
+   */
   async disarmZone(zoneId, userId = 'system') {
     const zone = this.zones.get(zoneId);
     if (!zone) throw new Error(`Zone not found: ${zoneId}`);
@@ -350,6 +443,11 @@ class AdvancedSecuritySystem {
     return { zoneId, armed: false };
   }
 
+  /**
+   * Return the current armed state and device count for every security zone.
+   *
+   * @returns {{[zoneId: string]: {name: string, armed: boolean, deviceCount: number}}}
+   */
   getZoneStatus() {
     const result = {};
     for (const [id, zone] of this.zones) {
@@ -371,6 +469,19 @@ class AdvancedSecuritySystem {
 
   // ── Visitor Access Window Scheduling ──────────────────────────────────
 
+  /**
+   * Schedule time-windowed access for a visitor and persist the schedule.
+   *
+   * @param {string} visitorId - Unique visitor identifier
+   * @param {object} schedule - Schedule definition
+   * @param {string} [schedule.name] - Display name for the visitor
+   * @param {number[]} [schedule.allowedDays] - Allowed week days (0=Sun … 6=Sat)
+   * @param {string} [schedule.startTime='08:00'] - Daily start time ('HH:MM')
+   * @param {string} [schedule.endTime='18:00'] - Daily end time ('HH:MM')
+   * @param {number} [schedule.startDate] - Schedule start timestamp (ms); defaults to now
+   * @param {number} [schedule.endDate] - Schedule end timestamp (ms); defaults to 30 days
+   * @returns {Promise<VisitorSchedule>} The created visitor schedule
+   */
   async scheduleVisitorAccess(visitorId, schedule) {
     const entry = {
       visitorId,
@@ -410,6 +521,12 @@ class AdvancedSecuritySystem {
     }
   }
 
+  /**
+   * Check whether a visitor is currently within their allowed access window.
+   *
+   * @param {string} visitorId - Visitor identifier to check
+   * @returns {boolean} `true` if the visitor has an active, currently-valid schedule
+   */
   isVisitorAllowed(visitorId) {
     const schedule = this.visitorSchedules.get(visitorId);
     return schedule?.active && schedule?.currentlyAllowed;
@@ -427,6 +544,13 @@ class AdvancedSecuritySystem {
 
   // ── Silent Alarm Mode ─────────────────────────────────────────────────
 
+  /**
+   * Enable silent alarm mode. Security events will alert the configured contacts
+   * without triggering audible alarms.
+   *
+   * @param {string[]} [contacts=[]] - Emergency contact identifiers; replaces existing list when non-empty
+   * @returns {void}
+   */
   enableSilentAlarm(contacts = []) {
     this.silentAlarmMode = true;
     if (contacts.length > 0) this.silentAlarmContacts = contacts;
@@ -464,6 +588,12 @@ class AdvancedSecuritySystem {
 
   // ── Security Simulation Mode (Away) ───────────────────────────────────
 
+  /**
+   * Start occupancy simulation mode. Randomly toggles lights and appliances at
+   * configurable intervals to deter intruders while away.
+   *
+   * @returns {Promise<void>}
+   */
   async startSimulationMode() {
     this.simulationMode = true;
     this.log('Security simulation mode started — simulating occupancy');
@@ -472,6 +602,12 @@ class AdvancedSecuritySystem {
     await this.scheduleNextSimulationAction();
   }
 
+  /**
+   * Stop occupancy simulation and turn off all devices that were toggled
+   * by the simulation.
+   *
+   * @returns {Promise<void>}
+   */
   async stopSimulationMode() {
     this.simulationMode = false;
     for (const timer of this.simulationTimers) clearTimeout(timer);
@@ -552,6 +688,12 @@ class AdvancedSecuritySystem {
     }, 300000);
   }
 
+  /**
+   * Poll every motion sensor, door/window sensor, and lock for battery level
+   * and reachability, then update the sensor health map.
+   *
+   * @returns {Promise<void>}
+   */
   async checkAllSensorHealth() {
     const allSensors = [
       ...Array.from(this.motionSensors.values()),
@@ -607,6 +749,11 @@ class AdvancedSecuritySystem {
     }
   }
 
+  /**
+   * Aggregate the current sensor health map into a summary report.
+   *
+   * @returns {SensorHealthReport}
+   */
   getSensorHealthReport() {
     const report = { healthy: 0, warning: 0, critical: 0, unreachable: 0, sensors: [] };
     for (const [id, health] of this.sensorHealth) {
@@ -618,6 +765,15 @@ class AdvancedSecuritySystem {
 
   // ── Security Audit Trail ──────────────────────────────────────────────
 
+  /**
+   * Append a new entry to the security audit trail. The trail is capped at
+   * 1 000 entries; older entries are evicted automatically.
+   *
+   * @param {string} action - Action category string (e.g. 'zone_arm', 'mode_change')
+   * @param {string} userId - Identifier of the user who performed the action
+   * @param {object} [details={}] - Action-specific metadata
+   * @returns {AuditEntry} The created audit entry
+   */
   addAuditEntry(action, userId, details = {}) {
     const entry = {
       id: `audit_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -631,6 +787,16 @@ class AdvancedSecuritySystem {
     return entry;
   }
 
+  /**
+   * Return a filtered, limited slice of the audit trail.
+   *
+   * @param {number} [limit=50] - Maximum number of entries to return
+   * @param {object} [filters={}] - Optional filter criteria
+   * @param {string} [filters.action] - Filter by action category
+   * @param {string} [filters.userId] - Filter by user ID
+   * @param {number} [filters.since] - Filter by minimum timestamp (ms)
+   * @returns {AuditEntry[]} Matching audit entries (most recent last)
+   */
   getAuditTrail(limit = 50, filters = {}) {
     let trail = [...this.auditTrail];
     if (filters.action) trail = trail.filter(e => e.action === filters.action);
@@ -641,6 +807,17 @@ class AdvancedSecuritySystem {
 
   // ── Duress Code Detection ─────────────────────────────────────────────
 
+  /**
+   * Register a duress code. When entered at a lock it triggers a hidden alert
+   * while appearing to disarm the system normally.
+   *
+   * @param {string} code - The duress code string to register
+   * @param {object} [config={}] - Duress code options
+   * @param {string} [config.name='Duress Code'] - Descriptive label
+   * @param {boolean} [config.silentAlert=true] - Whether to send a silent alert on use
+   * @param {string[]} [config.alertContacts] - Contacts to alert (defaults to silent alarm contacts)
+   * @returns {Promise<void>}
+   */
   async addDuressCode(code, config = {}) {
     this.duressCodes.set(code, {
       name: config.name || 'Duress Code',
@@ -652,6 +829,13 @@ class AdvancedSecuritySystem {
     this.log('Duress code configured');
   }
 
+  /**
+   * Check whether a code is a registered duress code and, if so, trigger a
+   * silent alert and start covert camera recording.
+   *
+   * @param {string} code - Code string to check
+   * @returns {Promise<boolean>} `true` when the code is a known duress code
+   */
   async checkDuressCode(code) {
     const duress = this.duressCodes.get(code);
     if (!duress) return false;
@@ -672,6 +856,11 @@ class AdvancedSecuritySystem {
 
   // ── Night Vision Mode ─────────────────────────────────────────────────
 
+  /**
+   * Enable night-vision mode on all discovered cameras and record the event.
+   *
+   * @returns {Promise<void>}
+   */
   async enableNightVision() {
     this.nightVisionEnabled = true;
     for (const [id, camera] of this.cameras) {
@@ -681,6 +870,11 @@ class AdvancedSecuritySystem {
     this.addAuditEntry('night_vision_enabled', 'system', { cameraCount: this.cameras.size });
   }
 
+  /**
+   * Disable night-vision mode on all cameras.
+   *
+   * @returns {Promise<void>}
+   */
   async disableNightVision() {
     this.nightVisionEnabled = false;
     for (const [id, camera] of this.cameras) {
@@ -692,12 +886,31 @@ class AdvancedSecuritySystem {
 
   // ── Configurable Alarm Escalation ─────────────────────────────────────
 
+  /**
+   * Update alarm escalation timing and persist the configuration.
+   *
+   * @param {object} config - Escalation timing overrides
+   * @param {number} [config.warningDelaySec] - Seconds before warning notification
+   * @param {number} [config.sirenDelaySec] - Seconds before siren activation
+   * @param {number} [config.policeNotifyDelaySec] - Seconds before police notification
+   * @param {boolean} [config.enabled] - Whether escalation is active
+   * @returns {void}
+   */
   configureEscalation(config) {
     Object.assign(this.escalationConfig, config);
     this.saveSettings();
     this.log(`Escalation configured: warning=${config.warningDelaySec}s, siren=${config.sirenDelaySec}s, police=${config.policeNotifyDelaySec}s`);
   }
 
+  /**
+   * Start a three-stage alarm escalation for a security event: warning → siren →
+   * police notification. Each stage fires after the configured delay unless
+   * the escalation is cancelled first.
+   *
+   * @param {string} eventId - Timeline event ID that triggered escalation
+   * @param {object} event - Security event details (type, zone, timestamp, etc.)
+   * @returns {Promise<void>}
+   */
   async startEscalation(eventId, event) {
     if (!this.escalationConfig.enabled) return;
 
@@ -759,6 +972,14 @@ class AdvancedSecuritySystem {
     this.activeEscalations.set(eventId, escalation);
   }
 
+  /**
+   * Cancel an active alarm escalation, clear all pending timers, and record
+   * the cancellation in the audit trail.
+   *
+   * @param {string} eventId - ID of the escalation to cancel
+   * @param {string} [userId='system'] - User who cancelled the escalation
+   * @returns {Promise<boolean>} `true` if the escalation was found and cancelled
+   */
   async cancelEscalation(eventId, userId = 'system') {
     const escalation = this.activeEscalations.get(eventId);
     if (!escalation) return false;
@@ -877,6 +1098,15 @@ class AdvancedSecuritySystem {
     }
   }
 
+  /**
+   * Change the global security mode, persist it, and apply side effects
+   * (lock all doors, activate night vision, cancel escalations, stop simulation).
+   *
+   * @param {SecurityMode} mode - New security mode
+   * @param {string} [userId='system'] - User requesting the change
+   * @param {string} [trigger='manual'] - Trigger source ('manual', 'geofence_arrive', 'panic', etc.)
+   * @returns {Promise<void>}
+   */
   async setSecurityMode(mode, userId = 'system', trigger = 'manual') {
     const previousMode = this.securityMode;
     this.securityMode = mode;
@@ -919,6 +1149,13 @@ class AdvancedSecuritySystem {
     }
   }
 
+  /**
+   * Activate panic mode: arm the system, lock all doors, start recording on all
+   * cameras, and send a critical notification.
+   *
+   * @param {string} [userId='system'] - User who triggered panic mode
+   * @returns {Promise<void>}
+   */
   async activatePanicMode(userId = 'system') {
     this.panicMode = true;
     this.log('PANIC MODE ACTIVATED');
@@ -978,6 +1215,11 @@ class AdvancedSecuritySystem {
 
   // ── Statistics ────────────────────────────────────────────────────────
 
+  /**
+   * Return a snapshot of the security system's current state and metrics.
+   *
+   * @returns {{mode: SecurityMode, cameras: number, motionSensors: number, doorWindowSensors: number, locks: number, recentEvents: object[], panicMode: boolean, silentAlarmMode: boolean, simulationMode: boolean, nightVisionEnabled: boolean, geofenceEnabled: boolean, zoneStatus: object, sensorHealth: object, auditEntries: number, activeEscalations: number, visitorSchedules: number}}
+   */
   getStatistics() {
     const healthReport = this.getSensorHealthReport();
     return {
@@ -1007,6 +1249,12 @@ class AdvancedSecuritySystem {
 
   // ── Cleanup ───────────────────────────────────────────────────────────
 
+  /**
+   * Stop all monitoring intervals and cancel all pending timers and escalations.
+   * Should be called before the app is unloaded.
+   *
+   * @returns {void}
+   */
   destroy() {
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);

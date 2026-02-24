@@ -168,7 +168,9 @@ class SmartHomeDashboard {
             energy: {},
             security: { mode: 'home' }
         };
-        
+        // 24-slot circular buffer, SEK 1.50/kWh (Swedish average)
+        this.energyAnalytics = new EnergyAnalytics(24, 1.5);
+
         this.init();
     }
 
@@ -215,8 +217,17 @@ class SmartHomeDashboard {
             this.handleSceneActivated(data);
         });
 
-        this.socket.on('energy-update', (data) => {
+        this.socket.on('energy:update', (data) => {
+            this.energyAnalytics.recordDataPoint(data);
             this.updateEnergyDisplay(data);
+            this.updateEnergyAnalyticsPanel();
+        });
+
+        // Legacy event name — keep working if server still sends old name
+        this.socket.on('energy-update', (data) => {
+            this.energyAnalytics.recordDataPoint(data);
+            this.updateEnergyDisplay(data);
+            this.updateEnergyAnalyticsPanel();
         });
 
         this.socket.on('security-mode-changed', (data) => {
@@ -325,6 +336,12 @@ class SmartHomeDashboard {
         this.renderClimateZones();
         this.renderEnergyConsumers();
         this.initEnergyChart();
+
+        // Seed analytics panel with the initial energy value from loaded data
+        if (this.data.energy && this.data.energy.current) {
+            this.energyAnalytics.recordDataPoint(this.data.energy);
+            this.updateEnergyAnalyticsPanel();
+        }
     }
 
     renderZones() {
@@ -748,9 +765,173 @@ class SmartHomeDashboard {
     updateEnergyDisplay(data) {
         const currentPower = document.getElementById('current-power');
         const energyCurrent = document.getElementById('energy-current');
-        
+
         if (currentPower) currentPower.textContent = `${data.current} W`;
         if (energyCurrent) energyCurrent.textContent = data.current;
+    }
+
+    updateEnergyAnalyticsPanel() {
+        const stats = this.energyAnalytics.getAnalytics();
+
+        const elCurrent = document.getElementById('ea-current');
+        const elAverage = document.getElementById('ea-average');
+        const elPeak = document.getElementById('ea-peak');
+        const elTrend = document.getElementById('ea-trend');
+        const elCost = document.getElementById('ea-cost');
+        const elUpdated = document.getElementById('energy-analytics-updated');
+
+        if (elCurrent) elCurrent.textContent = `${stats.current} W`;
+        if (elAverage) elAverage.textContent = `${stats.average} W`;
+        if (elPeak) elPeak.textContent = `${stats.peak} W`;
+
+        if (elTrend) {
+            const trendMap = {
+                increasing: { label: '\u2191 Stigande', cls: 'trend-up' },
+                decreasing: { label: '\u2193 Fallande', cls: 'trend-down' },
+                stable:     { label: '\u2192 Stabil',   cls: 'trend-stable' },
+                unknown:    { label: '--',              cls: '' },
+            };
+            const t = trendMap[stats.trend] || trendMap.unknown;
+            elTrend.textContent = t.label;
+            elTrend.className = 'energy-analytics-value energy-trend-indicator ' + t.cls;
+        }
+
+        if (elCost) {
+            elCost.textContent = stats.estimatedDailyCostSEK.toFixed(2).replace('.', ',') + ' kr';
+        }
+
+        if (elUpdated) {
+            const now = new Date();
+            elUpdated.textContent = 'Uppdaterad ' + now.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        this.renderEnergyAnalyticsChart();
+    }
+
+    /**
+     * Render a simple SVG area/line chart from the EnergyAnalytics buffer.
+     * No external libraries — pure SVG path manipulation.
+     */
+    renderEnergyAnalyticsChart() {
+        const svg = document.getElementById('energy-analytics-chart');
+        if (!svg) return;
+
+        const readings = this.energyAnalytics._orderedReadings();
+        if (readings.length < 2) {
+            // Not enough data yet — show placeholder text
+            svg.innerHTML = '';
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', '50%');
+            text.setAttribute('y', '50%');
+            text.setAttribute('dominant-baseline', 'middle');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', 'var(--text-muted)');
+            text.setAttribute('font-size', '13');
+            text.textContent = 'Samlar data\u2026';
+            svg.appendChild(text);
+            return;
+        }
+
+        const W = svg.clientWidth || 600;
+        const H = svg.clientHeight || 140;
+        const PAD = { top: 12, right: 12, bottom: 28, left: 44 };
+        const chartW = W - PAD.left - PAD.right;
+        const chartH = H - PAD.top - PAD.bottom;
+
+        const watts = readings.map(r => r.watts);
+        const minW = Math.min(...watts);
+        const maxW = Math.max(...watts);
+        const range = maxW - minW || 1;
+
+        const xScale = (i) => PAD.left + (i / (watts.length - 1)) * chartW;
+        const yScale = (w) => PAD.top + chartH - ((w - minW) / range) * chartH;
+
+        // Build path coordinates
+        const points = watts.map((w, i) => [xScale(i), yScale(w)]);
+
+        const linePath = points.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(' ');
+        const areaPath = `${linePath} L${points[points.length - 1][0]},${PAD.top + chartH} L${PAD.left},${PAD.top + chartH} Z`;
+
+        // Clear and rebuild SVG children safely
+        svg.innerHTML = '';
+
+        // Defs — gradient
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        grad.setAttribute('id', 'ea-area-grad');
+        grad.setAttribute('x1', '0');
+        grad.setAttribute('y1', '0');
+        grad.setAttribute('x2', '0');
+        grad.setAttribute('y2', '1');
+        const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop1.setAttribute('offset', '0%');
+        stop1.setAttribute('stop-color', 'var(--warning)');
+        stop1.setAttribute('stop-opacity', '0.35');
+        const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop2.setAttribute('offset', '100%');
+        stop2.setAttribute('stop-color', 'var(--warning)');
+        stop2.setAttribute('stop-opacity', '0.02');
+        grad.appendChild(stop1);
+        grad.appendChild(stop2);
+        defs.appendChild(grad);
+        svg.appendChild(defs);
+
+        // Grid lines (3 horizontal)
+        for (let k = 0; k <= 2; k++) {
+            const y = PAD.top + (k / 2) * chartH;
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', String(PAD.left));
+            line.setAttribute('y1', String(y));
+            line.setAttribute('x2', String(PAD.left + chartW));
+            line.setAttribute('y2', String(y));
+            line.setAttribute('class', 'ea-grid-line');
+            svg.appendChild(line);
+
+            // Y-axis label
+            const wVal = Math.round(maxW - (k / 2) * range);
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', String(PAD.left - 6));
+            label.setAttribute('y', String(y + 4));
+            label.setAttribute('text-anchor', 'end');
+            label.setAttribute('class', 'ea-axis-label');
+            label.textContent = wVal + ' W';
+            svg.appendChild(label);
+        }
+
+        // Area fill
+        const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        area.setAttribute('d', areaPath);
+        area.setAttribute('fill', 'url(#ea-area-grad)');
+        svg.appendChild(area);
+
+        // Line stroke
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        line.setAttribute('d', linePath);
+        line.setAttribute('class', 'ea-line');
+        svg.appendChild(line);
+
+        // Dot on latest value
+        const last = points[points.length - 1];
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', String(last[0]));
+        dot.setAttribute('cy', String(last[1]));
+        dot.setAttribute('r', '4');
+        dot.setAttribute('class', 'ea-dot');
+        svg.appendChild(dot);
+
+        // X-axis labels — show first, middle, last timestamp
+        const labelIndices = [0, Math.floor((readings.length - 1) / 2), readings.length - 1];
+        labelIndices.forEach(idx => {
+            const ts = new Date(readings[idx].timestamp);
+            const timeStr = ts.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+            const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            xLabel.setAttribute('x', String(xScale(idx)));
+            xLabel.setAttribute('y', String(PAD.top + chartH + 18));
+            xLabel.setAttribute('text-anchor', 'middle');
+            xLabel.setAttribute('class', 'ea-axis-label');
+            xLabel.textContent = timeStr;
+            svg.appendChild(xLabel);
+        });
     }
 
     // Utilities

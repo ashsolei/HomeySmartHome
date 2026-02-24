@@ -1,11 +1,48 @@
 'use strict';
 
 /**
+ * @typedef {object} TempCodeOptions
+ * @property {string} [code] - Code string (auto-generated if omitted)
+ * @property {string} [name='Temporary Access'] - Descriptive label
+ * @property {number} [expiresAt] - Expiry Unix timestamp (ms); takes precedence over durationHours
+ * @property {number} [durationHours=24] - Validity duration in hours when expiresAt is not set
+ * @property {number|null} [maxUses=null] - Maximum allowed uses; null means unlimited
+ * @property {string[]|null} [allowedLocks=null] - Allowed lock IDs; null means all locks
+ * @property {string} [purpose='general'] - Purpose label for audit
+ * @property {string} [createdBy='system'] - Creator identifier
+ */
+
+/**
+ * @typedef {object} KeyData
+ * @property {'physical'|'digital'|string} [type='physical'] - Key type
+ * @property {string} [assignedTo='unassigned'] - Person or system the key is assigned to
+ * @property {string} [label] - Display name (defaults to keyId)
+ * @property {number|null} [expiresAt=null] - Expiry Unix timestamp (ms)
+ * @property {string[]|null} [allowedLocks=null] - Allowed lock IDs; null means all
+ * @property {string} [notes=''] - Free-text notes
+ */
+
+/**
+ * @typedef {object} AccessScheduleConfig
+ * @property {string} [name] - Display name (defaults to userId)
+ * @property {number[]} [allowedDays] - Permitted week days (0=Sun … 6=Sat); defaults to all
+ * @property {string} [startTime='00:00'] - Earliest allowed time in 'HH:MM'
+ * @property {string} [endTime='23:59'] - Latest allowed time in 'HH:MM'
+ * @property {string[]|null} [allowedLocks=null] - Lock IDs this schedule applies to; null means all
+ */
+
+/**
  * Smart Lock Management System
- * Advanced lock control with temporary access codes, auto-lock timers, tamper detection,
- * key management, lock synchronization, analytics, battery monitoring, and security integration
+ *
+ * Advanced lock control with temporary access codes, auto-lock timers,
+ * tamper detection, physical/digital key management, lock synchronisation
+ * groups, usage analytics, battery monitoring, access schedule restrictions,
+ * and security system integration.
  */
 class SmartLockManagementSystem {
+  /**
+   * @param {import('homey').Homey} homey - Homey application instance
+   */
   constructor(homey) {
     this.homey = homey;
     this.locks = new Map();
@@ -56,6 +93,12 @@ class SmartLockManagementSystem {
     this.securityIntegrationEnabled = true;
   }
 
+  /**
+   * Load persisted settings, discover locks, load access codes, keys, sync groups,
+   * access schedules, and analytics data, then start the monitoring interval.
+   *
+   * @returns {Promise<void>}
+   */
   async initialize() {
     this.log('Initializing Smart Lock Management System...');
 
@@ -81,6 +124,12 @@ class SmartLockManagementSystem {
     this.log('Smart Lock Management System initialized');
   }
 
+  /**
+   * Scan all Homey devices and populate the locks map with devices whose name
+   * contains 'lock'/'lås' or that have the `locked` capability.
+   *
+   * @returns {Promise<void>}
+   */
   async discoverLocks() {
     const devices = this.homey.drivers.getDevices();
 
@@ -159,6 +208,14 @@ class SmartLockManagementSystem {
 
   // ── Temporary Access Codes with Expiration ────────────────────────────
 
+  /**
+   * Create a temporary access code with optional expiration and usage limits.
+   *
+   * Persists the new code and sends a low-priority notification with expiry time.
+   *
+   * @param {TempCodeOptions} options - Temporary code configuration
+   * @returns {Promise<{code: string, name: string, expiresAt: number, [key: string]: any}>}
+   */
   async createTemporaryCode(options) {
     const code = options.code || this.generateRandomCode();
     const tempCode = {
@@ -197,6 +254,12 @@ class SmartLockManagementSystem {
     return { code, ...tempCode };
   }
 
+  /**
+   * Generate a random numeric access code.
+   *
+   * @param {number} [length=6] - Number of digits
+   * @returns {string} Numeric code string of the specified length
+   */
   generateRandomCode(length = 6) {
     let code = '';
     for (let i = 0; i < length; i++) {
@@ -205,6 +268,15 @@ class SmartLockManagementSystem {
     return code;
   }
 
+  /**
+   * Validate an access code against the code registry and consume one use if valid.
+   *
+   * Automatically disables codes that have expired or exhausted their use limit.
+   *
+   * @param {string} code - Access code string to validate
+   * @param {string} lockId - Lock ID the code is being used on
+   * @returns {Promise<{valid: true, codeName: string}|{valid: false, reason: 'code_not_found'|'code_disabled'|'code_expired'|'lock_not_allowed'|'max_uses_reached'}>}
+   */
   async validateAndUseCode(code, lockId) {
     const codeData = this.accessCodes.get(code);
     if (!codeData) return { valid: false, reason: 'code_not_found' };
@@ -250,6 +322,13 @@ class SmartLockManagementSystem {
     }
   }
 
+  /**
+   * Set the auto-lock delay for a specific lock, overriding the global default.
+   *
+   * @param {string} lockId - Lock identifier
+   * @param {number} delayMs - Delay in milliseconds before auto-locking
+   * @returns {{lockId: string, autoLockDelayMs: number}|null} Updated config, or `null` if lock not found
+   */
   setAutoLockDelay(lockId, delayMs) {
     const lock = this.locks.get(lockId);
     if (!lock) return null;
@@ -260,6 +339,13 @@ class SmartLockManagementSystem {
 
   // ── Lock Usage Analytics ──────────────────────────────────────────────
 
+  /**
+   * Record a lock/unlock event in the hourly, daily, and per-door usage analytics.
+   *
+   * @param {string} lockId - Lock identifier
+   * @param {'lock'|'unlock'|string} action - Action type
+   * @returns {void}
+   */
   recordUsageEvent(lockId, action) {
     const now = new Date();
     const hour = now.getHours();
@@ -272,6 +358,12 @@ class SmartLockManagementSystem {
     this.usageAnalytics.doorUsageCounts.set(lockId, count + 1);
   }
 
+  /**
+   * Return aggregated lock usage analytics including most-used door, busiest
+   * hour/day, and hourly/daily distribution arrays.
+   *
+   * @returns {{mostUsedDoor: {id: string|null, name: string|null, count: number}, busiestHour: string, busiestDay: string, hourlyDistribution: number[], dailyDistribution: number[], totalEvents: number}}
+   */
   getUsageAnalytics() {
     const mostUsedDoor = { id: null, name: null, count: 0 };
     for (const [lockId, count] of this.usageAnalytics.doorUsageCounts) {
@@ -332,6 +424,14 @@ class SmartLockManagementSystem {
     }
   }
 
+  /**
+   * Handle a tamper detection event: record it, send a critical notification,
+   * and optionally notify the security system.
+   *
+   * @param {object} lock - Lock object from the locks map
+   * @param {'physical_tamper'|'multiple_failed_attempts'|string} [type='physical_tamper'] - Tamper event type
+   * @returns {Promise<void>}
+   */
   async handleTamperEvent(lock, type = 'physical_tamper') {
     const event = {
       lockId: lock.id,
@@ -365,6 +465,13 @@ class SmartLockManagementSystem {
 
   // ── Key Management ────────────────────────────────────────────────────
 
+  /**
+   * Register a physical or digital key in the key registry and persist it.
+   *
+   * @param {string} keyId - Unique key identifier
+   * @param {KeyData} keyData - Key metadata
+   * @returns {Promise<object>} The registered key registry entry
+   */
   async registerKey(keyId, keyData) {
     const entry = {
       keyId,
@@ -384,6 +491,13 @@ class SmartLockManagementSystem {
     return entry;
   }
 
+  /**
+   * Revoke a key: mark it inactive, record the revocation reason, persist, and notify.
+   *
+   * @param {string} keyId - Key identifier to revoke
+   * @param {string} [reason=''] - Human-readable revocation reason
+   * @returns {Promise<object|null>} The updated key entry, or `null` if key not found
+   */
   async revokeKey(keyId, reason = '') {
     const key = this.keyRegistry.get(keyId);
     if (!key) return null;
@@ -412,6 +526,11 @@ class SmartLockManagementSystem {
     return key;
   }
 
+  /**
+   * Return a summary of the key registry split into physical and digital keys.
+   *
+   * @returns {{physical: object[], digital: object[], totalActive: number}}
+   */
   getKeyInventory() {
     const physical = [];
     const digital = [];
@@ -459,6 +578,16 @@ class SmartLockManagementSystem {
 
   // ── Emergency Unlock All ──────────────────────────────────────────────
 
+  /**
+   * Immediately unlock all registered locks. Requires `emergencyUnlockEnabled = true`.
+   *
+   * Records the event in the emergency log and access log, and sends a critical
+   * notification. Per-lock failures are captured in the result but do not abort others.
+   *
+   * @param {string} [triggeredBy='system'] - Identifier of who triggered the emergency unlock
+   * @param {string} [reason='emergency'] - Reason for the emergency unlock
+   * @returns {Promise<{success: boolean, reason?: string, results?: {lock: string, success: boolean, error?: string}[]}>}
+   */
   async emergencyUnlockAll(triggeredBy = 'system', reason = 'emergency') {
     if (!this.emergencyUnlockEnabled) {
       this.log('Emergency unlock is disabled');
@@ -558,6 +687,11 @@ class SmartLockManagementSystem {
     }
   }
 
+  /**
+   * Return the current battery status for every registered lock.
+   *
+   * @returns {{lockId: string, lockName: string, batteryLevel: number|null, lastChecked: number|null, status: 'healthy'|'low'|'critical'|'unknown'}[]}
+   */
   getBatteryReport() {
     const report = [];
     for (const [id, lock] of this.locks) {
@@ -576,6 +710,15 @@ class SmartLockManagementSystem {
 
   // ── Lock Synchronization ──────────────────────────────────────────────
 
+  /**
+   * Create a lock synchronisation group. When one lock in the group is locked/unlocked,
+   * all others in the group follow.
+   *
+   * @param {string} groupName - Unique group name
+   * @param {string[]} lockIds - IDs of locks to include (minimum 2 valid locks required)
+   * @returns {Promise<{name: string, lockIds: string[], createdAt: number, enabled: boolean}>}
+   * @throws {Error} When fewer than 2 valid lock IDs are provided
+   */
   async createSyncGroup(groupName, lockIds) {
     const validLocks = lockIds.filter(id => this.locks.has(id));
     if (validLocks.length < 2) throw new Error('Sync group requires at least 2 locks');
@@ -618,6 +761,13 @@ class SmartLockManagementSystem {
 
   // ── Access Schedule Restrictions ──────────────────────────────────────
 
+  /**
+   * Define a time-based access schedule for a user and persist it.
+   *
+   * @param {string} userId - User identifier the schedule applies to
+   * @param {AccessScheduleConfig} schedule - Schedule definition
+   * @returns {Promise<object>} The created access schedule entry
+   */
   async setAccessSchedule(userId, schedule) {
     const entry = {
       userId,
@@ -636,6 +786,15 @@ class SmartLockManagementSystem {
     return entry;
   }
 
+  /**
+   * Check whether a user's access schedule permits access right now.
+   *
+   * Users without a schedule entry are considered unrestricted (returns `true`).
+   *
+   * @param {string} userId - User identifier to check
+   * @param {string|null} [lockId=null] - Lock to check against; `null` ignores lock-level restrictions
+   * @returns {boolean} `true` if the user is currently allowed access
+   */
   isAccessAllowed(userId, lockId = null) {
     const schedule = this.accessSchedules.get(userId);
     if (!schedule || !schedule.active) return true; // No restriction means allowed
@@ -704,6 +863,16 @@ class SmartLockManagementSystem {
 
   // ── Core Lock/Unlock Methods ──────────────────────────────────────────
 
+  /**
+   * Lock a specific door and log the event.
+   *
+   * Propagates the lock action to any sync group the lock belongs to.
+   *
+   * @param {string} lockId - Lock identifier
+   * @param {string} [triggeredBy='manual'] - Trigger source for audit logging
+   * @returns {Promise<{success: boolean, message: string}>}
+   * @throws {Error} When the lock is not found or the device call fails
+   */
   async lockDoor(lockId, triggeredBy = 'manual') {
     const lock = this.locks.get(lockId);
     if (!lock) throw new Error('Lock not found');
@@ -740,6 +909,17 @@ class SmartLockManagementSystem {
     }
   }
 
+  /**
+   * Unlock a specific door after validating access code, user schedule, and temporary
+   * access expiry, then log and notify.
+   *
+   * @param {string} lockId - Lock identifier
+   * @param {string|null} [accessCode=null] - Access code to validate (skipped when null)
+   * @param {string|null} [userId=null] - User ID for schedule and temporary-access checks
+   * @param {string} [triggeredBy='manual'] - Trigger source for audit logging
+   * @returns {Promise<{success: boolean, message: string}>}
+   * @throws {Error} When the lock is not found, access is denied, or the device call fails
+   */
   async unlockDoor(lockId, accessCode = null, userId = null, triggeredBy = 'manual') {
     const lock = this.locks.get(lockId);
     if (!lock) throw new Error('Lock not found');
@@ -817,6 +997,19 @@ class SmartLockManagementSystem {
     }
   }
 
+  /**
+   * Add a permanent or temporary access code to the registry and persist it.
+   *
+   * @param {string} code - Access code string
+   * @param {object} [options={}] - Code options
+   * @param {string} [options.name='Unnamed'] - Descriptive label
+   * @param {'permanent'|'temporary'} [options.type='permanent'] - Code type
+   * @param {boolean} [options.enabled=true] - Whether the code is active
+   * @param {number|null} [options.expiresAt=null] - Expiry timestamp (ms)
+   * @param {string[]|null} [options.allowedLocks=null] - Lock IDs this code may be used on
+   * @param {number|null} [options.maxUses=null] - Usage cap; null means unlimited
+   * @returns {Promise<object>} The stored code data object
+   */
   async addAccessCode(code, options = {}) {
     const codeData = {
       name: options.name || 'Unnamed',
@@ -835,6 +1028,12 @@ class SmartLockManagementSystem {
     return codeData;
   }
 
+  /**
+   * Remove an access code from the registry and persist the change.
+   *
+   * @param {string} code - Access code string to remove
+   * @returns {Promise<boolean>} `true` if removed, `false` if code was not found
+   */
   async removeAccessCode(code) {
     const codeData = this.accessCodes.get(code);
     if (!codeData) return false;
@@ -863,6 +1062,14 @@ class SmartLockManagementSystem {
     }
   }
 
+  /**
+   * Grant a user temporary access for a specified duration and send a notification.
+   *
+   * @param {string} userId - User identifier to grant access to
+   * @param {number} [durationHours=24] - Access duration in hours
+   * @param {string[]|null} [allowedLocks=null] - Specific lock IDs to allow; null means all locks
+   * @returns {Promise<{userId: string, grantedAt: number, expiresAt: number, allowedLocks: string[]|null}>}
+   */
   async grantTemporaryAccess(userId, durationHours = 24, allowedLocks = null) {
     const access = {
       userId,
@@ -920,6 +1127,13 @@ class SmartLockManagementSystem {
     }
   }
 
+  /**
+   * Lock all registered doors. Per-lock failures are captured in the result but
+   * do not abort locking of remaining doors.
+   *
+   * @param {string} [triggeredBy='manual'] - Trigger source for audit logging
+   * @returns {Promise<{lock: string, success: boolean, error?: string}[]>}
+   */
   async lockAllDoors(triggeredBy = 'manual') {
     const results = [];
 
@@ -1018,10 +1232,21 @@ class SmartLockManagementSystem {
 
   // ── Statistics ────────────────────────────────────────────────────────
 
+  /**
+   * Return the most recent access log entries.
+   *
+   * @param {number} [limit=50] - Maximum number of entries to return
+   * @returns {object[]} Access log entries (most recent last)
+   */
   getAccessLog(limit = 50) {
     return this.accessLog.slice(-limit);
   }
 
+  /**
+   * Return a comprehensive statistics snapshot of the lock management system.
+   *
+   * @returns {{totalLocks: number, accessCodes: number, temporaryAccess: number, totalAccessEvents: number, recentUnlocks: number, recentFailedAttempts: number, autoLockEnabled: boolean, autoLockDelay: number, tamperEvents: number, emergencyEvents: number, syncGroupsEnabled: boolean, syncGroups: number, keysRegistered: number, accessSchedules: number, lockBehindMeEnabled: boolean, mostUsedDoor: object, busiestHour: string, batteryStatus: object[]}}
+   */
   getStatistics() {
     const recentLog = this.accessLog.slice(-100);
     const unlocks = recentLog.filter(entry => entry.action === 'unlock').length;
@@ -1053,6 +1278,11 @@ class SmartLockManagementSystem {
 
   // ── Cleanup ───────────────────────────────────────────────────────────
 
+  /**
+   * Stop the monitoring interval. Should be called before the app is unloaded.
+   *
+   * @returns {void}
+   */
   destroy() {
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);

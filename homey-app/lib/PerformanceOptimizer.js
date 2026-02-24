@@ -3,10 +3,41 @@
 const { BaseSystem } = require('./utils/BaseSystem');
 
 /**
- * Performance Optimizer
- * System optimization, resource monitoring, and performance tuning
+ * @typedef {object} PerformanceAlert
+ * @property {string} id - Unique alert identifier
+ * @property {'memory'|'eventloop'|'cpu'|string} type - Alert category
+ * @property {'low'|'medium'|'high'} severity - Alert severity
+ * @property {string} message - Human-readable alert message (Swedish)
+ * @property {string} recommendation - Recommended action (Swedish)
+ * @property {number} timestamp - Alert creation timestamp (ms)
+ * @property {boolean} acknowledged - Whether the alert has been dismissed
+ */
+
+/**
+ * @typedef {object} PerformanceReport
+ * @property {number} timestamp - Report generation timestamp (ms)
+ * @property {number} uptime - Process uptime in seconds
+ * @property {{current: object|null, average: {heapUsed: number, heapTotal: number}, baseline: object|undefined}} memory - Memory stats
+ * @property {{current: object|null, average: number, baseline: number|undefined}} eventLoop - Event-loop lag stats
+ * @property {PerformanceAlert[]} alerts - Unacknowledged alerts
+ * @property {object[]} optimizations - Most recent optimisation actions
+ * @property {number} health - Overall health score (0–100)
+ */
+
+/**
+ * Performance Optimizer.
+ *
+ * Continuously collects CPU, memory, and event-loop metrics, detects
+ * performance degradation, runs scheduled optimisation passes (cache cleanup,
+ * data defragmentation, interval tuning), and surfaces alerts + actionable
+ * recommendations.
+ *
+ * @extends BaseSystem
  */
 class PerformanceOptimizer extends BaseSystem {
+  /**
+   * @param {import('homey').Homey} homey - Homey app instance
+   */
   constructor(homey) {
     super(homey, 'PerformanceOptimizer');
     // Note: BaseSystem defines this.metrics for its own use, so we store
@@ -164,7 +195,11 @@ class PerformanceOptimizer extends BaseSystem {
   }
 
   /**
-   * Analyze current performance
+   * Analyse the most recent 10 samples of each metric, raise alerts for any
+   * thresholds exceeded, and generate optimisation recommendations for detected
+   * bottlenecks.
+   *
+   * @returns {Promise<void>}
    */
   async analyzePerformance() {
     if (this.perfMetrics.memory.length < 10) return;
@@ -259,7 +294,10 @@ class PerformanceOptimizer extends BaseSystem {
   }
 
   /**
-   * Identify performance bottlenecks
+   * Scan all tracked metrics and return a list of detected performance
+   * bottlenecks (slow devices, memory leaks, slow API calls).
+   *
+   * @returns {Promise<Array<{type: string, severity: 'low'|'medium'|'high', [key: string]: *}>>}
    */
   async identifyBottlenecks() {
     const bottlenecks = [];
@@ -311,7 +349,11 @@ class PerformanceOptimizer extends BaseSystem {
   }
 
   /**
-   * Optimize system performance
+   * Run all system optimisation passes (data cleanup, cache optimisation,
+   * data defragmentation, interval tuning) and return a summary of applied
+   * optimisations.
+   *
+   * @returns {Promise<Array<{type: string, description: string, impact: string}>>}
    */
   async optimizeSystem() {
     this.log('Running system optimization...');
@@ -483,7 +525,10 @@ class PerformanceOptimizer extends BaseSystem {
   }
 
   /**
-   * Perform deep performance analysis
+   * Perform a comprehensive performance analysis covering memory trends,
+   * event-loop stability, and slow device detection.
+   *
+   * @returns {Promise<{timestamp: number, duration: number, findings: Array<{category: string, metric: string, value: *, assessment: string}>}>}
    */
   async performDeepAnalysis() {
     this.log('Performing deep performance analysis...');
@@ -624,7 +669,11 @@ class PerformanceOptimizer extends BaseSystem {
   }
 
   /**
-   * Get performance report
+   * Build and return a snapshot performance report covering the last hour of
+   * metrics, unacknowledged alerts, recent optimisations, and an overall
+   * health score.
+   *
+   * @returns {PerformanceReport}
    */
   getPerformanceReport() {
     const now = Date.now();
@@ -657,7 +706,10 @@ class PerformanceOptimizer extends BaseSystem {
   }
 
   /**
-   * Calculate overall system health score
+   * Derive an overall system health score (0–100) from current memory usage,
+   * event-loop lag, and the number of unacknowledged alerts.
+   *
+   * @returns {number} Health score clamped to [0, 100]
    */
   calculateSystemHealth() {
     let score = 100;
@@ -687,7 +739,11 @@ class PerformanceOptimizer extends BaseSystem {
   }
 
   /**
-   * Record API latency
+   * Append an API latency sample to the rolling buffer (capped at 500 entries).
+   *
+   * @param {string} endpoint - API endpoint or label
+   * @param {number} duration - Request duration in ms
+   * @returns {void}
    */
   recordApiLatency(endpoint, duration) {
     this.perfMetrics.apiLatency.push({
@@ -703,7 +759,12 @@ class PerformanceOptimizer extends BaseSystem {
   }
 
   /**
-   * Record device response time
+   * Append a device response-time sample to the per-device rolling buffer
+   * (capped at 100 entries per device).
+   *
+   * @param {string} deviceId - Device identifier
+   * @param {number} responseTime - Response time in ms
+   * @returns {void}
    */
   recordDeviceResponseTime(deviceId, responseTime) {
     if (!this.perfMetrics.deviceResponseTimes.has(deviceId)) {
