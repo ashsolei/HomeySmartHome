@@ -1,6 +1,13 @@
 'use strict';
 require('dotenv').config();
 const logger = require('./lib/logger');
+const { monitorEventLoopDelay } = require('perf_hooks');
+
+// ── Event-loop delay sampler ─────────────────────────────────────────────────
+// Started once at module load so the histogram has time to accumulate samples
+// before the first /metrics request.  Resolution is 10 ms.
+const _eventLoopHistogram = monitorEventLoopDelay({ resolution: 10 });
+_eventLoopHistogram.enable();
 
 /**
  * Smart Home Pro — Standalone Express Server
@@ -903,8 +910,12 @@ async function startServer() {
   // ── Prometheus Metrics Endpoint ──
   server.get('/metrics', (_req, res) => {
     const mem = process.memoryUsage();
+    const cpu = process.cpuUsage();
     const okCount = Object.values(systemStatuses).filter(s => s.status === 'ok').length;
     const failedCount = Object.values(systemStatuses).filter(s => s.status === 'failed').length;
+
+    // Event-loop lag: histogram mean is in nanoseconds; convert to seconds.
+    const eventLoopLagSeconds = _eventLoopHistogram.mean / 1e9;
 
     const lines = [
       '# HELP smarthome_uptime_seconds Process uptime in seconds',
@@ -938,7 +949,35 @@ async function startServer() {
       '# HELP smarthome_api_routes_total Number of registered API routes',
       '# TYPE smarthome_api_routes_total gauge',
       `smarthome_api_routes_total ${routeCount}`,
-      ''
+      '',
+      '# HELP process_cpu_user_seconds_total Total user CPU time in seconds',
+      '# TYPE process_cpu_user_seconds_total counter',
+      `process_cpu_user_seconds_total ${(cpu.user / 1e6).toFixed(6)}`,
+      '',
+      '# HELP process_cpu_system_seconds_total Total system CPU time in seconds',
+      '# TYPE process_cpu_system_seconds_total counter',
+      `process_cpu_system_seconds_total ${(cpu.system / 1e6).toFixed(6)}`,
+      '',
+      '# HELP nodejs_heap_size_total_bytes Process heap size from V8 in bytes',
+      '# TYPE nodejs_heap_size_total_bytes gauge',
+      `nodejs_heap_size_total_bytes ${mem.heapTotal}`,
+      '',
+      '# HELP nodejs_heap_size_used_bytes Process heap size used from V8 in bytes',
+      '# TYPE nodejs_heap_size_used_bytes gauge',
+      `nodejs_heap_size_used_bytes ${mem.heapUsed}`,
+      '',
+      '# HELP nodejs_external_memory_bytes Node.js external memory size in bytes',
+      '# TYPE nodejs_external_memory_bytes gauge',
+      `nodejs_external_memory_bytes ${mem.external}`,
+      '',
+      '# HELP nodejs_eventloop_lag_seconds Mean event loop delay in seconds',
+      '# TYPE nodejs_eventloop_lag_seconds gauge',
+      `nodejs_eventloop_lag_seconds ${eventLoopLagSeconds.toFixed(9)}`,
+      '',
+      '# HELP process_resident_memory_bytes Resident memory size in bytes',
+      '# TYPE process_resident_memory_bytes gauge',
+      `process_resident_memory_bytes ${mem.rss}`,
+      '',
     ];
 
     res.setHeader('Content-Type', 'text/plain; version=0.0.4');
@@ -974,6 +1013,22 @@ async function startServer() {
 
   const methodMap = { GET: 'get', POST: 'post', PUT: 'put', DELETE: 'delete', PATCH: 'patch' };
 
+  // FEAT-07: minimum role required per HTTP method.
+  //   GET    → VIEWER (read-only, least privilege)
+  //   POST   → USER   (device control, scene activation)
+  //   PUT    → USER   (resource updates)
+  //   PATCH  → USER   (partial updates)
+  //   DELETE → ADMIN  (destructive operations, settings changes)
+  const METHOD_ROLE = {
+    GET:    'VIEWER',
+    POST:   'USER',
+    PUT:    'USER',
+    PATCH:  'USER',
+    DELETE: 'ADMIN',
+  };
+
+  const gateway = smartApp.apiAuthenticationGateway;
+
   for (const [fnName, def] of Object.entries(apiDefs)) {
     const handler = apiHandlers[fnName];
     if (!handler || typeof handler !== 'function') {
@@ -981,12 +1036,43 @@ async function startServer() {
       continue;
     }
 
-    const method = methodMap[(def.method || 'GET').toUpperCase()];
+    const httpMethod = (def.method || 'GET').toUpperCase();
+    const method = methodMap[httpMethod];
     if (!method) continue;
 
     const path = `/api${def.path}`;
+    const requiredRole = METHOD_ROLE[httpMethod] || 'VIEWER';
 
     server[method](path, async (req, res) => {
+      // ── FEAT-07: Authentication + Role-Based Access Control ──
+      //
+      // 1. Authenticate the request (validates Bearer token, rate limits, lockout).
+      //    Public paths bypass this automatically inside authenticate().
+      // 2. If authentication succeeds and a token is present, attach it to req
+      //    and check the token's role against the minimum required for this method.
+      // 3. In non-production environments with no token present, requests are
+      //    allowed through as ADMIN so development and testing are unaffected.
+      const authResult = gateway.authenticate(req);
+      if (!authResult.authenticated) {
+        return res.status(authResult.statusCode || 401).json({
+          error: authResult.error || 'Unauthorized',
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      if (authResult.tokenRecord) {
+        // Token present — attach to req then check role
+        req.tokenRecord = authResult.tokenRecord;
+        const authzResult = gateway.authorize(req, requiredRole);
+        if (!authzResult.authorized) {
+          return res.status(authzResult.statusCode || 403).json({
+            error: authzResult.error || 'Forbidden',
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+      // No token + non-production: allowed as ADMIN (dev-friendly default)
+
       try {
         const result = await handler({
           homey,

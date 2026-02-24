@@ -1,13 +1,17 @@
 'use strict';
 
+const { BaseSystem } = require('./utils/BaseSystem');
+
 /**
  * Performance Optimizer
  * System optimization, resource monitoring, and performance tuning
  */
-class PerformanceOptimizer {
+class PerformanceOptimizer extends BaseSystem {
   constructor(homey) {
-    this.homey = homey;
-    this.metrics = {
+    super(homey, 'PerformanceOptimizer');
+    // Note: BaseSystem defines this.metrics for its own use, so we store
+    // performance-specific metrics under a distinct key to avoid a collision.
+    this.perfMetrics = {
       cpu: [],
       memory: [],
       eventLoop: [],
@@ -19,13 +23,13 @@ class PerformanceOptimizer {
     this.baselineMetrics = null;
   }
 
-  async initialize() {
+  async onInitialize() {
     this.log('Initializing Performance Optimizer...');
-    
+
     // Load performance history
     const savedMetrics = await this.homey.settings.get('performanceMetrics');
     if (savedMetrics) {
-      this.metrics = savedMetrics;
+      this.perfMetrics = savedMetrics;
     }
 
     // Establish baseline
@@ -45,22 +49,22 @@ class PerformanceOptimizer {
    */
   async startPerformanceMonitoring() {
     // Monitor every 10 seconds
-    this.monitoringInterval = setInterval(async () => {
+    this.monitoringInterval = this.wrapInterval(async () => {
       await this.collectMetrics();
     }, 10000);
 
     // Analyze every minute
-    this.analysisInterval = setInterval(async () => {
+    this.analysisInterval = this.wrapInterval(async () => {
       await this.analyzePerformance();
     }, 60000);
 
     // Optimize every hour
-    this.optimizationInterval = setInterval(async () => {
+    this.optimizationInterval = this.wrapInterval(async () => {
       await this.optimizeSystem();
     }, 3600000);
 
     // Deep analysis daily
-    this.deepAnalysisInterval = setInterval(async () => {
+    this.deepAnalysisInterval = this.wrapInterval(async () => {
       await this.performDeepAnalysis();
     }, 86400000);
   }
@@ -73,7 +77,7 @@ class PerformanceOptimizer {
 
     // CPU usage (approximated)
     const cpuUsage = process.cpuUsage();
-    this.metrics.cpu.push({
+    this.perfMetrics.cpu.push({
       timestamp,
       user: cpuUsage.user,
       system: cpuUsage.system
@@ -81,7 +85,7 @@ class PerformanceOptimizer {
 
     // Memory usage
     const memUsage = process.memoryUsage();
-    this.metrics.memory.push({
+    this.perfMetrics.memory.push({
       timestamp,
       heapUsed: memUsage.heapUsed,
       heapTotal: memUsage.heapTotal,
@@ -91,20 +95,20 @@ class PerformanceOptimizer {
 
     // Event loop lag
     const eventLoopLag = await this.measureEventLoopLag();
-    this.metrics.eventLoop.push({
+    this.perfMetrics.eventLoop.push({
       timestamp,
       lag: eventLoopLag
     });
 
     // Keep only last 1000 data points per metric
     ['cpu', 'memory', 'eventLoop'].forEach(key => {
-      if (this.metrics[key].length > 1000) {
-        this.metrics[key] = this.metrics[key].slice(-1000);
+      if (this.perfMetrics[key].length > 1000) {
+        this.perfMetrics[key] = this.perfMetrics[key].slice(-1000);
       }
     });
 
     // Save periodically (every 10 minutes)
-    if (this.metrics.memory.length % 60 === 0) {
+    if (this.perfMetrics.memory.length % 60 === 0) {
       await this.saveMetrics();
     }
   }
@@ -133,11 +137,11 @@ class PerformanceOptimizer {
     for (let i = 0; i < 30; i++) {
       await this.collectMetrics();
       await this.sleep(1000);
-      
+
       const latest = {
-        memory: this.metrics.memory[this.metrics.memory.length - 1],
-        cpu: this.metrics.cpu[this.metrics.cpu.length - 1],
-        eventLoop: this.metrics.eventLoop[this.metrics.eventLoop.length - 1]
+        memory: this.perfMetrics.memory[this.perfMetrics.memory.length - 1],
+        cpu: this.perfMetrics.cpu[this.perfMetrics.cpu.length - 1],
+        eventLoop: this.perfMetrics.eventLoop[this.perfMetrics.eventLoop.length - 1]
       };
       samples.push(latest);
     }
@@ -163,12 +167,12 @@ class PerformanceOptimizer {
    * Analyze current performance
    */
   async analyzePerformance() {
-    if (this.metrics.memory.length < 10) return;
+    if (this.perfMetrics.memory.length < 10) return;
 
     const recent = {
-      memory: this.metrics.memory.slice(-10),
-      cpu: this.metrics.cpu.slice(-10),
-      eventLoop: this.metrics.eventLoop.slice(-10)
+      memory: this.perfMetrics.memory.slice(-10),
+      cpu: this.perfMetrics.cpu.slice(-10),
+      eventLoop: this.perfMetrics.eventLoop.slice(-10)
     };
 
     // Check for performance issues
@@ -178,7 +182,7 @@ class PerformanceOptimizer {
 
     // Identify bottlenecks
     const bottlenecks = await this.identifyBottlenecks();
-    
+
     if (bottlenecks.length > 0) {
       this.log('Performance bottlenecks detected:', bottlenecks);
       await this.createOptimizationRecommendations(bottlenecks);
@@ -191,7 +195,7 @@ class PerformanceOptimizer {
   async checkMemoryUsage(memoryData) {
     const avgHeapUsed = this.calculateAverage(memoryData.map(m => m.heapUsed));
     const avgHeapTotal = this.calculateAverage(memoryData.map(m => m.heapTotal));
-    
+
     const usagePercent = (avgHeapUsed / avgHeapTotal) * 100;
 
     // Alert if memory usage > 80%
@@ -209,9 +213,9 @@ class PerformanceOptimizer {
 
     // Compare to baseline
     if (this.baselineMetrics) {
-      const increase = ((avgHeapUsed - this.baselineMetrics.memory.heapUsed) / 
+      const increase = ((avgHeapUsed - this.baselineMetrics.memory.heapUsed) /
                        this.baselineMetrics.memory.heapUsed) * 100;
-      
+
       if (increase > 50) {
         this.log(`Memory usage increased ${increase.toFixed(1)}% from baseline`);
       }
@@ -223,7 +227,7 @@ class PerformanceOptimizer {
    */
   async checkEventLoopLag(eventLoopData) {
     const avgLag = this.calculateAverage(eventLoopData.map(e => e.lag));
-    
+
     // Alert if lag > 100ms
     if (avgLag > 100) {
       await this.createPerformanceAlert({
@@ -240,10 +244,10 @@ class PerformanceOptimizer {
    */
   async checkCPUUsage(cpuData) {
     const avgUser = this.calculateAverage(cpuData.map(c => c.user));
-    
+
     // Convert to percentage (simplified)
     const cpuPercent = (avgUser / 1000000) * 100;
-    
+
     if (cpuPercent > 80) {
       await this.createPerformanceAlert({
         type: 'cpu',
@@ -261,7 +265,7 @@ class PerformanceOptimizer {
     const bottlenecks = [];
 
     // Check device response times
-    for (const [deviceId, times] of this.metrics.deviceResponseTimes) {
+    for (const [deviceId, times] of this.perfMetrics.deviceResponseTimes) {
       const avgTime = this.calculateAverage(times);
       if (avgTime > 2000) { // > 2 seconds
         bottlenecks.push({
@@ -274,11 +278,11 @@ class PerformanceOptimizer {
     }
 
     // Check for memory leaks
-    if (this.metrics.memory.length > 100) {
+    if (this.perfMetrics.memory.length > 100) {
       const trend = this.calculateTrend(
-        this.metrics.memory.slice(-100).map(m => m.heapUsed)
+        this.perfMetrics.memory.slice(-100).map(m => m.heapUsed)
       );
-      
+
       if (trend > 1000) { // Positive trend = growing memory
         bottlenecks.push({
           type: 'memory_leak',
@@ -289,11 +293,11 @@ class PerformanceOptimizer {
     }
 
     // Check API latency
-    if (this.metrics.apiLatency.length > 10) {
+    if (this.perfMetrics.apiLatency.length > 10) {
       const avgLatency = this.calculateAverage(
-        this.metrics.apiLatency.slice(-10).map(a => a.duration)
+        this.perfMetrics.apiLatency.slice(-10).map(a => a.duration)
       );
-      
+
       if (avgLatency > 1000) {
         bottlenecks.push({
           type: 'slow_api',
@@ -349,7 +353,7 @@ class PerformanceOptimizer {
     });
 
     this.optimizations = optimizations;
-    
+
     this.log(`Optimization complete: ${optimizations.length} optimizations applied`);
 
     return optimizations;
@@ -408,7 +412,7 @@ class PerformanceOptimizer {
     if (this.homey.app.intelligenceManager) {
       const predictions = this.homey.app.intelligenceManager.predictions;
       const oneDayAgo = Date.now() - 86400000;
-      
+
       for (const [key, prediction] of predictions) {
         if (prediction.generatedAt < oneDayAgo) {
           predictions.delete(key);
@@ -442,13 +446,13 @@ class PerformanceOptimizer {
   async optimizeIntervals() {
     // Adjust intervals based on system load
     const avgMemUsage = this.calculateAverage(
-      this.metrics.memory.slice(-10).map(m => m.heapUsed)
+      this.perfMetrics.memory.slice(-10).map(m => m.heapUsed)
     );
-    
+
     const avgMemTotal = this.calculateAverage(
-      this.metrics.memory.slice(-10).map(m => m.heapTotal)
+      this.perfMetrics.memory.slice(-10).map(m => m.heapTotal)
     );
-    
+
     const memoryPressure = avgMemUsage / avgMemTotal;
 
     // If memory pressure is high, slow down non-critical updates
@@ -465,10 +469,10 @@ class PerformanceOptimizer {
     this.log('Attempting to free memory...');
 
     // Clear large data structures
-    this.metrics.cpu = this.metrics.cpu.slice(-100);
-    this.metrics.memory = this.metrics.memory.slice(-100);
-    this.metrics.eventLoop = this.metrics.eventLoop.slice(-100);
-    this.metrics.apiLatency = this.metrics.apiLatency.slice(-100);
+    this.perfMetrics.cpu = this.perfMetrics.cpu.slice(-100);
+    this.perfMetrics.memory = this.perfMetrics.memory.slice(-100);
+    this.perfMetrics.eventLoop = this.perfMetrics.eventLoop.slice(-100);
+    this.perfMetrics.apiLatency = this.perfMetrics.apiLatency.slice(-100);
 
     // Force GC if available
     if (global.gc) {
@@ -493,11 +497,11 @@ class PerformanceOptimizer {
     const startTime = Date.now();
 
     // Analyze memory patterns
-    if (this.metrics.memory.length > 100) {
+    if (this.perfMetrics.memory.length > 100) {
       const memoryTrend = this.calculateTrend(
-        this.metrics.memory.map(m => m.heapUsed)
+        this.perfMetrics.memory.map(m => m.heapUsed)
       );
-      
+
       analysis.findings.push({
         category: 'memory',
         metric: 'heap_trend',
@@ -507,11 +511,11 @@ class PerformanceOptimizer {
     }
 
     // Analyze event loop stability
-    if (this.metrics.eventLoop.length > 100) {
+    if (this.perfMetrics.eventLoop.length > 100) {
       const lagVariance = this.calculateVariance(
-        this.metrics.eventLoop.map(e => e.lag)
+        this.perfMetrics.eventLoop.map(e => e.lag)
       );
-      
+
       analysis.findings.push({
         category: 'eventloop',
         metric: 'lag_variance',
@@ -522,7 +526,7 @@ class PerformanceOptimizer {
 
     // Analyze device response patterns
     const slowDevices = [];
-    for (const [deviceId, times] of this.metrics.deviceResponseTimes) {
+    for (const [deviceId, times] of this.perfMetrics.deviceResponseTimes) {
       const avg = this.calculateAverage(times);
       if (avg > 1000) {
         slowDevices.push({ deviceId, avgTime: avg });
@@ -626,9 +630,9 @@ class PerformanceOptimizer {
     const now = Date.now();
     const oneHourAgo = now - 3600000;
 
-    const recentMemory = this.metrics.memory.filter(m => m.timestamp > oneHourAgo);
-    const recentCPU = this.metrics.cpu.filter(c => c.timestamp > oneHourAgo);
-    const recentEventLoop = this.metrics.eventLoop.filter(e => e.timestamp > oneHourAgo);
+    const recentMemory = this.perfMetrics.memory.filter(m => m.timestamp > oneHourAgo);
+    const recentCPU = this.perfMetrics.cpu.filter(c => c.timestamp > oneHourAgo);
+    const recentEventLoop = this.perfMetrics.eventLoop.filter(e => e.timestamp > oneHourAgo);
 
     return {
       timestamp: now,
@@ -659,17 +663,17 @@ class PerformanceOptimizer {
     let score = 100;
 
     // Check memory
-    if (this.metrics.memory.length > 0) {
-      const latest = this.metrics.memory[this.metrics.memory.length - 1];
+    if (this.perfMetrics.memory.length > 0) {
+      const latest = this.perfMetrics.memory[this.perfMetrics.memory.length - 1];
       const usagePercent = (latest.heapUsed / latest.heapTotal) * 100;
       if (usagePercent > 80) score -= 20;
       else if (usagePercent > 60) score -= 10;
     }
 
     // Check event loop
-    if (this.metrics.eventLoop.length > 0) {
+    if (this.perfMetrics.eventLoop.length > 0) {
       const avgLag = this.calculateAverage(
-        this.metrics.eventLoop.slice(-10).map(e => e.lag)
+        this.perfMetrics.eventLoop.slice(-10).map(e => e.lag)
       );
       if (avgLag > 100) score -= 20;
       else if (avgLag > 50) score -= 10;
@@ -686,15 +690,15 @@ class PerformanceOptimizer {
    * Record API latency
    */
   recordApiLatency(endpoint, duration) {
-    this.metrics.apiLatency.push({
+    this.perfMetrics.apiLatency.push({
       endpoint,
       duration,
       timestamp: Date.now()
     });
 
     // Keep only last 500
-    if (this.metrics.apiLatency.length > 500) {
-      this.metrics.apiLatency.shift();
+    if (this.perfMetrics.apiLatency.length > 500) {
+      this.perfMetrics.apiLatency.shift();
     }
   }
 
@@ -702,11 +706,11 @@ class PerformanceOptimizer {
    * Record device response time
    */
   recordDeviceResponseTime(deviceId, responseTime) {
-    if (!this.metrics.deviceResponseTimes.has(deviceId)) {
-      this.metrics.deviceResponseTimes.set(deviceId, []);
+    if (!this.perfMetrics.deviceResponseTimes.has(deviceId)) {
+      this.perfMetrics.deviceResponseTimes.set(deviceId, []);
     }
 
-    const times = this.metrics.deviceResponseTimes.get(deviceId);
+    const times = this.perfMetrics.deviceResponseTimes.get(deviceId);
     times.push(responseTime);
 
     // Keep only last 100 per device
@@ -751,18 +755,10 @@ class PerformanceOptimizer {
 
   async saveMetrics() {
     await this.homey.settings.set('performanceMetrics', {
-      cpu: this.metrics.cpu.slice(-100),
-      memory: this.metrics.memory.slice(-100),
-      eventLoop: this.metrics.eventLoop.slice(-100)
+      cpu: this.perfMetrics.cpu.slice(-100),
+      memory: this.perfMetrics.memory.slice(-100),
+      eventLoop: this.perfMetrics.eventLoop.slice(-100)
     });
-  }
-
-  log(...args) {
-    console.log('[PerformanceOptimizer]', ...args);
-  }
-
-  error(...args) {
-    console.error('[PerformanceOptimizer]', ...args);
   }
 }
 
