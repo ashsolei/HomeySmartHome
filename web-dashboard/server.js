@@ -448,6 +448,9 @@ io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
   socket.on('subscribe-device', (deviceId) => {
+    if (!deviceId || typeof deviceId !== 'string' || deviceId.length > 128) {
+      return socket.emit('error', { message: 'Invalid device ID' });
+    }
     socket.join(`device-${deviceId}`);
   });
 
@@ -455,6 +458,9 @@ io.on('connection', (socket) => {
     const { deviceId, capability, value } = data || {};
     if (!deviceId || typeof deviceId !== 'string' || !capability || typeof capability !== 'string') {
       return socket.emit('error', { message: 'Invalid device control data' });
+    }
+    if (deviceId.length > 128 || capability.length > 64) {
+      return socket.emit('error', { message: 'Invalid input length' });
     }
     try {
       await homeyClient.setDeviceCapability(deviceId, capability, value);
@@ -465,6 +471,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('activate-scene', (sceneId) => {
+    if (!sceneId || typeof sceneId !== 'string' || sceneId.length > 128) {
+      return socket.emit('error', { message: 'Invalid scene ID' });
+    }
     io.emit('scene-activated', { sceneId });
   });
 
