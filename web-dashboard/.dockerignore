@@ -19,3 +19,5 @@ Dockerfile
 Dockerfile.dev
 docker-compose*.yml
 .dockerignore
+.tasks.json
+eslint.config.js

@@ -1196,7 +1196,11 @@ async function startServer() {
 }
 
 // ── Entry point ──
-startServer().catch((err) => {
-  logger.fatal({ err }, 'Fatal error during server boot');
-  process.exit(1);
-});
+if (require.main === module) {
+  startServer().catch((err) => {
+    logger.fatal({ err }, 'Fatal error during server boot');
+    process.exit(1);
+  });
+}
+
+module.exports = { startServer };
