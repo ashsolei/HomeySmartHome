@@ -274,6 +274,13 @@ app.post('/api/device/:deviceId/capability/:capability', async (req, res) => {
   const { deviceId, capability } = req.params;
   const { value } = req.body;
 
+  if (!deviceId || typeof deviceId !== 'string' || deviceId.length > 128) {
+    return res.status(400).json({ error: 'Invalid device ID' });
+  }
+  if (!capability || typeof capability !== 'string' || capability.length > 64) {
+    return res.status(400).json({ error: 'Invalid capability' });
+  }
+
   try {
     const result = await homeyClient.setDeviceCapability(deviceId, capability, value);
     io.emit('device-updated', { deviceId, capability, value });
@@ -285,8 +292,17 @@ app.post('/api/device/:deviceId/capability/:capability', async (req, res) => {
 
 app.post('/api/scene/:sceneId', async (req, res) => {
   const { sceneId } = req.params;
-  io.emit('scene-activated', { sceneId });
-  res.json({ success: true, sceneId });
+
+  if (!sceneId || typeof sceneId !== 'string' || sceneId.length > 128) {
+    return res.status(400).json({ error: 'Invalid scene ID' });
+  }
+
+  try {
+    io.emit('scene-activated', { sceneId });
+    res.json({ success: true, sceneId });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/api/energy', async (req, res) => {
@@ -318,8 +334,18 @@ app.get('/api/security', async (req, res) => {
 
 app.post('/api/security/mode', (req, res) => {
   const { mode } = req.body;
-  io.emit('security-mode-changed', { mode });
-  res.json({ success: true, mode });
+  const validModes = ['home', 'away', 'night', 'vacation', 'disarmed'];
+
+  if (!mode || typeof mode !== 'string' || !validModes.includes(mode)) {
+    return res.status(400).json({ error: 'Invalid security mode' });
+  }
+
+  try {
+    io.emit('security-mode-changed', { mode });
+    res.json({ success: true, mode });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ============================================
