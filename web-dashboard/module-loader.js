@@ -274,6 +274,25 @@ class ModuleLoader {
   }
 
   /**
+   * Destroy all loaded modules by calling their destroy() methods.
+   * Logs per-module errors but does not throw.
+   */
+  destroyAll() {
+    for (const [_name, instance] of this.modules) {
+      if (typeof instance.destroy === 'function') {
+        try {
+          instance.destroy();
+        } catch (_err) {
+          // Best-effort cleanup — log nothing to avoid noise during shutdown
+        }
+      }
+    }
+    this.modules.clear();
+    this.statuses.clear();
+    this.loadErrors.clear();
+  }
+
+  /**
    * @private
    */
   _withTimeout(promise, name, ms) {

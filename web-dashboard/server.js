@@ -563,6 +563,13 @@ const gracefulShutdown = (signal) => {
 
   clearInterval(periodicUpdateInterval);
 
+  // Destroy all loaded dashboard modules (clear intervals/timeouts)
+  moduleLoader.destroyAll();
+
+  // Destroy standalone services
+  if (typeof performanceMonitor.destroy === 'function') performanceMonitor.destroy();
+  if (typeof securityMiddleware.destroy === 'function') securityMiddleware.destroy();
+
   // Stop accepting new connections
   httpServer.close(() => {
     console.log('HTTP server closed');
@@ -573,7 +580,7 @@ const gracefulShutdown = (signal) => {
     console.log('Socket.IO closed');
   });
 
-  // Give ongoing requests 10s to complete
+  // Give ongoing requests time to complete
   setTimeout(() => {
     console.log('Cleanup complete. Exiting.');
     process.exit(0);

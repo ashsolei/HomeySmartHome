@@ -110,4 +110,40 @@ describe('ModuleLoader', () => {
       }
     });
   });
+
+  describe('destroyAll', () => {
+    it('clears all maps', () => {
+      loader.modules.set('mod-a', { destroy: () => {} });
+      loader.modules.set('mod-b', {});
+      loader.statuses.set('mod-a', 'ready');
+      loader.statuses.set('mod-b', 'ready');
+      loader.loadErrors.set('mod-c', 'err');
+
+      loader.destroyAll();
+
+      assert.strictEqual(loader.modules.size, 0);
+      assert.strictEqual(loader.statuses.size, 0);
+      assert.strictEqual(loader.loadErrors.size, 0);
+    });
+
+    it('calls destroy() on modules that have it', () => {
+      let destroyed = false;
+      loader.modules.set('mod-a', { destroy: () => { destroyed = true; } });
+      loader.destroyAll();
+      assert.strictEqual(destroyed, true);
+    });
+
+    it('skips modules without destroy()', () => {
+      loader.modules.set('mod-b', { name: 'no-destroy' });
+      assert.doesNotThrow(() => loader.destroyAll());
+    });
+
+    it('handles destroy() errors gracefully', () => {
+      loader.modules.set('mod-err', {
+        destroy: () => { throw new Error('boom'); }
+      });
+      assert.doesNotThrow(() => loader.destroyAll());
+      assert.strictEqual(loader.modules.size, 0);
+    });
+  });
 });
