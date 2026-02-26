@@ -6,6 +6,7 @@
  */
 class GeofencingManager {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.zones = new Map();
     this.devices = new Map();
@@ -207,14 +208,14 @@ class GeofencingManager {
 
   startTracking() {
     // Update locations every 2 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateAllLocations();
-    }, 2 * 60 * 1000);
+    }, 2 * 60 * 1000));
 
     // Check zone transitions every 30 seconds
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkZoneTransitions();
-    }, 30 * 1000);
+    }, 30 * 1000));
 
     // Initial update
     this.updateAllLocations();
@@ -756,6 +757,13 @@ class GeofencingManager {
     // Keep last 500 events
     if (this.events.length > 500) {
       this.events = this.events.slice(-500);
+    }
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
     }
   }
 }

@@ -6,6 +6,8 @@
  */
 class SmartApplianceController {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.appliances = new Map();
     this.schedules = new Map();
@@ -238,9 +240,9 @@ class SmartApplianceController {
 
     // Simulate completion
     if (appliance.duration) {
-      setTimeout(() => {
+      this._timeouts.push(setTimeout(() => {
         this.completeAppliance(applianceId);
-      }, appliance.duration * 60 * 1000); // Convert minutes to ms
+      }, appliance.duration * 60 * 1000)); // Convert minutes to ms
     }
 
     return { success: true, session };
@@ -472,9 +474,9 @@ class SmartApplianceController {
       await this.stopAppliance(toDefer.id);
       
       // Reschedule for later
-      setTimeout(() => {
+      this._timeouts.push(setTimeout(() => {
         this.startAppliance(toDefer.id, { forceStart: false });
-      }, 30 * 60 * 1000); // Retry in 30 minutes
+      }, 30 * 60 * 1000)); // Retry in 30 minutes
     }
   }
 
@@ -576,24 +578,24 @@ class SmartApplianceController {
 
   startMonitoring() {
     // Check load every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkLoadLimit();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Monitor always-on appliances every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.monitorAlwaysOn();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Check schedules every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkSchedules();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Maintenance check weekly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkMaintenance();
-    }, 7 * 24 * 60 * 60 * 1000);
+    }, 7 * 24 * 60 * 60 * 1000));
   }
 
   async monitorAlwaysOn() {
@@ -846,6 +848,17 @@ class SmartApplianceController {
       totalIssues: issues.length,
       issues
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

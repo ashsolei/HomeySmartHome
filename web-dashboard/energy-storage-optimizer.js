@@ -6,6 +6,7 @@
  */
 class EnergyStorageOptimizer {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.batteries = new Map();
     this.strategies = new Map();
@@ -282,26 +283,26 @@ class EnergyStorageOptimizer {
 
   startOptimization() {
     // Update battery status every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateBatteryStatus();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Run optimization every 15 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.runOptimization();
-    }, 15 * 60 * 1000);
+    }, 15 * 60 * 1000));
 
     // Update price data every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updatePriceData();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Calculate daily savings at midnight
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       if (new Date().getHours() === 0) {
         this.calculateDailySavings();
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial run
     this.updateBatteryStatus();
@@ -748,6 +749,13 @@ class EnergyStorageOptimizer {
     }
 
     return recommendations;
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

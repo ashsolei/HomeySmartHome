@@ -6,6 +6,7 @@
  */
 class SustainabilityCarbonTracker {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.energyData = [];
     this.waterData = [];
@@ -711,6 +712,13 @@ class SustainabilityCarbonTracker {
       date: new Date(a.achievedDate).toLocaleDateString('sv-SE'),
       value: a.value
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

@@ -6,6 +6,7 @@
  */
 class CommunityIntegrationHub {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.neighbors = new Map();
     this.sharedResources = new Map();
@@ -644,22 +645,22 @@ class CommunityIntegrationHub {
 
   startMonitoring() {
     // Check borrowed resources daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkBorrowedResources();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Check upcoming events daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkUpcomingEvents();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Generate weekly recommendations
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const day = new Date().getDay();
       if (day === 0) { // Sunday
         this.generateRecommendations();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Initial recommendations
     this.generateRecommendations();
@@ -775,6 +776,13 @@ class CommunityIntegrationHub {
         distance: s.distance + ' km',
         recommendedBy: s.usedBy.length + ' neighbors'
       }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

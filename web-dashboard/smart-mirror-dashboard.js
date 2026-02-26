@@ -6,6 +6,7 @@
  */
 class SmartMirrorDashboard {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.widgets = new Map();
     this.layouts = new Map();
@@ -489,14 +490,14 @@ class SmartMirrorDashboard {
 
   startMonitoring() {
     // Update widgets according to refresh intervals
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateActiveWidgets();
-    }, 60000);  // Check every minute
+    }, 60000));  // Check every minute
 
     // Auto-activate layouts based on schedule
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkAutoActivateLayouts();
-    }, 60000);
+    }, 60000));
 
     console.log('🪞 Smart Mirror active');
   }
@@ -578,6 +579,13 @@ class SmartMirrorDashboard {
       widgets: l.activeWidgets.length,
       brightness: l.brightness + '%'
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

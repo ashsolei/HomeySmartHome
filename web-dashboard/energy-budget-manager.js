@@ -6,6 +6,7 @@
  */
 class EnergyBudgetManager {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.budgets = new Map();
     this.consumptionHistory = [];
@@ -151,9 +152,9 @@ class EnergyBudgetManager {
 
   startConsumptionTracking() {
     // Track consumption every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateConsumption();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Initial update
     this.updateConsumption();
@@ -260,9 +261,9 @@ class EnergyBudgetManager {
 
   startBudgetMonitoring() {
     // Check budgets every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.monitorBudgets();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial monitoring
     this.monitorBudgets();
@@ -653,6 +654,13 @@ class EnergyBudgetManager {
       return { success: true };
     }
     return { success: false, error: 'Alert not found' };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

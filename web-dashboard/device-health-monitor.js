@@ -6,6 +6,7 @@
  */
 class DeviceHealthMonitor {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.devices = new Map();
     this.healthHistory = [];
@@ -124,14 +125,14 @@ class DeviceHealthMonitor {
 
   startHealthChecks() {
     // Run health checks every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.performHealthChecks();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Run predictive analysis every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.runPredictiveAnalysis();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial check
     this.performHealthChecks();
@@ -682,6 +683,13 @@ class DeviceHealthMonitor {
     }
 
     return { success: false, error: 'Alert not found' };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

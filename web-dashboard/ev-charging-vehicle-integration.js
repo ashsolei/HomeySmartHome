@@ -6,6 +6,7 @@
  */
 class EVChargingVehicleIntegration {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.vehicles = new Map();
     this.chargingStations = new Map();
@@ -454,14 +455,14 @@ class EVChargingVehicleIntegration {
 
   startMonitoring() {
     // Check charging sessions every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkChargingSessions();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Update vehicle locations (simulated)
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateVehicleLocations();
-    }, 10 * 60 * 1000);
+    }, 10 * 60 * 1000));
 
     console.log('🚗 EV Integration active');
   }
@@ -541,6 +542,13 @@ class EVChargingVehicleIntegration {
       hour: hour.toString().padStart(2, '0') + ':00',
       price: price.toFixed(2) + ' SEK/kWh'
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

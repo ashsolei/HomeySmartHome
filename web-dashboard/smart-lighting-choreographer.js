@@ -6,6 +6,7 @@
  */
 class SmartLightingChoreographer {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.lights = new Map();
     this.lightingScenes = new Map();
@@ -492,7 +493,7 @@ class SmartLightingChoreographer {
 
   startMonitoring() {
     // Apply circadian lighting every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const activeRooms = Array.from(this.lights.values())
         .filter(l => l.on)
         .map(l => l.room);
@@ -500,7 +501,7 @@ class SmartLightingChoreographer {
       if (activeRooms.length > 0) {
         this.applyCircadianLighting([...new Set(activeRooms)]);
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     console.log('💡 Lighting Choreographer active');
   }
@@ -555,6 +556,13 @@ class SmartLightingChoreographer {
       brightness: current.brightness + '%',
       phase: current.description
     } : null;
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

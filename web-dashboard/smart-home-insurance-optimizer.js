@@ -6,6 +6,7 @@
  */
 class SmartHomeInsuranceOptimizer {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.insurancePolicies = new Map();
     this.riskFactors = new Map();
@@ -531,25 +532,25 @@ class SmartHomeInsuranceOptimizer {
 
   startMonitoring() {
     // Check renewals daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkRenewals();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Update risk assessment weekly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const day = new Date().getDay();
       if (day === 1) { // Monday
         this.updateRiskAssessment();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Generate recommendations monthly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const date = new Date().getDate();
       if (date === 1) {
         this.generateRecommendations();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Initial recommendations
     this.generateRecommendations();
@@ -661,6 +662,13 @@ class SmartHomeInsuranceOptimizer {
         amount: c.estimatedAmount + ' SEK',
         status: c.status
       }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

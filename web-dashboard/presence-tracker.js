@@ -6,6 +6,7 @@
  */
 class PresenceTracker {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.rooms = new Map();
     this.presenceHistory = [];
@@ -96,14 +97,14 @@ class PresenceTracker {
 
   startPresenceMonitoring() {
     // Check presence every 5 seconds
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updatePresenceStatus();
-    }, 5000);
+    }, 5000));
 
     // Analyze patterns every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.analyzePresencePatterns();
-    }, 60000);
+    }, 60000));
   }
 
   async updatePresenceStatus() {
@@ -654,6 +655,13 @@ class PresenceTracker {
 
   isHomeOccupied() {
     return Array.from(this.rooms.values()).some(room => room.occupied);
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

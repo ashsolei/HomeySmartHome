@@ -6,6 +6,7 @@
  */
 class SecurityMonitor {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.securityEvents = [];
     this.anomalies = [];
@@ -76,14 +77,14 @@ class SecurityMonitor {
 
   startMonitoring() {
     // Monitor every 10 seconds
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.performSecurityCheck();
-    }, 10000);
+    }, 10000));
 
     // Periodic anomaly analysis (every 5 minutes)
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.analyzeAnomalies();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
   }
 
   async performSecurityCheck() {
@@ -679,6 +680,13 @@ class SecurityMonitor {
     return this.anomalies
       .slice(-limit)
       .sort((a, b) => b.timestamp - a.timestamp);
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

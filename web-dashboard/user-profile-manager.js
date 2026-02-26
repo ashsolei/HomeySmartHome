@@ -6,6 +6,8 @@
  */
 class UserProfileManager {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.profiles = new Map();
     this.currentUser = null;
@@ -257,9 +259,9 @@ class UserProfileManager {
 
   startPresenceDetection() {
     // Check presence every 30 seconds
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.detectCurrentUser();
-    }, 30 * 1000);
+    }, 30 * 1000));
   }
 
   async detectCurrentUser() {
@@ -431,9 +433,9 @@ class UserProfileManager {
     await this.applyUserPreferences(guestProfile);
 
     // Auto-disable after duration
-    setTimeout(() => {
+    this._timeouts.push(setTimeout(() => {
       this.detectCurrentUser();
-    }, duration * 60 * 60 * 1000);
+    }, duration * 60 * 60 * 1000));
 
     return {
       success: true,
@@ -668,6 +670,17 @@ class UserProfileManager {
         canModifySchedules: false
       }
     });
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

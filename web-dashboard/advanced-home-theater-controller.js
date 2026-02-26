@@ -6,6 +6,8 @@
  */
 class AdvancedHomeTheaterController {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.devices = new Map();
     this.activities = new Map();
@@ -575,16 +577,16 @@ class AdvancedHomeTheaterController {
 
   startMonitoring() {
     // Check device status every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkDeviceStatus();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Auto-adjust volume based on time
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       if (this.currentActivity) {
         this.adjustVolumeBasedOnTime();
       }
-    }, 30 * 60 * 1000);
+    }, 30 * 60 * 1000));
 
     console.log('🎬 Home Theater Controller active');
   }
@@ -629,6 +631,17 @@ class AdvancedHomeTheaterController {
       description: a.description,
       devices: a.devices.length
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

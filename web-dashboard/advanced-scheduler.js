@@ -6,6 +6,8 @@
  */
 class AdvancedScheduler {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.schedules = new Map();
     this.holidays = [];
@@ -129,9 +131,9 @@ class AdvancedScheduler {
 
   startSchedulerEngine() {
     // Check schedules every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkSchedules();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Initial check
     this.checkSchedules();
@@ -707,6 +709,17 @@ class AdvancedScheduler {
         { type: 'device_on', deviceId: 'outdoor_lights' }
       ]
     });
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

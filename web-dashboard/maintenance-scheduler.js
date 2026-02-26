@@ -6,6 +6,7 @@
  */
 class MaintenanceScheduler {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.devices = new Map();
     this.tasks = new Map();
@@ -519,9 +520,9 @@ class MaintenanceScheduler {
 
   startScheduler() {
     // Check for due tasks every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkDueTasks();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial check
     this.checkDueTasks();
@@ -699,6 +700,13 @@ class MaintenanceScheduler {
       maintenanceHistory: this.getDeviceMaintenanceHistory(deviceId),
       warranty: this.getWarrantyStatus(deviceId)
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

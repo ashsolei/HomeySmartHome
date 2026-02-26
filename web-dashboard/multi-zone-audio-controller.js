@@ -6,6 +6,7 @@
  */
 class MultiZoneAudioController {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.zones = new Map();
     this.audioSources = new Map();
@@ -569,13 +570,13 @@ class MultiZoneAudioController {
 
   startMonitoring() {
     // Auto-adjust volume based on time
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       for (const [zoneId, zone] of this.zones) {
         if (zone.playing) {
           this.autoVolumeAdjust(zoneId, Date.now());
         }
       }
-    }, 60 * 60 * 1000);  // Every hour
+    }, 60 * 60 * 1000));  // Every hour
 
     console.log('🎵 Multi-Zone Audio active');
   }
@@ -625,6 +626,13 @@ class MultiZoneAudioController {
         track: track ? `${track.title} - ${track.artist}` : 'Unknown'
       };
     });
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

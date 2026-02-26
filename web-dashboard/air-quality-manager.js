@@ -6,6 +6,7 @@
  */
 class AirQualityManager {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.sensors = new Map();
     this.rooms = new Map();
@@ -235,24 +236,24 @@ class AirQualityManager {
 
   startMonitoring() {
     // Update readings every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateAllReadings();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Calculate air quality scores every 2 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.calculateAirQualityScores();
-    }, 2 * 60 * 1000);
+    }, 2 * 60 * 1000));
 
     // Check for alerts every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkAlerts();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Auto-ventilation control every 3 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.autoVentilationControl();
-    }, 3 * 60 * 1000);
+    }, 3 * 60 * 1000));
 
     // Initial updates
     this.updateAllReadings();
@@ -845,6 +846,13 @@ class AirQualityManager {
     }
 
     return [...new Set(recommendations)]; // Remove duplicates
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

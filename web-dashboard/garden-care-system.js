@@ -6,6 +6,8 @@
  */
 class GardenCareSystem {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.zones = new Map();
     this.plants = new Map();
@@ -329,24 +331,24 @@ class GardenCareSystem {
 
   startMonitoring() {
     // Update soil sensors every 15 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateSensors();
-    }, 15 * 60 * 1000);
+    }, 15 * 60 * 1000));
 
     // Check watering schedules every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkWateringSchedules();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Check weather and adjust schedules hourly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkWeatherAndAdjust();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Check plant health daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkPlantHealth();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Initial updates
     this.updateSensors();
@@ -827,6 +829,17 @@ class GardenCareSystem {
     else season = 'winter';
 
     return seasonalTips[season];
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

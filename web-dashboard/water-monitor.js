@@ -6,6 +6,7 @@
  */
 class WaterConsumptionMonitor {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.meters = new Map();
     this.usageHistory = [];
@@ -125,22 +126,22 @@ class WaterConsumptionMonitor {
 
   startMonitoring() {
     // Update readings every 30 seconds
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateReadings();
-    }, 30 * 1000);
+    }, 30 * 1000));
 
     // Check for leaks every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkForLeaks();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Calculate daily statistics at midnight
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const hour = new Date().getHours();
       if (hour === 0) {
         this.calculateDailyStats();
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial update
     this.updateReadings();
@@ -709,6 +710,13 @@ class WaterConsumptionMonitor {
     // Keep last 24 hours (at 30-second intervals = 2880 records)
     if (this.usageHistory.length > 2880) {
       this.usageHistory = this.usageHistory.slice(-2880);
+    }
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
     }
   }
 }

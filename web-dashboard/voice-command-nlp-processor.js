@@ -6,6 +6,7 @@
  */
 class VoiceCommandNLPProcessor {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.commands = new Map();
     this.commandHistory = [];
@@ -775,12 +776,12 @@ class VoiceCommandNLPProcessor {
     console.log('🎤 Voice Command & NLP Processor active');
 
     // Analyze command usage weekly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const day = new Date().getDay();
       if (day === 0) { // Sunday
         this.analyzeCommandUsage();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
   }
 
   async analyzeCommandUsage() {
@@ -873,6 +874,13 @@ class VoiceCommandNLPProcessor {
       customCommands: u.customCommands.length,
       preferences: Object.keys(u.preferences).length
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

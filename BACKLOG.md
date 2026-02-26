@@ -1,8 +1,8 @@
 # BACKLOG - HomeySmartHome
 
-> Audit Round 10 — 2026-02-26
+> Audit Round 11 — 2026-02-26
 > Rounds 1-8: All actionable items DONE and merged (PRs #2-#8)
-> Rounds 9-10: Automated discovery cycles — lint cleanup, module hardening, error handling
+> Rounds 9-11: Automated discovery cycles — lint, module hardening, destroy(), supertest
 > Status: [ ] = TODO, [x] = DONE
 
 ---
@@ -67,17 +67,17 @@
 - [x] **COD-24**: Add try-catch error handling to 20+ module initialize() methods
 - [x] **COD-23** (partial): destroy() audit — confirmed BaseSystem extenders already covered; standalone modules addressed
 
-### Discovered — Pending Future Rounds
+### Round 11 — Stabilization (2026-02-26)
 
-- [ ] **COD-23**: Add destroy() methods to remaining 54 dashboard interval-leaking modules — P1
-- [ ] **COD-26**: Integration test-suite.js requires running server (34 tests fail without server) — refactor to use supertest — P2
-- [ ] **COD-27**: 8 modules violate SmartXxxSystem/AdvancedXxxSystem naming convention — P3
-- [ ] **COD-28**: 114 files use console.log instead of pino structured logging — P3
+- [x] **COD-23**: Add destroy() methods to 58 dashboard modules with interval/timeout leaks — stores refs in `this._intervals`/`this._timeouts`, clears in `destroy()`
+- [x] **COD-26**: Refactor test-suite.js to use supertest — no running server required; 11/11 tests pass; added `module.exports = { app }` to server.js with `require.main` guard
 
 ---
 
-## DEFERRED (Environment-Dependent / Low Priority)
+## DEFERRED (Environment-Dependent / Low Priority / High Risk)
 
 - [ ] **INF-51**: K8s SealedSecret placeholder values — requires kubeseal CLI + cluster access
 - [ ] **INF-55**: Alertmanager no targets — requires alertmanager service deployment
 - [ ] **COD-10**: Organize lib/ into subdirectories by domain — high risk (121 modules, all imports would break); deferred until major version bump
+- [ ] **COD-27**: 59 modules violate SmartXxxSystem/AdvancedXxxSystem naming convention — P3; renaming requires updating app.js, server.js, api.js per module; deferred until major version bump
+- [ ] **COD-28**: 114 files use console.log instead of pino structured logging — P3; massive scope, deferred

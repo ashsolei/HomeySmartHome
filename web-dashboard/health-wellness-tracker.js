@@ -6,6 +6,7 @@
  */
 class HealthWellnessTracker {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.users = new Map();
     this.metrics = new Map();
@@ -133,9 +134,9 @@ class HealthWellnessTracker {
 
   async startTracking() {
     // Simulate daily activity
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.simulateDailyActivity();
-    }, 60 * 60 * 1000); // Every hour
+    }, 60 * 60 * 1000)); // Every hour
 
     // Initial activity
     this.simulateDailyActivity();
@@ -554,29 +555,29 @@ class HealthWellnessTracker {
 
   startMonitoring() {
     // Update metrics every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.simulateDailyActivity();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Check goals daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateGoalProgress();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Track environmental health every 30 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.trackEnvironmentalHealth();
-    }, 30 * 60 * 1000);
+    }, 30 * 60 * 1000));
 
     // Generate daily recommendations
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const hour = new Date().getHours();
       if (hour === 8) { // Morning recommendations
         for (const [userId] of this.users) {
           this.generateRecommendations(userId);
         }
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial environmental tracking
     this.trackEnvironmentalHealth();
@@ -808,6 +809,13 @@ class HealthWellnessTracker {
       quality: avgCO2 < 800 && avgVOC < 300 ? 'Excellent' :
                avgCO2 < 1000 && avgVOC < 500 ? 'Good' : 'Needs Improvement'
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

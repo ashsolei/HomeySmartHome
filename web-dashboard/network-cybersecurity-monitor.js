@@ -6,6 +6,7 @@
  */
 class NetworkCybersecurityMonitor {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.devices = new Map();
     this.threats = [];
@@ -593,24 +594,24 @@ class NetworkCybersecurityMonitor {
 
   startMonitoring() {
     // Scan network every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.scanNetwork();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Detect threats every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.detectThreats();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Scan vulnerabilities daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.scanVulnerabilities();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Monitor traffic every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.monitorTraffic();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     console.log('🔒 Network Security Monitor active');
   }
@@ -682,6 +683,13 @@ class NetworkCybersecurityMonitor {
       cvss: v.cvss,
       description: v.description
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

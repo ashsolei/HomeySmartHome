@@ -6,6 +6,7 @@
  */
 class NotificationSystem {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.channels = new Map();
     this.notificationQueue = [];
@@ -213,9 +214,9 @@ class NotificationSystem {
   // ============================================
 
   startQueueProcessor() {
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.processQueue();
-    }, 1000); // Process every second
+    }, 1000)); // Process every second
   }
 
   async processQueue() {
@@ -560,6 +561,13 @@ class NotificationSystem {
       notification.dismissedAt = Date.now();
     }
     return { dismissed: true };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

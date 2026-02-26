@@ -6,6 +6,7 @@
  */
 class EnergyPriceOptimizer {
   constructor() {
+    this._intervals = [];
     this.priceData = {
       current: null,
       today: [],
@@ -20,9 +21,9 @@ class EnergyPriceOptimizer {
     await this.updatePriceData();
     
     // Auto-refresh hourly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updatePriceData();
-    }, this.updateInterval);
+    }, this.updateInterval));
 
     // Initialize optimization strategies
     this.initializeStrategies();
@@ -633,6 +634,13 @@ class EnergyPriceOptimizer {
       tomorrow: [],
       lastUpdate: Date.now()
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

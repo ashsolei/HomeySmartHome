@@ -6,6 +6,7 @@
  */
 class FamilyCalendarCoordinator {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.events = new Map();
     this.members = new Map();
@@ -666,22 +667,22 @@ class FamilyCalendarCoordinator {
 
   startMonitoring() {
     // Check reminders every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkReminders();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Update upcoming events every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateUpcomingEvents();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Daily summary at 7 AM
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const hour = new Date().getHours();
       if (hour === 7) {
         this.generateDailySummary();
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
   }
 
   async updateUpcomingEvents() {
@@ -813,6 +814,13 @@ class FamilyCalendarCoordinator {
         };
       })
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

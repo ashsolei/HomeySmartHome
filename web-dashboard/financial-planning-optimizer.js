@@ -6,6 +6,8 @@
  */
 class FinancialPlanningOptimizer {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.accounts = new Map();
     this.budgets = new Map();
@@ -382,9 +384,9 @@ class FinancialPlanningOptimizer {
     console.log(`✅ Paid: ${bill.name} (${bill.amount} SEK)`);
 
     // Reset status for next month
-    setTimeout(() => {
+    this._timeouts.push(setTimeout(() => {
       bill.status = 'pending';
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     return { success: true, bill };
   }
@@ -663,25 +665,25 @@ class FinancialPlanningOptimizer {
 
   startMonitoring() {
     // Check bills daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.processBills();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Generate weekly optimization report
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const day = new Date().getDay();
       if (day === 1) { // Monday
         this.generateWeeklyReport();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Reset budgets monthly (first day of month)
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const date = new Date().getDate();
       if (date === 1) {
         this.resetMonthlyBudgets();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Initial checks
     this.processBills();
@@ -872,6 +874,17 @@ class FinancialPlanningOptimizer {
     }
 
     return trend;
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

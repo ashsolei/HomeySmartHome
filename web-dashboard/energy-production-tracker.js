@@ -6,6 +6,7 @@
  */
 class EnergyProductionTracker {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.productionSources = new Map();
     this.productionHistory = [];
@@ -115,16 +116,16 @@ class EnergyProductionTracker {
 
   startMonitoring() {
     // Update production/consumption every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateProductionData();
       this.updateConsumptionData();
       this.calculateBalance();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Update forecasts every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateForecasts();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial update
     this.updateProductionData();
@@ -610,6 +611,13 @@ class EnergyProductionTracker {
     // Keep last 24 hours
     if (this.consumptionHistory.length > 288) {
       this.consumptionHistory = this.consumptionHistory.slice(-288);
+    }
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
     }
   }
 }

@@ -6,6 +6,7 @@
  */
 class AdvancedWeatherPredictor {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.location = { lat: 59.3293, lon: 18.0686 };  // Stockholm
     this.currentWeather = null;
@@ -532,19 +533,19 @@ class AdvancedWeatherPredictor {
 
   startMonitoring() {
     // Update weather every 30 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateCurrentWeather();
-    }, 30 * 60 * 1000);
+    }, 30 * 60 * 1000));
 
     // Update forecast every 6 hours
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateForecast();
-    }, 6 * 60 * 60 * 1000);
+    }, 6 * 60 * 60 * 1000));
 
     // Check alerts every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkWeatherAlerts();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     console.log('🌦️ Weather Predictor active');
   }
@@ -609,6 +610,13 @@ class AdvancedWeatherPredictor {
       enabled: r.enabled ? '✅' : '❌',
       actions: r.actions.length + ' actions'
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

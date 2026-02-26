@@ -6,6 +6,7 @@
  */
 class WasteManagementTracker {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.bins = new Map();
     this.collectionSchedule = new Map();
@@ -176,19 +177,19 @@ class WasteManagementTracker {
 
   startMonitoring() {
     // Check bin levels every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateBinLevels();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Check collection schedule every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkCollectionReminders();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Calculate stats daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.calculateStats();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Initial updates
     this.updateBinLevels();
@@ -668,6 +669,13 @@ class WasteManagementTracker {
       change: change.toFixed(1),
       trend: change < -5 ? 'improving' : change > 5 ? 'worsening' : 'stable'
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

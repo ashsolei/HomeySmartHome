@@ -548,16 +548,21 @@ const gracefulShutdown = (signal) => {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-// Start server
-httpServer.listen(PORT, async () => {
-  console.log(`🏠 Smart Home Dashboard running at http://localhost:${PORT}`);
-  console.log(`📡 Homey connection: ${HOMEY_URL}`);
+// Export app for testing (supertest)
+module.exports = { app };
 
-  // Boot all feature modules after server is listening
-  try {
-    const result = await bootModules();
-    console.log(`📦 ${result.ready}/${result.total} modules ready`);
-  } catch (err) {
-    console.error('Module boot error:', err.message);
-  }
-});
+// Start server only when run directly (not when imported for testing)
+if (require.main === module) {
+  httpServer.listen(PORT, async () => {
+    console.log(`🏠 Smart Home Dashboard running at http://localhost:${PORT}`);
+    console.log(`📡 Homey connection: ${HOMEY_URL}`);
+
+    // Boot all feature modules after server is listening
+    try {
+      const result = await bootModules();
+      console.log(`📦 ${result.ready}/${result.total} modules ready`);
+    } catch (err) {
+      console.error('Module boot error:', err.message);
+    }
+  });
+}

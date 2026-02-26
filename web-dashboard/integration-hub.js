@@ -6,6 +6,7 @@
  */
 class IntegrationHub {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.integrations = new Map();
     this.syncQueue = [];
@@ -433,9 +434,9 @@ class IntegrationHub {
 
   startSyncEngine() {
     // Sync every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.syncAllIntegrations();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
   }
 
   async syncAllIntegrations() {
@@ -798,6 +799,13 @@ class IntegrationHub {
 
   getRecentEvents(limit = 20) {
     return this.eventLog.slice(-limit).reverse();
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

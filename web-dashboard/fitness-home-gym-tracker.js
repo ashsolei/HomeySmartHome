@@ -6,6 +6,7 @@
  */
 class FitnessHomeGymTracker {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.users = new Map();
     this.equipment = new Map();
@@ -565,7 +566,7 @@ class FitnessHomeGymTracker {
 
   startMonitoring() {
     // Send workout reminders
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const hour = new Date().getHours();
       const minute = new Date().getMinutes();
 
@@ -576,17 +577,17 @@ class FitnessHomeGymTracker {
           this.sendWorkoutReminder(id);
         }
       }
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Check equipment maintenance
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       for (const [_id, equipment] of this.equipment) {
         if (equipment.totalHours > 200 && !equipment.maintenanceDue) {
           equipment.maintenanceDue = true;
           console.log(`🔧 Maintenance due: ${equipment.name}`);
         }
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     console.log('🏋️ Fitness Tracker active');
   }
@@ -657,6 +658,13 @@ class FitnessHomeGymTracker {
       inUse: e.inUse ? 'Yes' : 'No',
       maintenance: e.maintenanceDue ? 'Due' : 'OK'
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

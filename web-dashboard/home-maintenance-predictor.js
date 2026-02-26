@@ -6,6 +6,8 @@
  */
 class HomeMaintenancePredictor {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.systems = new Map();
     this.maintenanceTasks = new Map();
@@ -337,9 +339,9 @@ class HomeMaintenancePredictor {
     console.log(`✅ Completed: ${task.name} (Cost: ${data.actualCost || task.cost} SEK)`);
 
     // Reset status after logging
-    setTimeout(() => {
+    this._timeouts.push(setTimeout(() => {
       task.status = 'pending';
-    }, 1000);
+    }, 1000));
 
     return { success: true, task };
   }
@@ -620,25 +622,25 @@ class HomeMaintenancePredictor {
 
   startMonitoring() {
     // Check maintenance tasks daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkMaintenanceTasks();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Analyze systems weekly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const day = new Date().getDay();
       if (day === 0) { // Sunday
         this.analyzeSystems();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Check warranties monthly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const date = new Date().getDate();
       if (date === 1) {
         this.checkWarranties();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Initial analysis
     this.analyzeSystems();
@@ -789,6 +791,17 @@ class HomeMaintenancePredictor {
     }
 
     return calendar;
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

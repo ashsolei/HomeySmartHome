@@ -6,6 +6,8 @@
  */
 class SmartDoorbellFacialRecognition {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.knownPeople = new Map();
     this.visitors = [];
@@ -417,9 +419,9 @@ class SmartDoorbellFacialRecognition {
     console.log('🔓 Unlocking door');
     
     // Temporary unlock (5 minutes)
-    setTimeout(() => {
+    this._timeouts.push(setTimeout(() => {
       console.log('🔒 Auto-locking door');
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     return { success: true, duration: 300 };
   }
@@ -532,18 +534,18 @@ class SmartDoorbellFacialRecognition {
 
   startMonitoring() {
     // Simulate doorbell presses (random)
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       if (Math.random() < 0.01) {  // 1% chance per minute
         this.handleDoorbellPress();
       }
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Simulate motion detection
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       if (Math.random() < 0.05) {  // 5% chance per minute
         this.detectMotion('zone_entrance');
       }
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     console.log('🔔 Smart Doorbell active');
   }
@@ -591,6 +593,17 @@ class SmartDoorbellFacialRecognition {
         time: new Date(e.timestamp).toLocaleString('sv-SE'),
         recognized: e.recognition?.recognized ? e.recognition.person : 'Unknown'
       }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

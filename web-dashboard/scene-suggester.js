@@ -6,6 +6,7 @@
  */
 class SceneSuggester {
   constructor(app, intelligenceEngine) {
+    this._intervals = [];
     this.app = app;
     this.intelligenceEngine = intelligenceEngine;
     this.existingScenes = new Map();
@@ -83,9 +84,9 @@ class SceneSuggester {
 
   startSuggestionEngine() {
     // Generate suggestions every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.generateSuggestions();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial generation
     this.generateSuggestions();
@@ -655,6 +656,13 @@ class SceneSuggester {
 
   getImplementedScenes() {
     return Array.from(this.implementedSuggestions);
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

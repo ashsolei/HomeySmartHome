@@ -6,6 +6,7 @@
  */
 class BackupSystem {
   constructor(app) {
+    this._timeouts = [];
     this.app = app;
     this.backups = new Map();
     this.exportFormats = ['json', 'csv', 'yaml'];
@@ -662,10 +663,10 @@ class BackupSystem {
       
       const delay = next.getTime() - now.getTime();
       
-      setTimeout(() => {
+      this._timeouts.push(setTimeout(() => {
         this.performAutoBackup();
         scheduleNextBackup();
-      }, delay);
+      }, delay));
     };
 
     scheduleNextBackup();
@@ -771,6 +772,13 @@ class BackupSystem {
       itemCount: backup.itemCount,
       components: Object.keys(backup.data)
     };
+  }
+
+  destroy() {
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

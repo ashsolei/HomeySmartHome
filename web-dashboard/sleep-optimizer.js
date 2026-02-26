@@ -6,6 +6,8 @@
  */
 class SleepOptimizer {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.sleepSessions = [];
     this.profiles = new Map();
@@ -114,19 +116,19 @@ class SleepOptimizer {
 
   startMonitoring() {
     // Check for bedtime every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkBedtime();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Monitor sleep environment every minute during sleep
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.monitorSleepEnvironment();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Update sleep quality calculations
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateSleepQuality();
-    }, 10 * 60 * 1000); // Every 10 minutes
+    }, 10 * 60 * 1000)); // Every 10 minutes
   }
 
   async checkBedtime() {
@@ -692,6 +694,17 @@ class SleepOptimizer {
         ]
       }
     ];
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

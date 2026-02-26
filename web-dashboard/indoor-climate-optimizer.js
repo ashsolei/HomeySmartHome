@@ -6,6 +6,8 @@
  */
 class IndoorClimateOptimizer {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.rooms = new Map();
     this.hvacZones = new Map();
@@ -623,24 +625,24 @@ class IndoorClimateOptimizer {
 
   startMonitoring() {
     // Update sensor readings every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateSensorReadings();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Optimize climate every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.optimizeClimate();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Check schedules every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkSchedules();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Check air quality every 10 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkAirQuality();
-    }, 10 * 60 * 1000);
+    }, 10 * 60 * 1000));
 
     // Initial run
     this.updateSensorReadings();
@@ -843,6 +845,17 @@ class IndoorClimateOptimizer {
       timestamp: h.timestamp,
       ...h.rooms[roomId]
     })).filter(h => h.temp !== undefined);
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

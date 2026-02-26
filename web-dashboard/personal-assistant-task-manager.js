@@ -6,6 +6,7 @@
  */
 class PersonalAssistantTaskManager {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.tasks = new Map();
     this.calendar = new Map();
@@ -555,14 +556,14 @@ class PersonalAssistantTaskManager {
 
   startMonitoring() {
     // Check reminders every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkReminders();
-    }, 60000);
+    }, 60000));
 
     // Check overdue tasks daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkOverdueTasks();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     console.log('🤖 Personal Assistant active');
   }
@@ -697,6 +698,13 @@ class PersonalAssistantTaskManager {
     }
 
     return summary;
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

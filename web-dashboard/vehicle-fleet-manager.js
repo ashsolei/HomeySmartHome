@@ -6,6 +6,7 @@
  */
 class VehicleFleetManager {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.vehicles = new Map();
     this.trips = [];
@@ -640,14 +641,14 @@ class VehicleFleetManager {
 
   startMonitoring() {
     // Check for low battery/fuel
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkVehicleStatus();
-    }, 60 * 60 * 1000); // Every hour
+    }, 60 * 60 * 1000)); // Every hour
 
     // Check maintenance due
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkMaintenanceDue();
-    }, 24 * 60 * 60 * 1000); // Daily
+    }, 24 * 60 * 60 * 1000)); // Daily
 
     // Initial check
     this.checkVehicleStatus();
@@ -809,6 +810,13 @@ class VehicleFleetManager {
       period: `${days} days`,
       vehicles: comparison
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 
