@@ -6,6 +6,7 @@
  */
 class NetworkCybersecurityMonitor {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.devices = new Map();
     this.threats = [];
@@ -126,7 +127,7 @@ class NetworkCybersecurityMonitor {
     let found = 0;
     let new_devices = 0;
 
-    for (const [id, device] of this.devices) {
+    for (const [_id, device] of this.devices) {
       device.status = 'online';
       device.lastSeen = Date.now();
       found++;
@@ -345,7 +346,7 @@ class NetworkCybersecurityMonitor {
 
   detectMalwareCommunication() {
     // Check if any device is communicating with known malicious IPs
-    for (const [id, device] of this.devices) {
+    for (const [_id, device] of this.devices) {
       if (device.trustLevel === 'untrusted' && Math.random() < 0.03) {
         return [{
           type: 'malware_communication',
@@ -593,24 +594,24 @@ class NetworkCybersecurityMonitor {
 
   startMonitoring() {
     // Scan network every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.scanNetwork();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Detect threats every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.detectThreats();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Scan vulnerabilities daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.scanVulnerabilities();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Monitor traffic every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.monitorTraffic();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     console.log('🔒 Network Security Monitor active');
   }
@@ -682,6 +683,13 @@ class NetworkCybersecurityMonitor {
       cvss: v.cvss,
       description: v.description
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

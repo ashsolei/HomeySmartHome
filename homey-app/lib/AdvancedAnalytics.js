@@ -1,10 +1,37 @@
 'use strict';
 
 /**
+ * @typedef {'30d'|'60d'|'7d'|'24h'|string} AnalyticsPeriod
+ * Period string: number + unit (d=days, w=weeks, m=months, e.g. '7d', '2w', '1m')
+ */
+
+/**
+ * @typedef {object} EnergyData
+ * @property {number} total - Total kWh consumed in period
+ * @property {number} average - Average daily kWh
+ * @property {number} peak - Peak daily kWh
+ * @property {number[]} daily - Per-day consumption array
+ * @property {number} totalCost - Total cost in local currency
+ * @property {number} averageCost - Average daily cost
+ */
+
+/**
+ * @typedef {object} EnergyInsight
+ * @property {'trend'|'peak'|'optimization'} type - Insight category
+ * @property {'info'|'warning'|'positive'} severity - Severity level
+ * @property {{en: string, sv: string}} message - Localised message
+ */
+
+/**
  * Advanced Analytics Engine
- * Provides deep insights, trends analysis, and performance metrics
+ *
+ * Provides deep insights, trends analysis, and performance metrics across
+ * energy, devices, automations, presence, climate, and comparative dimensions.
  */
 class AdvancedAnalytics {
+  /**
+   * @param {import('homey').Homey} homey - Homey application instance
+   */
   constructor(homey) {
     this.homey = homey;
     this.metrics = new Map();
@@ -12,23 +39,38 @@ class AdvancedAnalytics {
     this.benchmarks = new Map();
   }
 
+  /**
+   * Load persisted metrics and trends, then start the background collection interval.
+   *
+   * @returns {Promise<void>}
+   */
   async initialize() {
-    this.log('Initializing Advanced Analytics...');
-    
-    // Load historical metrics
-    this.metrics = new Map(await this.homey.settings.get('analyticsMetrics') || []);
-    this.trends = new Map(await this.homey.settings.get('analyticsTrends') || []);
-    
-    // Start collecting metrics
-    this.startMetricsCollection();
-    
-    this.log('Advanced Analytics initialized');
+    try {
+      this.log('Initializing Advanced Analytics...');
+
+      // Load historical metrics
+      this.metrics = new Map(await this.homey.settings.get('analyticsMetrics') || []);
+      this.trends = new Map(await this.homey.settings.get('analyticsTrends') || []);
+
+      // Start collecting metrics
+      this.startMetricsCollection();
+
+      this.log('Advanced Analytics initialized');
+    } catch (error) {
+      console.error(`[AdvancedAnalytics] Failed to initialize:`, error.message);
+    }
   }
 
   // ============================================
   // ENERGY ANALYTICS
   // ============================================
 
+  /**
+   * Return a comprehensive energy analytics report for the given period.
+   *
+   * @param {AnalyticsPeriod} [period='30d'] - Analysis period
+   * @returns {Promise<{consumption: object, cost: object, efficiency: object, breakdown: object, insights: EnergyInsight[]}>}
+   */
   async getEnergyAnalytics(period = '30d') {
     const data = await this.collectEnergyData(period);
     
@@ -116,6 +158,11 @@ class AdvancedAnalytics {
   // DEVICE ANALYTICS
   // ============================================
 
+  /**
+   * Return health, usage, performance, and maintenance analytics for all devices.
+   *
+   * @returns {Promise<{overview: object, health: object, usage: object, performance: object, maintenance: object[]}>}
+   */
   async getDeviceAnalytics() {
     const devices = await this.homey.app.deviceManager.getAllDevices();
     
@@ -134,6 +181,13 @@ class AdvancedAnalytics {
     };
   }
 
+  /**
+   * Analyse health scores for all devices by checking availability, battery, and
+   * last-communication age.
+   *
+   * @param {object[]} devices - Array of Homey device objects
+   * @returns {Promise<{overall: number, byDevice: object[], issues: object[], recommendations: object[]}>}
+   */
   async analyzeDeviceHealth(devices) {
     const health = {
       overall: 0,
@@ -192,6 +246,12 @@ class AdvancedAnalytics {
     return health;
   }
 
+  /**
+   * Rank devices by usage frequency and compute aggregate usage statistics.
+   *
+   * @param {object[]} devices - Array of Homey device objects
+   * @returns {Promise<{mostUsed: object[], leastUsed: object[], patterns: object[], statistics: object}>}
+   */
   async analyzeDeviceUsage(devices) {
     const usage = {
       mostUsed: [],
@@ -225,6 +285,12 @@ class AdvancedAnalytics {
     return usage;
   }
 
+  /**
+   * Analyse response time, reliability, and energy efficiency for all devices.
+   *
+   * @param {object[]} devices - Array of Homey device objects
+   * @returns {Promise<{responseTime: object, reliability: object, efficiency: object}>}
+   */
   async analyzeDevicePerformance(devices) {
     return {
       responseTime: await this.analyzeResponseTimes(devices),
@@ -237,6 +303,11 @@ class AdvancedAnalytics {
   // AUTOMATION ANALYTICS
   // ============================================
 
+  /**
+   * Return performance, effectiveness, optimization, and insight analytics for all automations.
+   *
+   * @returns {Promise<{overview: object, performance: object, effectiveness: object, optimization: object, insights: object[]}>}
+   */
   async getAutomationAnalytics() {
     const automations = this.homey.app.automationEngine?.automations || new Map();
     const executions = this.homey.app.automationEngine?.executionHistory || [];
@@ -254,6 +325,13 @@ class AdvancedAnalytics {
     };
   }
 
+  /**
+   * Compute per-automation and aggregate success/failure metrics.
+   *
+   * @param {Map<string, object>} automations - Map of automation ID → automation object
+   * @param {object[]} executions - Flat execution history array
+   * @returns {Promise<{byAutomation: object[], overall: object}>}
+   */
   async analyzeAutomationPerformance(automations, executions) {
     const performance = {
       byAutomation: [],
@@ -286,6 +364,12 @@ class AdvancedAnalytics {
     return performance;
   }
 
+  /**
+   * Analyse automation effectiveness by time-of-day, trigger type, and user satisfaction.
+   *
+   * @param {object[]} executions - Flat execution history array
+   * @returns {Promise<{timeBasedEffectiveness: object[], triggerEffectiveness: object[], userSatisfaction: number}>}
+   */
   async analyzeAutomationEffectiveness(executions) {
     const timeBasedAnalysis = this.analyzeExecutionsByTime(executions);
     const triggerAnalysis = this.analyzeExecutionsByTrigger(executions);
@@ -342,6 +426,12 @@ class AdvancedAnalytics {
   // PRESENCE & BEHAVIOR ANALYTICS
   // ============================================
 
+  /**
+   * Return occupancy patterns, zone usage, and presence predictions for the period.
+   *
+   * @param {AnalyticsPeriod} [period='30d'] - Analysis period
+   * @returns {Promise<{patterns: object, occupancy: object, zones: object, predictions: object}>}
+   */
   async getPresenceAnalytics(period = '30d') {
     const days = this.parsePeriodToDays(period);
     const presenceData = [];
@@ -387,6 +477,12 @@ class AdvancedAnalytics {
   // CLIMATE ANALYTICS
   // ============================================
 
+  /**
+   * Return temperature, humidity, efficiency, comfort, and climate recommendations.
+   *
+   * @param {AnalyticsPeriod} [period='30d'] - Analysis period
+   * @returns {Promise<{temperature: object, humidity: object, efficiency: object, comfort: object, recommendations: object[]}>}
+   */
   async getClimateAnalytics(period = '30d') {
     return {
       temperature: await this.analyzeTemperatureTrends(period),
@@ -419,6 +515,12 @@ class AdvancedAnalytics {
   // COMPARATIVE ANALYTICS
   // ============================================
 
+  /**
+   * Compare current performance across energy, efficiency, cost, and device metrics
+   * against previous periods and benchmarks.
+   *
+   * @returns {Promise<{energyComparison: object, efficiencyComparison: object, costComparison: object, performanceComparison: object}>}
+   */
   async getComparativeAnalytics() {
     return {
       energyComparison: await this.compareEnergyUsage(),
@@ -449,6 +551,11 @@ class AdvancedAnalytics {
   // INSIGHTS GENERATION
   // ============================================
 
+  /**
+   * Generate actionable insights across all major system domains.
+   *
+   * @returns {Promise<{energy: EnergyInsight[], devices: object[], automation: object[], comfort: object[], security: object[], optimization: object[]}>}
+   */
   async generateComprehensiveInsights() {
     return {
       energy: await this.generateEnergyInsights(),
@@ -460,6 +567,15 @@ class AdvancedAnalytics {
     };
   }
 
+  /**
+   * Generate energy-specific insights from collected data.
+   *
+   * When `data` is not provided the last 30 days are fetched automatically.
+   * Produces trend warnings and peak-consumption observations.
+   *
+   * @param {EnergyData|null} [data=null] - Pre-collected energy data, or null to auto-fetch
+   * @returns {Promise<EnergyInsight[]>} Array of insight objects
+   */
   async generateEnergyInsights(data = null) {
     if (!data) {
       data = await this.collectEnergyData('30d');
@@ -499,6 +615,11 @@ class AdvancedAnalytics {
     return insights;
   }
 
+  /**
+   * Identify inefficient devices and produce prioritised optimisation recommendations.
+   *
+   * @returns {Promise<object[]>} Optimisation insight objects with action payloads
+   */
   async generateOptimizationInsights() {
     const insights = [];
     

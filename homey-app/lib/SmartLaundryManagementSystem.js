@@ -889,7 +889,7 @@ class SmartLaundryManagementSystem extends EventEmitter {
   monitorAppliances() {
     this.monitoring.lastCheck = Date.now();
     
-    for (const [id, appliance] of this.laundryAppliances) {
+    for (const [_id, appliance] of this.laundryAppliances) {
       // Update remaining time for running appliances
       if (appliance.status === 'running' && appliance.remainingTime > 0) {
         appliance.remainingTime = Math.max(0, appliance.remainingTime - 2); // 2 minutes since last check
@@ -901,7 +901,7 @@ class SmartLaundryManagementSystem extends EventEmitter {
    * Monitor detergent inventory
    */
   monitorDetergentInventory() {
-    for (const [id, detergent] of this.detergentInventory) {
+    for (const [_id, detergent] of this.detergentInventory) {
       if (detergent.loadsRemaining === 5) {
         // Alert already sent when inventory updated
         continue;

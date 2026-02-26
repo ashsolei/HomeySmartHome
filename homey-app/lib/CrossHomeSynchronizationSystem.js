@@ -14,27 +14,31 @@ class CrossHomeSynchronizationSystem {
   }
 
   async initialize() {
-    this.log('Initializing Cross-Home Synchronization System...');
-    
-    // Load homes
-    const savedHomes = await this.homey.settings.get('homes') || {};
-    Object.entries(savedHomes).forEach(([id, home]) => {
-      this.homes.set(id, home);
-    });
+    try {
+      this.log('Initializing Cross-Home Synchronization System...');
 
-    // Load sync groups
-    const savedGroups = await this.homey.settings.get('syncGroups') || {};
-    Object.entries(savedGroups).forEach(([id, group]) => {
-      this.syncGroups.set(id, group);
-    });
+      // Load homes
+      const savedHomes = await this.homey.settings.get('homes') || {};
+      Object.entries(savedHomes).forEach(([id, home]) => {
+        this.homes.set(id, home);
+      });
 
-    // Register current home
-    await this.registerCurrentHome();
+      // Load sync groups
+      const savedGroups = await this.homey.settings.get('syncGroups') || {};
+      Object.entries(savedGroups).forEach(([id, group]) => {
+        this.syncGroups.set(id, group);
+      });
 
-    // Setup default sync groups
-    await this.setupDefaultSyncGroups();
+      // Register current home
+      await this.registerCurrentHome();
 
-    this.log('Cross-Home Synchronization System initialized');
+      // Setup default sync groups
+      await this.setupDefaultSyncGroups();
+
+      this.log('Cross-Home Synchronization System initialized');
+    } catch (error) {
+      console.error(`[CrossHomeSynchronizationSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -302,7 +306,7 @@ class CrossHomeSynchronizationSystem {
       if (sceneTemplateSystem) {
         const customScenes = await this.homey.settings.get('customScenes') || {};
         
-        for (const [id, scene] of Object.entries(customScenes)) {
+        for (const [_id, scene] of Object.entries(customScenes)) {
           scenes.push({
             id: scene.id,
             name: scene.name,
@@ -361,7 +365,7 @@ class CrossHomeSynchronizationSystem {
       if (automationEngine) {
         const rules = await this.homey.settings.get('automationRules') || {};
         
-        for (const [id, rule] of Object.entries(rules)) {
+        for (const [_id, rule] of Object.entries(rules)) {
           automations.push({
             id: rule.id,
             name: rule.name,

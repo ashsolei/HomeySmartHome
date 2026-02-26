@@ -44,20 +44,24 @@ class AdvancedNeighborhoodIntegrationSystem extends EventEmitter {
    * @returns {Promise<boolean>}
    */
   async initialize() {
-    if (this.initialized) return true;
+    try {
+      if (this.initialized) return true;
 
-    this.homey.log('[AdvancedNeighborhoodIntegrationSystem] Initializing...');
+      this.homey.log('[AdvancedNeighborhoodIntegrationSystem] Initializing...');
 
-    await this.loadSettings();
-    this.initializeSecurityDefaults();
-    this.startPeriodicSync();
-    this.startWeatherAggregation();
-    this.startEnergyBalancing();
+      await this.loadSettings();
+      this.initializeSecurityDefaults();
+      this.startPeriodicSync();
+      this.startWeatherAggregation();
+      this.startEnergyBalancing();
 
-    this.initialized = true;
-    this.homey.log('[AdvancedNeighborhoodIntegrationSystem] Initialized');
-    this.homey.emit('neighborhood:initialized');
-    return true;
+      this.initialized = true;
+      this.homey.log('[AdvancedNeighborhoodIntegrationSystem] Initialized');
+      this.homey.emit('neighborhood:initialized');
+      return true;
+    } catch (error) {
+      this.homey.error(`[AdvancedNeighborhoodIntegrationSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**

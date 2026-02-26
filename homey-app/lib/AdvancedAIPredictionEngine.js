@@ -507,7 +507,7 @@ class AdvancedAIPredictionEngine extends EventEmitter {
     this.monitoring.lastCheck = Date.now();
     
     // Check if models need retraining
-    for (const [id, model] of this.predictionModels) {
+    for (const [_id, model] of this.predictionModels) {
       const daysSinceTraining = (Date.now() - model.lastTraining) / (24 * 60 * 60 * 1000);
       
       if (daysSinceTraining > 30) {

@@ -6,6 +6,8 @@
  */
 class HomeSecuritySystem {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.zones = new Map();
     this.sensors = new Map();
@@ -332,9 +334,9 @@ class HomeSecuritySystem {
     console.log(`📹 Started recording on ${camera.name} for ${duration}s`);
 
     // Stop recording after duration
-    setTimeout(() => {
+    this._timeouts.push(setTimeout(() => {
       this.stopRecording(cameraId, recording.id);
-    }, duration * 1000);
+    }, duration * 1000));
 
     return { success: true, recording };
   }
@@ -440,9 +442,9 @@ class HomeSecuritySystem {
       if (entryZone && entryZone.delayExit > 0) {
         console.log(`⏳ Arming in ${entryZone.delayExit} seconds...`);
         
-        setTimeout(() => {
+        this._timeouts.push(setTimeout(() => {
           this.applyMode(mode, userId);
-        }, entryZone.delayExit * 1000);
+        }, entryZone.delayExit * 1000));
 
         return { success: true, mode, delaySeconds: entryZone.delayExit };
       }
@@ -455,7 +457,7 @@ class HomeSecuritySystem {
 
   async applyMode(mode, userId) {
     // Disarm all zones first
-    for (const [zoneId, zone] of this.zones) {
+    for (const [_zoneId, zone] of this.zones) {
       zone.armed = false;
     }
 
@@ -701,7 +703,7 @@ class HomeSecuritySystem {
   }
 
   async authenticateUser(pin) {
-    for (const [userId, user] of this.users) {
+    for (const [_userId, user] of this.users) {
       if (user.pin === pin) {
         // Check if guest access expired
         if (user.type === 'guest' && user.validUntil < Date.now()) {
@@ -731,19 +733,19 @@ class HomeSecuritySystem {
 
   startMonitoring() {
     // Simulate random sensor activity
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.simulateActivity();
-    }, 5 * 60 * 1000); // Every 5 minutes
+    }, 5 * 60 * 1000)); // Every 5 minutes
 
     // Check sensor batteries weekly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkSensorBatteries();
-    }, 7 * 24 * 60 * 60 * 1000);
+    }, 7 * 24 * 60 * 60 * 1000));
 
     // Check alerts
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkUnacknowledgedAlerts();
-    }, 60 * 1000); // Every minute
+    }, 60 * 1000)); // Every minute
   }
 
   async simulateActivity() {
@@ -937,6 +939,17 @@ class HomeSecuritySystem {
       alertsBySeverity,
       averageAlertsPerDay: (recentAlerts.length / days).toFixed(1)
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

@@ -6,6 +6,7 @@
  */
 class FamilyCalendarCoordinator {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.events = new Map();
     this.members = new Map();
@@ -126,7 +127,7 @@ class FamilyCalendarCoordinator {
     // Check if this affects any events
     const now = Date.now();
     
-    for (const [eventId, event] of this.events) {
+    for (const [_eventId, event] of this.events) {
       if (event.startTime > now && event.startTime < now + 30 * 60 * 1000) {
         // Event starting within 30 minutes
         if (event.attendees.includes(member.id)) {
@@ -398,7 +399,7 @@ class FamilyCalendarCoordinator {
       return { success: false, error: 'Conflict not found' };
     }
 
-    const conflict = this.conflicts[conflictIndex];
+    const _conflict = this.conflicts[conflictIndex];
     
     switch (resolution.action) {
       case 'reschedule':
@@ -666,22 +667,22 @@ class FamilyCalendarCoordinator {
 
   startMonitoring() {
     // Check reminders every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkReminders();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Update upcoming events every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateUpcomingEvents();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Daily summary at 7 AM
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const hour = new Date().getHours();
       if (hour === 7) {
         this.generateDailySummary();
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
   }
 
   async updateUpcomingEvents() {
@@ -813,6 +814,13 @@ class FamilyCalendarCoordinator {
         };
       })
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

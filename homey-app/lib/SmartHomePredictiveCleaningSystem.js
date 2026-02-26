@@ -526,7 +526,7 @@ class SmartHomePredictiveCleaningSystem {
 
       // Simulate sensor readings with gradual accumulation
       const hoursSinceInit = (Date.now() - (this._initTimestamp || Date.now())) / 3600000;
-      const timeDecay = Math.min(hoursSinceInit * 0.01, 1);
+      const _timeDecay = Math.min(hoursSinceInit * 0.01, 1);
 
       const dustDelta = surfaceProfile.dustAccumulationRate * (0.3 + Math.random() * 0.4) * season.frequencyMultiplier;
       const humidityReading = this._readHumiditySensor(roomId);
@@ -773,7 +773,7 @@ class SmartHomePredictiveCleaningSystem {
    * @private
    */
   _getCleaningThreshold(room) {
-    const surfaceProfile = SURFACE_PROFILES[room.surfaceType] || SURFACE_PROFILES.mixed;
+    const _surfaceProfile = SURFACE_PROFILES[room.surfaceType] || SURFACE_PROFILES.mixed;
     let threshold = 60; // Base threshold
 
     // Carpet gets dirty faster, lower threshold
@@ -855,7 +855,7 @@ class SmartHomePredictiveCleaningSystem {
       if (!room) return;
 
       const preScore = this.contaminationScores.get(roomId);
-      const surfaceProfile = SURFACE_PROFILES[room.surfaceType] || SURFACE_PROFILES.mixed;
+      const _surfaceProfile = SURFACE_PROFILES[room.surfaceType] || SURFACE_PROFILES.mixed;
       const duration = this._estimateCleaningDuration(room, type);
       const energyUsed = this._estimateEnergyUsage(duration, type);
 
@@ -1047,7 +1047,7 @@ class SmartHomePredictiveCleaningSystem {
    */
   _buildObstacleMap() {
     try {
-      for (const [roomId, room] of this.rooms) {
+      for (const [roomId, _room] of this.rooms) {
         this.obstacleMap.set(roomId, {
           permanentObstacles: [],
           temporaryObstacles: [],
@@ -1074,7 +1074,7 @@ class SmartHomePredictiveCleaningSystem {
 
       // Find available vacuum on the correct floor
       let selectedVacuum = null;
-      for (const [vacId, vac] of this.robotVacuums) {
+      for (const [_vacId, vac] of this.robotVacuums) {
         if (vac.floor === room.floor && vac.status === 'docked' && vac.batteryLevel > 20) {
           selectedVacuum = vac;
           break;
@@ -1174,7 +1174,7 @@ class SmartHomePredictiveCleaningSystem {
    */
   _coordinateRobots() {
     try {
-      for (const [vacId, vac] of this.robotVacuums) {
+      for (const [_vacId, vac] of this.robotVacuums) {
         // Recharge monitoring
         if (vac.status === 'docked' && vac.batteryLevel < 100) {
           vac.batteryLevel = Math.min(100, vac.batteryLevel + 5); // Simulate charging
@@ -1264,7 +1264,7 @@ class SmartHomePredictiveCleaningSystem {
   _detectCurrentSeason() {
     try {
       const month = new Date().getMonth();
-      for (const [key, profile] of Object.entries(SEASONAL_PROFILES)) {
+      for (const [_key, profile] of Object.entries(SEASONAL_PROFILES)) {
         if (profile.months.includes(month)) {
           this.currentSeason = profile;
           this.log(`Current season detected: ${profile.label}`);

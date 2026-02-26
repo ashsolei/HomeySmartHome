@@ -6,6 +6,7 @@
  */
 class VoiceCommandNLPProcessor {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.commands = new Map();
     this.commandHistory = [];
@@ -347,7 +348,7 @@ class VoiceCommandNLPProcessor {
     let bestMatch = null;
     let bestScore = 0;
 
-    for (const [commandId, command] of this.commands) {
+    for (const [_commandId, command] of this.commands) {
       for (const pattern of command.patterns) {
         const score = this.calculateSimilarity(normalized, pattern);
         
@@ -434,7 +435,7 @@ class VoiceCommandNLPProcessor {
   // COMMAND EXECUTION
   // ============================================
 
-  async executeCommand(command, entities, userId) {
+  async executeCommand(command, entities, _userId) {
     console.log(`  🔧 Executing: ${command.intent}/${command.action}`);
 
     let response = command.response;
@@ -502,11 +503,11 @@ class VoiceCommandNLPProcessor {
     console.log(`    🌡️ Temperature ${action} to ${degrees}°C`);
   }
 
-  async controlSecurity(action, entities) {
+  async controlSecurity(action, _entities) {
     console.log(`    🔒 Security ${action}`);
   }
 
-  async activateScene(action, entities) {
+  async activateScene(action, _entities) {
     console.log(`    🎬 Scene ${action} activated`);
   }
 
@@ -520,11 +521,11 @@ class VoiceCommandNLPProcessor {
     return info[action] || { value: 'Unknown' };
   }
 
-  async controlMedia(action, entities) {
+  async controlMedia(action, _entities) {
     console.log(`    🎵 Media ${action}`);
   }
 
-  async controlAppliance(action, entities) {
+  async controlAppliance(action, _entities) {
     console.log(`    ⚙️ Appliance ${action}`);
   }
 
@@ -775,12 +776,12 @@ class VoiceCommandNLPProcessor {
     console.log('🎤 Voice Command & NLP Processor active');
 
     // Analyze command usage weekly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const day = new Date().getDay();
       if (day === 0) { // Sunday
         this.analyzeCommandUsage();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
   }
 
   async analyzeCommandUsage() {
@@ -873,6 +874,13 @@ class VoiceCommandNLPProcessor {
       customCommands: u.customCommands.length,
       preferences: Object.keys(u.preferences).length
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

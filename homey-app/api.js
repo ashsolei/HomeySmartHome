@@ -1303,7 +1303,7 @@ module.exports = {
     return purifiers;
   },
 
-  async controlPurifier({ homey, params, body }) {
+  async controlPurifier({ homey, params: _params, body }) {
     await homey.app.airQualityManagementSystem.controlPurifiers(body.mode);
     return { success: true };
   },
@@ -4602,7 +4602,7 @@ module.exports = {
     return { success: true, event, timestamp: new Date().toISOString() };
   },
 
-  async getWebhookEvents({ homey }) {
+  async getWebhookEvents({ homey: _homey }) {
     return {
       events: [
         { name: 'scene.activate', description: 'Activate a scene', requiredFields: ['sceneId'] },

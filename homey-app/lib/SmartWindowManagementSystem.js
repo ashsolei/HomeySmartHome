@@ -29,17 +29,21 @@ class SmartWindowManagementSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Smart Window Management System...');
-    
-    await this.loadSettings();
-    this.initializeDefaultWindows();
-    this.initializeAutomationRules();
-    this.initializeSchedules();
-    
-    this.startMonitoring();
-    
-    this.homey.log('Smart Window Management System initialized successfully');
-    return true;
+    try {
+      this.homey.log('Initializing Smart Window Management System...');
+
+      await this.loadSettings();
+      this.initializeDefaultWindows();
+      this.initializeAutomationRules();
+      this.initializeSchedules();
+
+      this.startMonitoring();
+
+      this.homey.log('Smart Window Management System initialized successfully');
+      return true;
+    } catch (error) {
+      this.homey.error(`[SmartWindowManagementSystem] Failed to initialize:`, error.message);
+    }
   }
 
   async loadSettings() {

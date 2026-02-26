@@ -6,6 +6,7 @@
  */
 class AnomalyDetectionAI {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.baselines = new Map();
     this.anomalies = [];
@@ -121,13 +122,13 @@ class AnomalyDetectionAI {
 
   startMonitoring() {
     // Check for anomalies every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkEnergyAnomalies();
       this.checkTemperatureAnomalies();
       this.checkDeviceAnomalies();
       this.checkPresenceAnomalies();
       this.checkAccessAnomalies();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Initial check
     this.checkEnergyAnomalies();
@@ -135,9 +136,9 @@ class AnomalyDetectionAI {
 
   startLearning() {
     // Update baselines every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateBaselines();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
   }
 
   // ============================================
@@ -248,7 +249,7 @@ class AnomalyDetectionAI {
     return baseline.average + random;
   }
 
-  getTemperatureRecommendations(temp, baseline, room) {
+  getTemperatureRecommendations(temp, baseline, _room) {
     const recommendations = [];
     
     if (temp > baseline.average + 2) {
@@ -649,6 +650,13 @@ class AnomalyDetectionAI {
     }
     
     return last7days;
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

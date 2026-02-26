@@ -6,6 +6,8 @@
  */
 class PackageDeliveryManager {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.packages = new Map();
     this.deliveryZones = new Map();
@@ -288,7 +290,7 @@ class PackageDeliveryManager {
   // DELIVERY PERSON RECOGNITION
   // ============================================
 
-  async recognizeDeliveryPerson(imageData) {
+  async recognizeDeliveryPerson(_imageData) {
     // Simulated facial/uniform recognition
     const knownCarriers = ['PostNord', 'DHL', 'UPS', 'Bring', 'Budbee'];
     const recognizedCarrier = knownCarriers[Math.floor(Math.random() * knownCarriers.length)];
@@ -312,9 +314,9 @@ class PackageDeliveryManager {
     console.log(`   Code: ${code}`);
     console.log(`   Valid for: ${duration} seconds`);
 
-    setTimeout(() => {
+    this._timeouts.push(setTimeout(() => {
       console.log(`   🔒 Access code ${code} expired`);
-    }, duration * 1000);
+    }, duration * 1000));
 
     return { success: true, code, expiresIn: duration };
   }
@@ -393,14 +395,14 @@ class PackageDeliveryManager {
 
   startMonitoring() {
     // Check for delivery updates every 15 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkDeliveryUpdates();
-    }, 15 * 60 * 1000);
+    }, 15 * 60 * 1000));
 
     // Check for expected deliveries today
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkTodaysDeliveries();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     console.log('📦 Package Manager active');
   }
@@ -491,6 +493,17 @@ class PackageDeliveryManager {
       lockbox: z.lockbox ? 'Yes' : 'No',
       weatherProtected: z.weatherProtected ? 'Yes' : 'No'
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

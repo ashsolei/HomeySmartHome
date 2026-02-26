@@ -21,7 +21,7 @@ const HOMEY_TOKEN = process.env.HOMEY_TOKEN || '';
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost,http://localhost:80').split(',').map(s => s.trim());
 
 // ── Process error handlers ──
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason, _promise) => {
   console.error('[FATAL] Unhandled Promise Rejection:', reason);
 });
 
@@ -241,7 +241,7 @@ app.get('/api/dashboard', async (req, res) => {
       zones,
       timestamp: new Date().toISOString()
     });
-  } catch (error) {
+  } catch (_error) {
     res.json(getDemoData());
   }
 });
@@ -253,7 +253,7 @@ app.get('/api/devices', async (req, res) => {
       return res.json(getDemoData().devices);
     }
     res.json(devices);
-  } catch (error) {
+  } catch (_error) {
     res.json(getDemoData().devices);
   }
 });
@@ -265,7 +265,7 @@ app.get('/api/zones', async (req, res) => {
       return res.json(getDemoData().zones);
     }
     res.json(zones);
-  } catch (error) {
+  } catch (_error) {
     res.json(getDemoData().zones);
   }
 });
@@ -291,6 +291,25 @@ app.post('/api/scene/:sceneId', async (req, res) => {
 
 app.get('/api/energy', async (req, res) => {
   res.json(getDemoData().energy);
+});
+
+// Energy analytics snapshot — returns current demo values with SEK cost estimate
+app.get('/api/energy/analytics', (req, res) => {
+  const energy = getDemoData().energy;
+  const pricePerKwh = 1.5; // SEK/kWh
+  const estimatedDailyCostSEK = parseFloat(
+    ((energy.current * 24) / 1000 * pricePerKwh).toFixed(2)
+  );
+  res.json({
+    current: energy.current,
+    today: energy.today,
+    thisMonth: energy.thisMonth,
+    trend: energy.trend,
+    estimatedDailyCostSEK,
+    pricePerKwh,
+    currency: 'SEK',
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.get('/api/security', async (req, res) => {
@@ -419,7 +438,7 @@ async function getDashboardData() {
     }
 
     return { devices, zones };
-  } catch (error) {
+  } catch (_error) {
     return getDemoData();
   }
 }
@@ -460,6 +479,8 @@ const periodicUpdateInterval = setInterval(async () => {
     const data = getDemoData();
     // Simulate real-time changes
     data.energy.current = 800 + Math.floor(Math.random() * 100);
+    // Emit on both the canonical `energy:update` and the legacy name
+    io.emit('energy:update', data.energy);
     io.emit('energy-update', data.energy);
   } catch (error) {
     console.error('Update error:', error);
@@ -527,16 +548,21 @@ const gracefulShutdown = (signal) => {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-// Start server
-httpServer.listen(PORT, async () => {
-  console.log(`🏠 Smart Home Dashboard running at http://localhost:${PORT}`);
-  console.log(`📡 Homey connection: ${HOMEY_URL}`);
+// Export app for testing (supertest)
+module.exports = { app };
 
-  // Boot all feature modules after server is listening
-  try {
-    const result = await bootModules();
-    console.log(`📦 ${result.ready}/${result.total} modules ready`);
-  } catch (err) {
-    console.error('Module boot error:', err.message);
-  }
-});
+// Start server only when run directly (not when imported for testing)
+if (require.main === module) {
+  httpServer.listen(PORT, async () => {
+    console.log(`🏠 Smart Home Dashboard running at http://localhost:${PORT}`);
+    console.log(`📡 Homey connection: ${HOMEY_URL}`);
+
+    // Boot all feature modules after server is listening
+    try {
+      const result = await bootModules();
+      console.log(`📦 ${result.ready}/${result.total} modules ready`);
+    } catch (err) {
+      console.error('Module boot error:', err.message);
+    }
+  });
+}

@@ -34,20 +34,24 @@ class SmartHomeTheaterSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Smart Home Theater System...');
-    
     try {
-      await this.loadSettings();
-      this.initializeDefaultTheaters();
-      this.initializeTheaterScenes();
-      
-      this.startMonitoring();
-      
-      this.homey.log('Smart Home Theater System initialized successfully');
-      return true;
+      this.homey.log('Initializing Smart Home Theater System...');
+
+      try {
+        await this.loadSettings();
+        this.initializeDefaultTheaters();
+        this.initializeTheaterScenes();
+
+        this.startMonitoring();
+
+        this.homey.log('Smart Home Theater System initialized successfully');
+        return true;
+      } catch (error) {
+        this.homey.error('Failed to initialize Smart Home Theater System:', error);
+        throw error;
+      }
     } catch (error) {
-      this.homey.error('Failed to initialize Smart Home Theater System:', error);
-      throw error;
+      this.homey.error(`[SmartHomeTheaterSystem] Failed to initialize:`, error.message);
     }
   }
 

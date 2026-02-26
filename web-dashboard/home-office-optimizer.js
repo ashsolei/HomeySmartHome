@@ -6,6 +6,7 @@
  */
 class HomeOfficeOptimizer {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.workModes = new Map();
     this.workSessions = [];
@@ -467,9 +468,9 @@ class HomeOfficeOptimizer {
     
     // In real implementation, would connect to posture sensor
     // For now, just remind periodically
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       console.log('💺 Posture reminder: Sit up straight!');
-    }, 30 * 60 * 1000);  // Every 30 minutes
+    }, 30 * 60 * 1000));  // Every 30 minutes
 
     return { success: true };
   }
@@ -487,14 +488,14 @@ class HomeOfficeOptimizer {
 
   startMonitoring() {
     // Check break reminders
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkBreakReminders();
-    }, 60000);  // Every minute
+    }, 60000));  // Every minute
 
     // Remind to stand every 60 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.remindToStand();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     console.log('💼 Home Office Optimizer active');
   }
@@ -576,6 +577,13 @@ class HomeOfficeOptimizer {
       remaining: remaining + ' min',
       breaks: current.breaks.length
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

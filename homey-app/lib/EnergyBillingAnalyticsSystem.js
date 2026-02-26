@@ -26,18 +26,22 @@ class EnergyBillingAnalyticsSystem {
   }
 
   async initialize() {
-    this.log('Initierar Energy Billing Analytics System...');
     try {
-      await this.loadBillingHistory();
-      await this.loadBudgetSettings();
-      await this.loadRatePlans();
-      await this.loadInvestments();
-      await this.loadSolarData();
-      await this.initializeDefaultRatePlans();
-      this._startPeriodicTasks();
-      this.log('Energy Billing Analytics System initierat');
+      this.log('Initierar Energy Billing Analytics System...');
+      try {
+        await this.loadBillingHistory();
+        await this.loadBudgetSettings();
+        await this.loadRatePlans();
+        await this.loadInvestments();
+        await this.loadSolarData();
+        await this.initializeDefaultRatePlans();
+        this._startPeriodicTasks();
+        this.log('Energy Billing Analytics System initierat');
+      } catch (error) {
+        this.error(`Initiering misslyckades: ${error.message}`);
+      }
     } catch (error) {
-      this.error(`Initiering misslyckades: ${error.message}`);
+      console.error(`[EnergyBillingAnalyticsSystem] Failed to initialize:`, error.message);
     }
   }
 

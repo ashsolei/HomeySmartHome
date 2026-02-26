@@ -6,6 +6,7 @@
  */
 class PetCareManager {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.pets = new Map();
     this.feedingSchedules = new Map();
@@ -208,24 +209,24 @@ class PetCareManager {
 
   startMonitoring() {
     // Check feeding schedules every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkFeedingSchedules();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Track activity every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.trackActivity();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Check reminders daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkReminders();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Reset daily counters at midnight
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.resetDailyCounters();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial checks
     this.checkFeedingSchedules();
@@ -414,7 +415,7 @@ class PetCareManager {
   async loadReminders() {
     // Check all health records for upcoming appointments
     for (const [petId, records] of this.healthRecords) {
-      const pet = this.pets.get(petId);
+      const _pet = this.pets.get(petId);
       
       for (const record of records) {
         if (record.nextDue && record.nextDue > Date.now()) {
@@ -450,7 +451,7 @@ class PetCareManager {
     const now = Date.now();
     const sevenDays = 7 * 24 * 60 * 60 * 1000;
 
-    for (const [reminderId, reminder] of this.reminders) {
+    for (const [_reminderId, reminder] of this.reminders) {
       if (reminder.completed) continue;
       if (reminder.notificationSent) continue;
 
@@ -530,7 +531,7 @@ class PetCareManager {
     
     // Reset at midnight
     if (hour === 0) {
-      for (const [petId, schedule] of this.feedingSchedules) {
+      for (const [_petId, schedule] of this.feedingSchedules) {
         schedule.treats.current = 0;
       }
     }
@@ -547,7 +548,7 @@ class PetCareManager {
 
     const age = Math.floor((Date.now() - pet.birthdate) / (365.25 * 24 * 60 * 60 * 1000));
     const feedingSchedule = this.feedingSchedules.get(petId);
-    const healthRecords = this.healthRecords.get(petId) || [];
+    const _healthRecords = this.healthRecords.get(petId) || [];
     const upcomingReminders = Array.from(this.reminders.values())
       .filter(r => r.petId === petId && !r.completed && r.dueDate > Date.now())
       .sort((a, b) => a.dueDate - b.dueDate);
@@ -726,6 +727,13 @@ class PetCareManager {
     ];
 
     return species === 'dog' ? dogTips : catTips;
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

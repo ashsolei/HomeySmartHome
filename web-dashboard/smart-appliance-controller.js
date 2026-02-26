@@ -6,6 +6,8 @@
  */
 class SmartApplianceController {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.appliances = new Map();
     this.schedules = new Map();
@@ -238,9 +240,9 @@ class SmartApplianceController {
 
     // Simulate completion
     if (appliance.duration) {
-      setTimeout(() => {
+      this._timeouts.push(setTimeout(() => {
         this.completeAppliance(applianceId);
-      }, appliance.duration * 60 * 1000); // Convert minutes to ms
+      }, appliance.duration * 60 * 1000)); // Convert minutes to ms
     }
 
     return { success: true, session };
@@ -362,7 +364,7 @@ class SmartApplianceController {
     }
 
     const currentPrice = prices[0].price;
-    const avgPrice = prices.reduce((sum, p) => sum + p.price, 0) / prices.length;
+    const _avgPrice = prices.reduce((sum, p) => sum + p.price, 0) / prices.length;
 
     // Find cheapest period that can accommodate the appliance duration
     const duration = appliance.duration || 60; // minutes
@@ -434,7 +436,7 @@ class SmartApplianceController {
     let currentLoad = 0;
     const runningAppliances = [];
 
-    for (const [id, appliance] of this.appliances) {
+    for (const [_id, appliance] of this.appliances) {
       if (appliance.status === 'running') {
         currentLoad += appliance.power;
         runningAppliances.push(appliance.name);
@@ -472,9 +474,9 @@ class SmartApplianceController {
       await this.stopAppliance(toDefer.id);
       
       // Reschedule for later
-      setTimeout(() => {
+      this._timeouts.push(setTimeout(() => {
         this.startAppliance(toDefer.id, { forceStart: false });
-      }, 30 * 60 * 1000); // Retry in 30 minutes
+      }, 30 * 60 * 1000)); // Retry in 30 minutes
     }
   }
 
@@ -576,28 +578,28 @@ class SmartApplianceController {
 
   startMonitoring() {
     // Check load every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkLoadLimit();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Monitor always-on appliances every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.monitorAlwaysOn();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Check schedules every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkSchedules();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Maintenance check weekly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkMaintenance();
-    }, 7 * 24 * 60 * 60 * 1000);
+    }, 7 * 24 * 60 * 60 * 1000));
   }
 
   async monitorAlwaysOn() {
-    for (const [id, appliance] of this.appliances) {
+    for (const [_id, appliance] of this.appliances) {
       if (appliance.alwaysOn && appliance.status === 'running') {
         // Track continuous energy usage
         const interval = 5 / 60; // 5 minutes in hours
@@ -614,7 +616,7 @@ class SmartApplianceController {
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
 
-    for (const [id, schedule] of this.schedules) {
+    for (const [_id, schedule] of this.schedules) {
       if (!schedule.enabled) continue;
 
       if (schedule.type === 'time') {
@@ -703,7 +705,7 @@ class SmartApplianceController {
     let currentLoad = 0;
     const active = [];
 
-    for (const [id, appliance] of this.appliances) {
+    for (const [_id, appliance] of this.appliances) {
       if (appliance.status === 'running') {
         currentLoad += appliance.power;
         active.push({
@@ -815,7 +817,7 @@ class SmartApplianceController {
   getMaintenanceStatus() {
     const issues = [];
 
-    for (const [id, appliance] of this.appliances) {
+    for (const [_id, appliance] of this.appliances) {
       // Check if maintenance is due
       if (appliance.type === 'dishwasher' && appliance.cyclesCompleted >= 50) {
         issues.push({
@@ -846,6 +848,17 @@ class SmartApplianceController {
       totalIssues: issues.length,
       issues
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

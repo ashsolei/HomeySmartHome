@@ -43,19 +43,23 @@ class HomeDigitalWellnessSystem extends EventEmitter {
    * @returns {Promise<boolean>}
    */
   async initialize() {
-    if (this.initialized) return true;
+    try {
+      if (this.initialized) return true;
 
-    this.homey.log('[HomeDigitalWellnessSystem] Initializing...');
+      this.homey.log('[HomeDigitalWellnessSystem] Initializing...');
 
-    await this.loadSettings();
-    this.initializeDefaultBudgets();
-    this.startUsageTracking();
-    this.startNotificationBatching();
+      await this.loadSettings();
+      this.initializeDefaultBudgets();
+      this.startUsageTracking();
+      this.startNotificationBatching();
 
-    this.initialized = true;
-    this.homey.log('[HomeDigitalWellnessSystem] Initialized');
-    this.homey.emit('digital-wellness:initialized');
-    return true;
+      this.initialized = true;
+      this.homey.log('[HomeDigitalWellnessSystem] Initialized');
+      this.homey.emit('digital-wellness:initialized');
+      return true;
+    } catch (error) {
+      this.homey.error(`[HomeDigitalWellnessSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**

@@ -1,14 +1,20 @@
 'use strict';
 
-const fs = require('fs').promises;
-const path = require('path');
+const _fs = require('fs').promises;
+const _path = require('path');
 const crypto = require('crypto');
 
 /**
  * Backup & Recovery System
- * Automated backups, incremental saves, and disaster recovery
+ *
+ * Automated backups, incremental saves, and disaster recovery.
+ * Supports full and incremental backups with optional compression
+ * and encryption, automatic scheduling, and selective restore.
  */
 class BackupRecoverySystem {
+  /**
+   * @param {import('homey').Homey} homey - Homey app instance
+   */
   constructor(homey) {
     this.homey = homey;
     this.backups = new Map();
@@ -24,31 +30,35 @@ class BackupRecoverySystem {
   }
 
   async initialize() {
-    this.log('Initializing Backup & Recovery System...');
-    
-    // Load backup configuration
-    const savedConfig = await this.homey.settings.get('backupConfig');
-    if (savedConfig) {
-      this.backupConfig = { ...this.backupConfig, ...savedConfig };
+    try {
+      this.log('Initializing Backup & Recovery System...');
+
+      // Load backup configuration
+      const savedConfig = await this.homey.settings.get('backupConfig');
+      if (savedConfig) {
+        this.backupConfig = { ...this.backupConfig, ...savedConfig };
+      }
+
+      // Load backup history
+      const savedBackups = await this.homey.settings.get('backupHistory') || {};
+      Object.entries(savedBackups).forEach(([id, backup]) => {
+        this.backups.set(id, backup);
+      });
+
+      // Start automatic backup scheduler
+      if (this.backupConfig.autoBackup) {
+        await this.startBackupScheduler();
+      }
+
+      // Create initial backup if none exists
+      if (this.backups.size === 0) {
+        await this.createBackup({ type: 'initial', description: 'Initial system backup' });
+      }
+
+      this.log('Backup & Recovery System initialized');
+    } catch (error) {
+      console.error(`[BackupRecoverySystem] Failed to initialize:`, error.message);
     }
-
-    // Load backup history
-    const savedBackups = await this.homey.settings.get('backupHistory') || {};
-    Object.entries(savedBackups).forEach(([id, backup]) => {
-      this.backups.set(id, backup);
-    });
-
-    // Start automatic backup scheduler
-    if (this.backupConfig.autoBackup) {
-      await this.startBackupScheduler();
-    }
-
-    // Create initial backup if none exists
-    if (this.backups.size === 0) {
-      await this.createBackup({ type: 'initial', description: 'Initial system backup' });
-    }
-
-    this.log('Backup & Recovery System initialized');
   }
 
   /**
@@ -63,7 +73,14 @@ class BackupRecoverySystem {
   }
 
   /**
-   * Create a full system backup
+   * Create a full system backup.
+   *
+   * Collects all system data, optionally compresses/encrypts it,
+   * stores it in memory, prunes old backups, and creates a recovery point.
+   *
+   * @param {{type?: string, description?: string}} [options] - Backup options
+   * @returns {Promise<{success: boolean, backupId: string, size: number, compressed: boolean, encrypted: boolean}>}
+   * @throws {Error} When data collection or storage fails
    */
   async createBackup(options = {}) {
     this.log('Creating system backup...');
@@ -218,7 +235,16 @@ class BackupRecoverySystem {
   }
 
   /**
-   * Restore system from backup
+   * Restore the system from a previously created backup.
+   *
+   * Verifies integrity, creates a safety backup (unless skipped),
+   * decrypts/decompresses as needed, and selectively restores data
+   * categories (settings, devices, automations, users, integrations, history).
+   *
+   * @param {string} backupId - ID of the backup to restore
+   * @param {{skipIntegrityCheck?: boolean, skipSafetyBackup?: boolean, settings?: boolean, devices?: boolean, automations?: boolean, users?: boolean, integrations?: boolean, history?: boolean, reinitialize?: boolean}} [options] - Restore options
+   * @returns {Promise<{success: boolean, backupId: string, restored: number}>}
+   * @throws {Error} When backup is not found or integrity check fails
    */
   async restoreBackup(backupId, options = {}) {
     this.log(`Restoring from backup: ${backupId}`);
@@ -334,7 +360,10 @@ class BackupRecoverySystem {
   }
 
   /**
-   * Create incremental backup (only changes)
+   * Create an incremental backup containing only the differences
+   * since the last full or incremental backup.
+   *
+   * @returns {Promise<{success: boolean, backupId?: string, changes?: number, noChanges?: boolean}>}
    */
   async createIncrementalBackup() {
     const lastBackup = this.getLatestBackup();
@@ -428,7 +457,10 @@ class BackupRecoverySystem {
   }
 
   /**
-   * Verify backup integrity
+   * Verify backup data integrity using SHA-256 hash comparison.
+   *
+   * @param {object} backup - Backup entry with `metadata.integrity` hash
+   * @returns {Promise<boolean>} `true` if integrity matches or no hash is stored
    */
   async verifyBackupIntegrity(backup) {
     if (!backup.metadata.integrity) {
@@ -440,7 +472,12 @@ class BackupRecoverySystem {
   }
 
   /**
-   * Export backup to external format
+   * Export a backup to a downloadable format.
+   *
+   * @param {string} backupId - ID of the backup to export
+   * @param {'json'|'encrypted'} [format='json'] - Export format
+   * @returns {Promise<{data: string, filename: string, mimeType: string}>}
+   * @throws {Error} When backup is not found or format is unsupported
    */
   async exportBackup(backupId, format = 'json') {
     const backup = this.backups.get(backupId);
@@ -470,7 +507,12 @@ class BackupRecoverySystem {
   }
 
   /**
-   * Import backup from external source
+   * Import a backup from an external source.
+   *
+   * @param {string} data - Raw backup data (JSON string or base64-encoded)
+   * @param {'json'|'encrypted'} [format='json'] - Import format
+   * @returns {Promise<{success: boolean, backupId: string}>}
+   * @throws {Error} When format is unsupported or structure is invalid
    */
   async importBackup(data, format = 'json') {
     let backup;
@@ -535,7 +577,9 @@ class BackupRecoverySystem {
   }
 
   /**
-   * Get backup statistics
+   * Get aggregate statistics about stored backups.
+   *
+   * @returns {{total: number, totalSize: string, byType: object, oldest: number|null, newest: number|null, recoveryPoints: number}}
    */
   getBackupStatistics() {
     const backups = Array.from(this.backups.values());
@@ -558,7 +602,9 @@ class BackupRecoverySystem {
   }
 
   /**
-   * Get latest backup
+   * Get the most recent backup by timestamp.
+   *
+   * @returns {object|null} The latest backup entry, or null if none exist
    */
   getLatestBackup() {
     const backups = Array.from(this.backups.values())

@@ -868,7 +868,7 @@ class HomeChildEducationSystem {
     return [...rotated.slice(offset), ...rotated.slice(0, offset)];
   }
 
-  _getBreakSuggestion(age) {
+  _getBreakSuggestion(_age) {
     const suggestions = [
       'Stretch and do jumping jacks',
       'Get a glass of water',
@@ -1035,7 +1035,7 @@ class HomeChildEducationSystem {
     };
   }
 
-  _getSuggestedBooks(age, language) {
+  _getSuggestedBooks(age, _language) {
     const swedish = [
       { title: 'Pippi Långstrump', author: 'Astrid Lindgren', minAge: 6, maxAge: 10 },
       { title: 'Mio min Mio', author: 'Astrid Lindgren', minAge: 7, maxAge: 11 },
@@ -2391,7 +2391,7 @@ class HomeChildEducationSystem {
     try {
       this.log('Loading stored child education data...');
       // Integration point for persistent storage
-    } catch (err) {
+    } catch (_err) {
       this.log('No previous data found, starting fresh');
     }
   }

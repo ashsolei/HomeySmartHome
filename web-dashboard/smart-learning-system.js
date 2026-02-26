@@ -6,6 +6,7 @@
  */
 class SmartLearningSystem {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.patterns = new Map();
     this.rules = new Map();
@@ -345,7 +346,7 @@ class SmartLearningSystem {
     // Simulate condition evaluation
     let allConditionsMet = true;
 
-    for (const condition of rule.conditions) {
+    for (const _condition of rule.conditions) {
       // In real implementation, check actual system state
       const conditionMet = Math.random() > 0.2; // 80% chance
       
@@ -697,25 +698,25 @@ class SmartLearningSystem {
 
   startLearning() {
     // Continuous learning from all systems
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.continuousLearning();
-    }, 60 * 60 * 1000); // Every hour
+    }, 60 * 60 * 1000)); // Every hour
 
     // Daily pattern analysis
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const hour = new Date().getHours();
       if (hour === 2) { // 2 AM
         this.dailyAnalysis();
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Weekly optimization suggestions
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const day = new Date().getDay();
       if (day === 0) { // Sunday
         this.weeklyOptimization();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Initial analysis
     this.analyzeUserBehavior('schedule');
@@ -743,7 +744,7 @@ class SmartLearningSystem {
     await this.analyzeUserBehavior('presence');
 
     // Evaluate rule performance
-    for (const [ruleId, rule] of this.rules) {
+    for (const [_ruleId, rule] of this.rules) {
       if (rule.timesTriggered > 0) {
         const successRate = (rule.timesSuccessful / rule.timesTriggered * 100).toFixed(0);
         console.log(`  Rule: ${rule.name} - ${successRate}% success rate`);
@@ -812,6 +813,13 @@ class SmartLearningSystem {
       patterns: i.patterns.length,
       confidence: (i.confidence * 100).toFixed(0) + '%'
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

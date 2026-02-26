@@ -368,52 +368,56 @@ class HomeWaterLeakProtectionSystem extends EventEmitter {
    * @returns {Promise<void>}
    */
   async initialize() {
-    this.homey.log('[WaterLeak] Initializing water leak protection system...');
-    var now = new Date().toISOString();
-    var sensorKeys = Object.keys(this.sensors);
-    for (var i = 0; i < sensorKeys.length; i++) {
-      this.sensors[sensorKeys[i]].lastChecked = now;
-      this.sensors[sensorKeys[i]].installDate = now;
-    }
-    var valveKeys = Object.keys(this.valves);
-    for (var j = 0; j < valveKeys.length; j++) {
-      this.valves[valveKeys[j]].lastStateChange = now;
-      this.valves[valveKeys[j]].lastExercise = now;
-      this.valves[valveKeys[j]].installDate = now;
-    }
-    for (var k = 0; k < this.freezeProtection.heatTapeZones.length; k++) {
-      this.freezeProtection.heatTapeZones[k].lastReading = now;
-    }
-    this.maintenance.annualTestDue = this._addDays(now, 365);
-    this.maintenance.lastAnnualTest = now;
-    this.maintenance.valveExerciseSchedule.lastExercise = now;
-    this.maintenance.valveExerciseSchedule.nextDue = this._addDays(now, 30);
-    this.maintenance.insuranceDocumentation.systemInstallDate = now;
-    this.maintenance.insuranceDocumentation.installedSensors = sensorKeys.slice();
-    this.usageAnalytics.currentDay.date = now.slice(0, 10);
-    this.pressureMonitoring.lastReading = now;
-    this.flowMonitoring.lastFlowReading = now;
+    try {
+      this.homey.log('[WaterLeak] Initializing water leak protection system...');
+      var now = new Date().toISOString();
+      var sensorKeys = Object.keys(this.sensors);
+      for (var i = 0; i < sensorKeys.length; i++) {
+        this.sensors[sensorKeys[i]].lastChecked = now;
+        this.sensors[sensorKeys[i]].installDate = now;
+      }
+      var valveKeys = Object.keys(this.valves);
+      for (var j = 0; j < valveKeys.length; j++) {
+        this.valves[valveKeys[j]].lastStateChange = now;
+        this.valves[valveKeys[j]].lastExercise = now;
+        this.valves[valveKeys[j]].installDate = now;
+      }
+      for (var k = 0; k < this.freezeProtection.heatTapeZones.length; k++) {
+        this.freezeProtection.heatTapeZones[k].lastReading = now;
+      }
+      this.maintenance.annualTestDue = this._addDays(now, 365);
+      this.maintenance.lastAnnualTest = now;
+      this.maintenance.valveExerciseSchedule.lastExercise = now;
+      this.maintenance.valveExerciseSchedule.nextDue = this._addDays(now, 30);
+      this.maintenance.insuranceDocumentation.systemInstallDate = now;
+      this.maintenance.insuranceDocumentation.installedSensors = sensorKeys.slice();
+      this.usageAnalytics.currentDay.date = now.slice(0, 10);
+      this.pressureMonitoring.lastReading = now;
+      this.flowMonitoring.lastFlowReading = now;
 
-    // Sensor polling interval (every 30 seconds)
-    this.intervals.push(setInterval(this._pollSensors.bind(this), 30000));
-    // Flow monitoring interval (every 60 seconds)
-    this.intervals.push(setInterval(this._monitorFlow.bind(this), 60000));
-    // Pressure monitoring interval (every 5 minutes)
-    this.intervals.push(setInterval(this._monitorPressure.bind(this), 300000));
-    // Freeze protection check (every 10 minutes)
-    this.intervals.push(setInterval(this._checkFreezeProtection.bind(this), 600000));
-    // Battery check (every hour)
-    this.intervals.push(setInterval(this._checkBatteries.bind(this), 3600000));
-    // Usage analytics rollup (every 15 minutes)
-    this.intervals.push(setInterval(this._rollupUsageAnalytics.bind(this), 900000));
-    // Valve exercise check (daily)
-    this.intervals.push(setInterval(this._checkValveExercise.bind(this), 86400000));
-    // Maintenance reminder check (daily)
-    this.intervals.push(setInterval(this._checkMaintenanceReminders.bind(this), 86400000));
+      // Sensor polling interval (every 30 seconds)
+      this.intervals.push(setInterval(this._pollSensors.bind(this), 30000));
+      // Flow monitoring interval (every 60 seconds)
+      this.intervals.push(setInterval(this._monitorFlow.bind(this), 60000));
+      // Pressure monitoring interval (every 5 minutes)
+      this.intervals.push(setInterval(this._monitorPressure.bind(this), 300000));
+      // Freeze protection check (every 10 minutes)
+      this.intervals.push(setInterval(this._checkFreezeProtection.bind(this), 600000));
+      // Battery check (every hour)
+      this.intervals.push(setInterval(this._checkBatteries.bind(this), 3600000));
+      // Usage analytics rollup (every 15 minutes)
+      this.intervals.push(setInterval(this._rollupUsageAnalytics.bind(this), 900000));
+      // Valve exercise check (daily)
+      this.intervals.push(setInterval(this._checkValveExercise.bind(this), 86400000));
+      // Maintenance reminder check (daily)
+      this.intervals.push(setInterval(this._checkMaintenanceReminders.bind(this), 86400000));
 
-    this.initialized = true;
-    this.homey.log('[WaterLeak] System initialized with ' + sensorKeys.length + ' sensors and ' + valveKeys.length + ' valves');
-    this.homey.emit('waterleak-initialized', { sensors: sensorKeys.length, valves: valveKeys.length, timestamp: now });
+      this.initialized = true;
+      this.homey.log('[WaterLeak] System initialized with ' + sensorKeys.length + ' sensors and ' + valveKeys.length + ' valves');
+      this.homey.emit('waterleak-initialized', { sensors: sensorKeys.length, valves: valveKeys.length, timestamp: now });
+    } catch (error) {
+      this.homey.error(`[HomeWaterLeakProtectionSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -745,7 +749,7 @@ class HomeWaterLeakProtectionSystem extends EventEmitter {
    * @param {object} levelConfig - The alert level configuration.
    * @private
    */
-  _runEscalation(alert, levelConfig) {
+  _runEscalation(alert, _levelConfig) {
     var chain = this.alertSystem.escalationChain;
     for (var i = 0; i < chain.length; i++) {
       var step = chain[i];

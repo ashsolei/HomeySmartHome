@@ -6,6 +6,8 @@
  */
 class MoodLightingSystem {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.lights = new Map();
     this.scenes = new Map();
@@ -568,16 +570,16 @@ class MoodLightingSystem {
 
   startAutomation() {
     // Update circadian rhythm every 30 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       if (this.circadianMode) {
         this.updateCircadianLighting();
       }
-    }, 30 * 60 * 1000);
+    }, 30 * 60 * 1000));
 
     // Check schedules every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkSchedules();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Initial update
     if (this.circadianMode) {
@@ -632,7 +634,7 @@ class MoodLightingSystem {
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     const currentDay = now.getDay();
 
-    for (const [scheduleId, schedule] of this.schedules) {
+    for (const [_scheduleId, schedule] of this.schedules) {
       if (!schedule.enabled) continue;
       if (!schedule.days.includes(currentDay)) continue;
       if (schedule.time !== currentTime) continue;
@@ -702,11 +704,11 @@ class MoodLightingSystem {
             brightness: currentBrightness + pulse
           });
 
-          setTimeout(() => {
+          this._timeouts.push(setTimeout(() => {
             this.setLight(lightId, {
               brightness: currentBrightness
             });
-          }, intervalMs / 2);
+          }, intervalMs / 2));
         }
       }
     }, intervalMs);
@@ -813,6 +815,17 @@ class MoodLightingSystem {
     if (hour >= 17 && hour < 20) return 65;
     if (hour >= 20 && hour < 22) return 40;
     return 10;
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

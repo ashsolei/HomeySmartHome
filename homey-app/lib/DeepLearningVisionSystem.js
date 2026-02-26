@@ -298,24 +298,28 @@ class DeepLearningVisionSystem extends EventEmitter {
   }
   
   async initialize() {
-    this.log('Initializing Deep Learning Vision System...');
-    
     try {
-      // Load vision models
-      await this.loadVisionModels();
-      
-      // Initialize cameras
-      await this.initializeCameras();
-      
-      // Start monitoring
-      this.startMonitoring();
-      
-      this.log('Deep Learning Vision System initialized successfully');
-      this.log(`Models loaded: ${Object.keys(this.models).length}`);
-      this.log(`Cameras active: ${this.cameras.size}`);
-      this.log(`Known faces: ${this.recognizedFaces.size}`);
+      this.log('Initializing Deep Learning Vision System...');
+
+      try {
+        // Load vision models
+        await this.loadVisionModels();
+
+        // Initialize cameras
+        await this.initializeCameras();
+
+        // Start monitoring
+        this.startMonitoring();
+
+        this.log('Deep Learning Vision System initialized successfully');
+        this.log(`Models loaded: ${Object.keys(this.models).length}`);
+        this.log(`Cameras active: ${this.cameras.size}`);
+        this.log(`Known faces: ${this.recognizedFaces.size}`);
+      } catch (error) {
+        this.error('Error initializing vision system:', error);
+      }
     } catch (error) {
-      this.error('Error initializing vision system:', error);
+      console.error(`[DeepLearningVisionSystem] Failed to initialize:`, error.message);
     }
   }
   
@@ -323,7 +327,7 @@ class DeepLearningVisionSystem extends EventEmitter {
     // Simulate loading deep learning models
     this.log('Loading vision models...');
     
-    for (const [modelName, model] of Object.entries(this.models)) {
+    for (const [_modelName, model] of Object.entries(this.models)) {
       this.log(`  ✓ ${model.name} (${model.type}) - Accuracy: ${(model.accuracy * 100).toFixed(1)}%`);
     }
     
@@ -333,7 +337,7 @@ class DeepLearningVisionSystem extends EventEmitter {
   async initializeCameras() {
     this.log('Initializing cameras...');
     
-    for (const [id, camera] of this.cameras) {
+    for (const [_id, camera] of this.cameras) {
       if (camera.aiEnabled) {
         this.log(`  ✓ ${camera.name} - ${camera.resolution} @ ${camera.fps}fps`);
       }
@@ -398,7 +402,7 @@ class DeepLearningVisionSystem extends EventEmitter {
   /**
    * Detect objects in frame using YOLO
    */
-  async detectObjects(frameData) {
+  async detectObjects(_frameData) {
     // Simulate YOLO object detection
     const detectedObjects = [];
     
@@ -432,7 +436,7 @@ class DeepLearningVisionSystem extends EventEmitter {
   /**
    * Recognize faces using FaceNet
    */
-  async recognizeFaces(frameData) {
+  async recognizeFaces(_frameData) {
     // Simulate FaceNet facial recognition
     const recognizedFaces = [];
     
@@ -467,7 +471,7 @@ class DeepLearningVisionSystem extends EventEmitter {
   /**
    * Recognize activity in video sequence
    */
-  async recognizeActivity(cameraId, frameData) {
+  async recognizeActivity(cameraId, _frameData) {
     // Simulate I3D activity recognition
     const activities = [
       'standing',
@@ -561,7 +565,7 @@ class DeepLearningVisionSystem extends EventEmitter {
     return null;
   }
   
-  generateAnomalyDescription(type, results) {
+  generateAnomalyDescription(type, _results) {
     const descriptions = {
       'unusual-activity': 'Unusual activity pattern detected',
       'unexpected-person': 'Unknown person detected on property',
@@ -576,7 +580,7 @@ class DeepLearningVisionSystem extends EventEmitter {
   /**
    * Register new person for facial recognition
    */
-  async registerPerson(name, role, imageData) {
+  async registerPerson(name, role, _imageData) {
     const personId = `person-${Date.now()}`;
     
     // Simulate extracting face embedding
@@ -605,9 +609,9 @@ class DeepLearningVisionSystem extends EventEmitter {
   /**
    * Search for person by face
    */
-  async searchPerson(imageData) {
+  async searchPerson(_imageData) {
     // Simulate face search
-    const embedding = new Array(512).fill(0).map(() => Math.random());
+    const _embedding = new Array(512).fill(0).map(() => Math.random());
     
     let bestMatch = null;
     let bestSimilarity = 0;

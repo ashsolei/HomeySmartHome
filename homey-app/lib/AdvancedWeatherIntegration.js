@@ -1,6 +1,58 @@
 'use strict';
 
+/**
+ * @typedef {object} SunPosition
+ * @property {number} altitude - Solar altitude in degrees above the horizon
+ * @property {number} azimuth - Solar azimuth in degrees (0=North, clockwise)
+ * @property {number} declination - Solar declination in degrees
+ */
+
+/**
+ * @typedef {object} SunTime
+ * @property {number} hours - Hour component (0–23)
+ * @property {number} minutes - Minute component (0–59)
+ * @property {string} [formatted] - 'HH:MM' string (only on sunrise/sunset)
+ */
+
+/**
+ * @typedef {object} FrostRiskReport
+ * @property {'none'|'low'|'moderate'|'high'|'severe'} riskLevel - Overall risk level
+ * @property {number} riskScore - Composite risk score (0–100+)
+ * @property {number} currentTemp - Current temperature in °C
+ * @property {boolean} pipeFreezeRisk - True when temp < -5°C
+ * @property {boolean} groundFrostRisk - True when temp < 2°C and wind < 3 m/s
+ * @property {boolean} icingRisk - True when humidity > 80% and temp ≤ 0°C
+ * @property {string[]} warnings - Human-readable warning messages
+ */
+
+/**
+ * @typedef {object} WeatherAlert
+ * @property {string} type - Alert type (e.g. 'storm', 'heatwave', 'dense_fog')
+ * @property {'severe'|'extreme'} severity - Alert severity
+ * @property {string} message - Human-readable description
+ * @property {number} timestamp - Unix timestamp in milliseconds
+ */
+
+/**
+ * @typedef {object} TriggeredRule
+ * @property {string} ruleId - Automation rule ID
+ * @property {string} name - Human-readable rule name
+ * @property {string} action - Action identifier to execute
+ * @property {number} priority - Rule priority (1–10)
+ */
+
+/**
+ * Advanced Weather Integration
+ *
+ * Provides simulated real-time weather data for Stockholm (lat 59.33, lon 18.07),
+ * 72-hour forecasts, solar position calculations, frost/severe-weather detection,
+ * pollen and AQI tracking, indoor–outdoor correlation, and weather-driven
+ * automation rule evaluation.
+ */
 class AdvancedWeatherIntegration {
+  /**
+   * @param {import('homey').Homey} homey - Homey application instance
+   */
   constructor(homey) {
     this.homey = homey;
     this.currentWeather = {};
@@ -17,22 +69,34 @@ class AdvancedWeatherIntegration {
     this.initialized = false;
   }
 
+  /**
+   * Bootstrap the integration: initialise locations, automation rules, pollen
+   * tracking, AQI, generate initial weather and forecast data, seed historical
+   * data, and start background monitoring intervals.
+   *
+   * @returns {Promise<void>}
+   * @throws {Error} Re-throws any initialisation error after logging it
+   */
   async initialize() {
-    this.log('Initializing Advanced Weather Integration...');
     try {
-      this._initializeLocations();
-      this._initializeAutomationRules();
-      this._initializePollenTracking();
-      this._initializeAQI();
-      this.currentWeather = this._generateCurrentWeather();
-      this.forecast = this._generate72HourForecast();
-      this._seedHistoricalData();
-      this._startMonitoring();
-      this.initialized = true;
-      this.log('Advanced Weather Integration initialized successfully');
-    } catch (err) {
-      this.error('Failed to initialize Weather Integration: ' + err.message);
-      throw err;
+      this.log('Initializing Advanced Weather Integration...');
+      try {
+        this._initializeLocations();
+        this._initializeAutomationRules();
+        this._initializePollenTracking();
+        this._initializeAQI();
+        this.currentWeather = this._generateCurrentWeather();
+        this.forecast = this._generate72HourForecast();
+        this._seedHistoricalData();
+        this._startMonitoring();
+        this.initialized = true;
+        this.log('Advanced Weather Integration initialized successfully');
+      } catch (err) {
+        this.error('Failed to initialize Weather Integration: ' + err.message);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[AdvancedWeatherIntegration] Failed to initialize:`, error.message);
     }
   }
 
@@ -267,7 +331,7 @@ class AdvancedWeatherIntegration {
 
   _updatePollenLevels() {
     const month = new Date().getMonth();
-    for (const [type, pollen] of Object.entries(this.pollenCounts)) {
+    for (const [_type, pollen] of Object.entries(this.pollenCounts)) {
       if (pollen.season.includes(month)) {
         const isPeak = month === pollen.peak;
         const baseLevel = isPeak ? 7 : 4;
@@ -410,6 +474,14 @@ class AdvancedWeatherIntegration {
     return 'winter';
   }
 
+  /**
+   * Return the seasonal climate profile for the current calendar month.
+   *
+   * The profile includes average temperature, diurnal range, humidity, wind speed,
+   * precipitation chance, max UV index, and expected daylight hours.
+   *
+   * @returns {{avgTemp: number, diurnalRange: number, avgHumidity: number, avgWind: number, precipChance: number, maxUV: number, daylightHours: number}}
+   */
   getSeasonProfile() {
     const month = new Date().getMonth();
     return this._getSeasonProfileForMonth(month);
@@ -433,9 +505,16 @@ class AdvancedWeatherIntegration {
     return profiles[month] || profiles[0];
   }
 
+  /**
+   * Calculate the sun's altitude and azimuth for a given date/time at the home
+   * location (lat 59.33°N, lon 18.07°E) using a simplified solar position algorithm.
+   *
+   * @param {Date|number} date - Date object or Unix timestamp for which to calculate position
+   * @returns {SunPosition}
+   */
   calculateSunPosition(date) {
     const lat = 59.33;
-    const lon = 18.07;
+    const _lon = 18.07;
     const d = date instanceof Date ? date : new Date(date);
 
     const dayOfYear = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
@@ -464,6 +543,14 @@ class AdvancedWeatherIntegration {
     };
   }
 
+  /**
+   * Calculate the number of daylight hours for a given date at 59.33°N.
+   *
+   * Returns 24 for polar day and 0 for polar night.
+   *
+   * @param {Date} [date] - Date to calculate for; defaults to today
+   * @returns {number} Daylight duration in hours (0–24), rounded to 2 decimal places
+   */
   calculateDaylightHours(date) {
     const d = date || new Date();
     const lat = 59.33;
@@ -484,6 +571,12 @@ class AdvancedWeatherIntegration {
     return Math.round(daylightHours * 100) / 100;
   }
 
+  /**
+   * Calculate the approximate sunrise time for the given date at 59.33°N.
+   *
+   * @param {Date} [date] - Date to calculate for; defaults to today
+   * @returns {SunTime} Sunrise time with hours, minutes, and 'HH:MM' formatted string
+   */
   getSunrise(date) {
     const d = date || new Date();
     const daylightHours = this.calculateDaylightHours(d);
@@ -494,6 +587,12 @@ class AdvancedWeatherIntegration {
     return { hours: hours, minutes: minutes, formatted: String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') };
   }
 
+  /**
+   * Calculate the approximate sunset time for the given date at 59.33°N.
+   *
+   * @param {Date} [date] - Date to calculate for; defaults to today
+   * @returns {SunTime} Sunset time with hours, minutes, and 'HH:MM' formatted string
+   */
   getSunset(date) {
     const d = date || new Date();
     const daylightHours = this.calculateDaylightHours(d);
@@ -504,6 +603,12 @@ class AdvancedWeatherIntegration {
     return { hours: hours, minutes: minutes, formatted: String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') };
   }
 
+  /**
+   * Return civil twilight times (±30 minutes from sunrise/sunset) for the given date.
+   *
+   * @param {Date} [date] - Date to calculate for; defaults to today
+   * @returns {{dawn: {hours: number, minutes: number}, dusk: {hours: number, minutes: number}}}
+   */
   getCivilTwilight(date) {
     const sunrise = this.getSunrise(date);
     const sunset = this.getSunset(date);
@@ -515,6 +620,12 @@ class AdvancedWeatherIntegration {
     };
   }
 
+  /**
+   * Return nautical twilight times (±60 minutes from sunrise/sunset) for the given date.
+   *
+   * @param {Date} [date] - Date to calculate for; defaults to today
+   * @returns {{dawn: {hours: number, minutes: number}, dusk: {hours: number, minutes: number}}}
+   */
   getNauticalTwilight(date) {
     const sunrise = this.getSunrise(date);
     const sunset = this.getSunset(date);
@@ -526,6 +637,12 @@ class AdvancedWeatherIntegration {
     };
   }
 
+  /**
+   * Evaluate the current frost risk from temperature, humidity, wind speed, dew point,
+   * and the 12-hour forecast.
+   *
+   * @returns {FrostRiskReport}
+   */
   checkFrostRisk() {
     const temp = this.currentWeather.temperature;
     const humidity = this.currentWeather.humidity;
@@ -583,6 +700,13 @@ class AdvancedWeatherIntegration {
     };
   }
 
+  /**
+   * Inspect the current weather for storm, heatwave, extreme cold, heavy precipitation,
+   * dense fog, and thunderstorm conditions, and append any new alerts to the
+   * `severeWeatherAlerts` buffer.
+   *
+   * @returns {WeatherAlert[]} New severe weather alerts detected in this call
+   */
   detectSevereWeather() {
     const w = this.currentWeather;
     const alerts = [];
@@ -661,6 +785,12 @@ class AdvancedWeatherIntegration {
     return alerts;
   }
 
+  /**
+   * Evaluate all enabled automation rules against the current weather and return
+   * those whose conditions are satisfied, sorted by priority (descending).
+   *
+   * @returns {TriggeredRule[]} Sorted list of triggered rule descriptors
+   */
   evaluateAutomationRules() {
     const triggered = [];
     const w = this.currentWeather;
@@ -699,6 +829,15 @@ class AdvancedWeatherIntegration {
     return Math.round(feelsLike * 10) / 10;
   }
 
+  /**
+   * Calculate the wind chill temperature using the Environment Canada formula.
+   *
+   * Returns the actual temperature unchanged when temp > 10°C or wind speed < 1.3 m/s.
+   *
+   * @param {number} temp - Air temperature in °C
+   * @param {number} windSpeed - Wind speed in m/s
+   * @returns {number} Wind chill temperature in °C, rounded to 1 decimal
+   */
   calculateWindChill(temp, windSpeed) {
     if (temp > 10 || windSpeed < 1.3) {
       return temp;
@@ -708,6 +847,15 @@ class AdvancedWeatherIntegration {
     return Math.round(windChill * 10) / 10;
   }
 
+  /**
+   * Calculate the heat index (apparent temperature) using the Rothfusz regression.
+   *
+   * Returns the actual temperature unchanged when temp < 27°C or humidity < 40%.
+   *
+   * @param {number} temp - Air temperature in °C
+   * @param {number} humidity - Relative humidity in percent (0–100)
+   * @returns {number} Heat index in °C, rounded to 1 decimal
+   */
   calculateHeatIndex(temp, humidity) {
     if (temp < 27 || humidity < 40) {
       return temp;
@@ -755,6 +903,17 @@ class AdvancedWeatherIntegration {
     return 'clear';
   }
 
+  /**
+   * Record an indoor temperature/humidity reading for a room and update the
+   * indoor–outdoor correlation statistics for insulation scoring.
+   *
+   * Readings are capped at 500 per room; older entries are evicted automatically.
+   *
+   * @param {string} room - Room identifier (e.g. 'living_room', 'bedroom')
+   * @param {number} indoorTemp - Indoor temperature in °C
+   * @param {number} indoorHumidity - Indoor relative humidity in percent
+   * @returns {{timestamp: number, outdoorTemp: number, outdoorHumidity: number, indoorTemp: number, indoorHumidity: number, tempDiff: number, humidityDiff: number}}
+   */
   trackIndoorCorrelation(room, indoorTemp, indoorHumidity) {
     if (!this.indoorCorrelation[room]) {
       this.indoorCorrelation[room] = {
@@ -814,6 +973,12 @@ class AdvancedWeatherIntegration {
     this.log('Historical data seeded: ' + this.historicalData.length + ' days');
   }
 
+  /**
+   * Compute aggregate statistics for the most recent N days of historical data.
+   *
+   * @param {number} [days=7] - Number of past days to include (capped at available history)
+   * @returns {{period: number, avgTemp: number, maxTemp: number, minTemp: number, totalPrecipMm: number, rainyDays: number, avgHumidity: number, avgWindSpeed: number, tempTrend: number, tempTrendDirection: 'warming'|'cooling'|'stable'}|null} `null` when no historical data is available
+   */
   getHistoricalAnalysis(days) {
     const period = Math.min(days || 7, this.historicalData.length);
     const data = this.historicalData.slice(-period);
@@ -848,6 +1013,12 @@ class AdvancedWeatherIntegration {
     };
   }
 
+  /**
+   * Generate weather-aware energy recommendations for heating, cooling, solar, and
+   * ventilation based on the current weather conditions.
+   *
+   * @returns {{type: string, priority: 'high'|'medium'|'low', message: string, [key: string]: any}[]}
+   */
   getEnergyRecommendations() {
     const w = this.currentWeather;
     const recommendations = [];
@@ -968,6 +1139,13 @@ class AdvancedWeatherIntegration {
     else this.aqiData.category = 'Very Unhealthy';
   }
 
+  /**
+   * Return a comprehensive snapshot of the weather system state, including
+   * current conditions, forecast summary, solar times, frost risk, pollen,
+   * AQI, automation rule statistics, and energy recommendations.
+   *
+   * @returns {object}
+   */
   getStatistics() {
     const analysis7d = this.getHistoricalAnalysis(7);
     const analysis30d = this.getHistoricalAnalysis(30);
@@ -1026,6 +1204,11 @@ class AdvancedWeatherIntegration {
     this.homey.error('[Weather]', msg);
   }
 
+  /**
+   * Stop all monitoring intervals. Should be called before the app is unloaded.
+   *
+   * @returns {void}
+   */
   destroy() {
     if (this.updateInterval) {
       clearInterval(this.updateInterval);

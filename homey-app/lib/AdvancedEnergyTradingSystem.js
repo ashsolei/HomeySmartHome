@@ -22,22 +22,26 @@ class AdvancedEnergyTradingSystem {
   }
 
   async initialize() {
-    this.log('Initializing Advanced Energy Trading System...');
     try {
-      this._initializeStorageUnits();
-      this._initializeStrategies();
-      this._initializeP2PNeighbors();
-      this._initializeFeedInTariffs();
-      this._initializeGridServices();
-      this._loadSettings();
-      this.spotPrices = this.generateHourlyPrices();
-      this._seedPriceHistory();
-      this._startMonitoring();
-      this.initialized = true;
-      this.log('Advanced Energy Trading System initialized successfully');
-    } catch (err) {
-      this.error('Failed to initialize Energy Trading System: ' + err.message);
-      throw err;
+      this.log('Initializing Advanced Energy Trading System...');
+      try {
+        this._initializeStorageUnits();
+        this._initializeStrategies();
+        this._initializeP2PNeighbors();
+        this._initializeFeedInTariffs();
+        this._initializeGridServices();
+        this._loadSettings();
+        this.spotPrices = this.generateHourlyPrices();
+        this._seedPriceHistory();
+        this._startMonitoring();
+        this.initialized = true;
+        this.log('Advanced Energy Trading System initialized successfully');
+      } catch (err) {
+        this.error('Failed to initialize Energy Trading System: ' + err.message);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[AdvancedEnergyTradingSystem] Failed to initialize:`, error.message);
     }
   }
 

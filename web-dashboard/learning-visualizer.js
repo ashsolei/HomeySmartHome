@@ -6,6 +6,7 @@
  */
 class LearningVisualizer {
   constructor() {
+    this._intervals = [];
     this.learningData = {
       patterns: [],
       predictions: [],
@@ -26,9 +27,9 @@ class LearningVisualizer {
   }
 
   startDataCollection() {
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.collectLearningData();
-    }, this.cacheTimeout);
+    }, this.cacheTimeout));
 
     // Initial collection
     this.collectLearningData();
@@ -595,6 +596,13 @@ class LearningVisualizer {
       adaptations: { total_adaptations: 0, recent: [] },
       lastUpdate: 0
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

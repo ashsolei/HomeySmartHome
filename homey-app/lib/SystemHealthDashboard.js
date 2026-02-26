@@ -139,22 +139,26 @@ class SystemHealthDashboard extends EventEmitter {
    * @returns {Promise<void>}
    */
   async initialize() {
-    if (this.initialized) return;
+    try {
+      if (this.initialized) return;
 
-    if (this.autoDiscover) {
-      this._discoverSystems();
+      if (this.autoDiscover) {
+        this._discoverSystems();
+      }
+
+      // Perform an initial health check immediately
+      await this.pollAllSystems();
+      this._takeSnapshot();
+
+      // Start recurring timers
+      this._pollTimer = setInterval(() => this.pollAllSystems(), this.pollIntervalMs);
+      this._snapshotTimer = setInterval(() => this._takeSnapshot(), this.snapshotIntervalMs);
+
+      this.initialized = true;
+      this.emit('health-check', { type: 'initialize', overallScore: this.overallScore });
+    } catch (error) {
+      console.error(`[SystemHealthDashboard] Failed to initialize:`, error.message);
     }
-
-    // Perform an initial health check immediately
-    await this.pollAllSystems();
-    this._takeSnapshot();
-
-    // Start recurring timers
-    this._pollTimer = setInterval(() => this.pollAllSystems(), this.pollIntervalMs);
-    this._snapshotTimer = setInterval(() => this._takeSnapshot(), this.snapshotIntervalMs);
-
-    this.initialized = true;
-    this.emit('health-check', { type: 'initialize', overallScore: this.overallScore });
   }
 
   /**

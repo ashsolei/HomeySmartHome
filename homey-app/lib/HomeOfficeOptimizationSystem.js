@@ -30,15 +30,19 @@ class HomeOfficeOptimizationSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Home Office Optimization System...');
-    
-    await this.loadSettings();
-    this.initializeDefaultOffices();
-    
-    this.startMonitoring();
-    
-    this.homey.log('Home Office Optimization System initialized successfully');
-    return true;
+    try {
+      this.homey.log('Initializing Home Office Optimization System...');
+
+      await this.loadSettings();
+      this.initializeDefaultOffices();
+
+      this.startMonitoring();
+
+      this.homey.log('Home Office Optimization System initialized successfully');
+      return true;
+    } catch (error) {
+      this.homey.error(`[HomeOfficeOptimizationSystem] Failed to initialize:`, error.message);
+    }
   }
 
   async loadSettings() {
@@ -211,7 +215,7 @@ class HomeOfficeOptimizationSystem extends EventEmitter {
     }
   }
 
-  async sendBreakReminder(office) {
+  async sendBreakReminder(_office) {
     this.emit('notification', {
       title: 'Dags för paus',
       message: 'Du har arbetat en stund. Ta en kort paus!',

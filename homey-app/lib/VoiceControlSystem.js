@@ -16,26 +16,30 @@ class VoiceControlSystem {
   }
 
   async initialize() {
-    this.log('Initializing Voice Control System...');
-    
-    // Load saved commands and profiles
-    const savedCommands = await this.homey.settings.get('customVoiceCommands') || {};
-    Object.entries(savedCommands).forEach(([id, cmd]) => {
-      this.customCommands.set(id, cmd);
-    });
+    try {
+      this.log('Initializing Voice Control System...');
 
-    const savedProfiles = await this.homey.settings.get('voiceProfiles') || {};
-    Object.entries(savedProfiles).forEach(([id, profile]) => {
-      this.voiceProfiles.set(id, profile);
-    });
+      // Load saved commands and profiles
+      const savedCommands = await this.homey.settings.get('customVoiceCommands') || {};
+      Object.entries(savedCommands).forEach(([id, cmd]) => {
+        this.customCommands.set(id, cmd);
+      });
 
-    // Register default commands
-    await this.registerDefaultCommands();
-    
-    // Start voice recognition service
-    await this.startVoiceRecognition();
-    
-    this.log('Voice Control System initialized');
+      const savedProfiles = await this.homey.settings.get('voiceProfiles') || {};
+      Object.entries(savedProfiles).forEach(([id, profile]) => {
+        this.voiceProfiles.set(id, profile);
+      });
+
+      // Register default commands
+      await this.registerDefaultCommands();
+
+      // Start voice recognition service
+      await this.startVoiceRecognition();
+
+      this.log('Voice Control System initialized');
+    } catch (error) {
+      console.error(`[VoiceControlSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -343,7 +347,7 @@ class VoiceControlSystem {
     let bestMatch = null;
     let bestScore = 0;
 
-    for (const [id, command] of this.commands) {
+    for (const [_id, command] of this.commands) {
       for (const pattern of command.patterns) {
         const result = this.matchPattern(pattern, input);
         if (result && result.score > bestScore) {
@@ -483,12 +487,12 @@ class VoiceControlSystem {
   /**
    * Handle follow-up questions in conversation
    */
-  async handleFollowUp(input, context) {
+  async handleFollowUp(input, _context) {
     const followUpWords = ['och', 'också', 'dessutom', 'plus', 'and', 'also', 'too'];
     const hasFollowUp = followUpWords.some(word => input.startsWith(word));
 
     if (hasFollowUp && this.conversationHistory.length > 0) {
-      const lastCommand = this.conversationHistory[this.conversationHistory.length - 1];
+      const _lastCommand = this.conversationHistory[this.conversationHistory.length - 1];
       // Repeat similar action in different context
       return await this.processVoiceInput(input.replace(/^(och|också|dessutom|plus|and|also|too)\s+/i, ''));
     }
@@ -602,12 +606,12 @@ class VoiceControlSystem {
   async startVoiceRecognition() {
     // Integration with Homey's speech-input
     try {
-      this.homey.speechInput.on('text', async (text, language) => {
+      this.homey.speechInput.on('text', async (text, _language) => {
         await this.processVoiceInput(text);
       });
       
       this.log('Voice recognition service started');
-    } catch (error) {
+    } catch (_error) {
       this.log('Speech input not available, voice commands will be available via API only');
     }
   }
@@ -666,7 +670,7 @@ class VoiceControlSystem {
     return matrix[str2.length][str1.length];
   }
 
-  async controlLights(zone, state) {
+  async controlLights(_zone, _state) {
     // Implementation
     return { success: true };
   }
@@ -694,7 +698,7 @@ class VoiceControlSystem {
     };
   }
 
-  async toggleAutomation(name, enabled) {
+  async toggleAutomation(_name, _enabled) {
     // Implementation
   }
 

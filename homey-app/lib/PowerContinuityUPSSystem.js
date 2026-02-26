@@ -226,7 +226,7 @@ class PowerContinuityUPSSystem {
 
   updateGridStatus(voltage, frequency, online) {
     try {
-      const prev = { ...this.gridStatus };
+      const _prev = { ...this.gridStatus };
       this.gridStatus.voltage = voltage;
       this.gridStatus.frequency = frequency;
 

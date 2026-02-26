@@ -828,7 +828,7 @@ class SmartHomeAdaptiveLearningSystem extends EventEmitter {
   _planActionsForPrediction(routine) {
     const actions = [];
     const userId = routine.userId;
-    const prefModel = this.preferenceModels.get(userId);
+    const _prefModel = this.preferenceModels.get(userId);
 
     if (routine.eventType === 'wake') {
       const lightPref = this._resolvePreference(userId, 'lighting');
@@ -1097,7 +1097,7 @@ class SmartHomeAdaptiveLearningSystem extends EventEmitter {
    * @param {number} weight
    * @param {object} details
    */
-  _applyReinforcementUpdate(userId, actionType, weight, details) {
+  _applyReinforcementUpdate(userId, actionType, weight, _details) {
     try {
       const model = this._ensurePreferenceModel(userId);
       if (!model._reinforcement) {
@@ -1236,7 +1236,7 @@ class SmartHomeAdaptiveLearningSystem extends EventEmitter {
    * @returns {object}
    */
   _computeUserComfort(userId, now) {
-    const prefModel = this.preferenceModels.get(userId);
+    const _prefModel = this.preferenceModels.get(userId);
     const circadian = this.circadianModels.get(userId);
 
     let lightingScore = 70;

@@ -18,33 +18,37 @@ class IntegrationHub {
   }
 
   async initialize() {
-    this.log('Initializing Integration Hub...');
-    
-    // Load integrations
-    const savedIntegrations = await this.homey.settings.get('integrations') || {};
-    Object.entries(savedIntegrations).forEach(([id, integration]) => {
-      this.integrations.set(id, integration);
-    });
+    try {
+      this.log('Initializing Integration Hub...');
 
-    // Load webhooks
-    const savedWebhooks = await this.homey.settings.get('webhooks') || {};
-    Object.entries(savedWebhooks).forEach(([id, webhook]) => {
-      this.webhooks.set(id, webhook);
-    });
+      // Load integrations
+      const savedIntegrations = await this.homey.settings.get('integrations') || {};
+      Object.entries(savedIntegrations).forEach(([id, integration]) => {
+        this.integrations.set(id, integration);
+      });
 
-    // Load API connectors
-    const savedConnectors = await this.homey.settings.get('apiConnectors') || {};
-    Object.entries(savedConnectors).forEach(([id, connector]) => {
-      this.apiConnectors.set(id, connector);
-    });
+      // Load webhooks
+      const savedWebhooks = await this.homey.settings.get('webhooks') || {};
+      Object.entries(savedWebhooks).forEach(([id, webhook]) => {
+        this.webhooks.set(id, webhook);
+      });
 
-    // Start webhook server
-    await this.startWebhookServer();
+      // Load API connectors
+      const savedConnectors = await this.homey.settings.get('apiConnectors') || {};
+      Object.entries(savedConnectors).forEach(([id, connector]) => {
+        this.apiConnectors.set(id, connector);
+      });
 
-    // Setup default integrations
-    await this.setupDefaultIntegrations();
-    
-    this.log('Integration Hub initialized');
+      // Start webhook server
+      await this.startWebhookServer();
+
+      // Setup default integrations
+      await this.setupDefaultIntegrations();
+
+      this.log('Integration Hub initialized');
+    } catch (error) {
+      console.error(`[IntegrationHub] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -207,7 +211,7 @@ class IntegrationHub {
   /**
    * Process webhook
    */
-  async processWebhook(webhook, data, req) {
+  async processWebhook(webhook, data, _req) {
     this.log(`Processing webhook: ${webhook.name}`);
 
     // Apply transformations
@@ -305,7 +309,7 @@ class IntegrationHub {
     return { success: true, action: 'device', device: device.name };
   }
 
-  async executeSceneAction(action, data) {
+  async executeSceneAction(action, _data) {
     const sceneManager = this.homey.app.sceneManager;
     await sceneManager.activateScene(action.sceneId);
     
@@ -543,7 +547,7 @@ class IntegrationHub {
     await this.saveIntegrations();
   }
 
-  async evaluateCondition(condition, data) {
+  async evaluateCondition(_condition, _data) {
     // Similar to scheduling system condition evaluation
     return true;
   }
@@ -603,7 +607,7 @@ class IntegrationHub {
     return session;
   }
 
-  async exchangeOAuthCode(provider, code) {
+  async exchangeOAuthCode(_provider, _code) {
     // Would exchange code for access token
     return {
       accessToken: 'mock_access_token',

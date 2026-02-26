@@ -152,26 +152,30 @@ class AdvancedHomeNetworkSecuritySystem {
   }
 
   async initialize() {
-    this.log('Initializing Advanced Home Network Security System...');
+    try {
+      this.log('Initializing Advanced Home Network Security System...');
 
-    this._initializeThreatIntelFeed();
-    this._initializeDNSBlocklist();
-    this._initializeDefaultFirewallRules();
-    this._initializeIoTSegmentRules();
-    this._initializeDefaultParentalProfiles();
-    this._initializeCertificateMonitoring();
-    this._initializeGuestNetwork();
+      this._initializeThreatIntelFeed();
+      this._initializeDNSBlocklist();
+      this._initializeDefaultFirewallRules();
+      this._initializeIoTSegmentRules();
+      this._initializeDefaultParentalProfiles();
+      this._initializeCertificateMonitoring();
+      this._initializeGuestNetwork();
 
-    await this._performInitialNetworkScan();
-    this._calculateSecurityPosture();
+      await this._performInitialNetworkScan();
+      this._calculateSecurityPosture();
 
-    this.monitoringInterval = setInterval(() => {
-      this._monitoringCycle();
-    }, this.scanInterval);
+      this.monitoringInterval = setInterval(() => {
+        this._monitoringCycle();
+      }, this.scanInterval);
 
-    this.isInitialized = true;
-    this._addAuditEntry('SYSTEM', 'Network Security System initialized');
-    this.log('Advanced Home Network Security System initialized successfully');
+      this.isInitialized = true;
+      this._addAuditEntry('SYSTEM', 'Network Security System initialized');
+      this.log('Advanced Home Network Security System initialized successfully');
+    } catch (error) {
+      this.homey.error(`[AdvancedHomeNetworkSecuritySystem] Failed to initialize:`, error.message);
+    }
   }
 
   // ─── Network Topology Discovery ──────────────────────────────────────
@@ -657,7 +661,7 @@ class AdvancedHomeNetworkSecuritySystem {
     return true;
   }
 
-  evaluateFirewallRules(sourceIP, destIP, port, protocol) {
+  evaluateFirewallRules(sourceIP, _destIP, _port, _protocol) {
     const sourceDevice = this.devices.get(sourceIP);
     for (const rule of this.firewallRules) {
       if (!rule.enabled) continue;
@@ -1133,7 +1137,7 @@ class AdvancedHomeNetworkSecuritySystem {
 
   _cleanupExpiredGuests() {
     const now = Date.now();
-    for (const [id, session] of this.guestSessions) {
+    for (const [_id, session] of this.guestSessions) {
       if (session.active && now > session.endTime) {
         session.active = false;
         session.expiredAt = now;
@@ -1205,7 +1209,7 @@ class AdvancedHomeNetworkSecuritySystem {
       { cve: 'CVE-2024-5005', description: 'Printer spooler privilege escalation', severity: 'medium', affectedTypes: ['PRINTER'] },
     ];
 
-    for (const [ip, device] of this.devices) {
+    for (const [_ip, device] of this.devices) {
       device.vulnerabilities = [];
       for (const cve of knownCVEs) {
         if (cve.affectedTypes.includes(device.deviceType)) {

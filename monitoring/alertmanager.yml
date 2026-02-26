@@ -1,0 +1,111 @@
+global:
+  # How long to wait before sending a notification about new alerts that
+  # are added to a group of alerts for which an initial notification has
+  # already been sent.
+  resolve_timeout: 5m
+
+  # SMTP defaults for email notifications — override per receiver if needed.
+  smtp_smarthost: 'smtp.yourdomain.com:587'
+  smtp_from: 'alertmanager@yourdomain.com'
+  smtp_auth_username: 'alertmanager@yourdomain.com'
+  # smtp_auth_password is injected via ALERTMANAGER_SMTP_PASSWORD env var.
+  smtp_auth_password_file: /etc/alertmanager/secrets/smtp_password
+  smtp_require_tls: true
+
+# The root route. All alerts that don't match a child route fall through here.
+route:
+  group_by: ['alertname', 'job', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default-receiver'
+
+  routes:
+    # Critical alerts go to both email and webhook immediately.
+    - matchers:
+        - severity = "critical"
+      receiver: 'critical-receiver'
+      group_wait: 10s
+      repeat_interval: 1h
+      continue: false
+
+    # Warning alerts go to email only with standard timing.
+    - matchers:
+        - severity = "warning"
+      receiver: 'warning-receiver'
+      group_wait: 30s
+      repeat_interval: 4h
+      continue: false
+
+# Inhibition rules suppress warning alerts when a critical alert is already
+# firing for the same job/instance, preventing alert noise.
+inhibit_rules:
+  - source_matchers:
+      - severity = "critical"
+    target_matchers:
+      - severity = "warning"
+    equal: ['alertname', 'job', 'instance']
+
+receivers:
+  - name: 'default-receiver'
+    email_configs:
+      - to: 'ops@yourdomain.com'
+        send_resolved: true
+        headers:
+          Subject: '[SmartHome Pro] {{ .Status | toUpper }} {{ .GroupLabels.alertname }}'
+        html: |
+          {{ range .Alerts }}
+          <b>Alert:</b> {{ .Labels.alertname }}<br/>
+          <b>Status:</b> {{ .Status }}<br/>
+          <b>Severity:</b> {{ .Labels.severity }}<br/>
+          <b>Summary:</b> {{ .Annotations.summary }}<br/>
+          <b>Description:</b> {{ .Annotations.description }}<br/>
+          <b>Started:</b> {{ .StartsAt }}<br/>
+          {{ if .EndsAt }}<b>Ended:</b> {{ .EndsAt }}<br/>{{ end }}
+          <hr/>
+          {{ end }}
+
+  - name: 'critical-receiver'
+    email_configs:
+      - to: 'ops@yourdomain.com'
+        send_resolved: true
+        headers:
+          Subject: '[SmartHome Pro] CRITICAL {{ .GroupLabels.alertname }}'
+        html: |
+          {{ range .Alerts }}
+          <b>Alert:</b> {{ .Labels.alertname }}<br/>
+          <b>Status:</b> {{ .Status }}<br/>
+          <b>Severity:</b> {{ .Labels.severity }}<br/>
+          <b>Summary:</b> {{ .Annotations.summary }}<br/>
+          <b>Description:</b> {{ .Annotations.description }}<br/>
+          <b>Started:</b> {{ .StartsAt }}<br/>
+          {{ if .EndsAt }}<b>Ended:</b> {{ .EndsAt }}<br/>{{ end }}
+          <hr/>
+          {{ end }}
+    webhook_configs:
+      # Replace with your actual webhook URL (Slack, PagerDuty, etc.).
+      # The URL can also be provided via ALERTMANAGER_WEBHOOK_URL env var
+      # and referenced as a file secret below.
+      - url: 'http://your-webhook-endpoint/alerts'
+        send_resolved: true
+        http_config:
+          # Optional: bearer_token_file for authenticated webhooks.
+          # bearer_token_file: /etc/alertmanager/secrets/webhook_token
+
+  - name: 'warning-receiver'
+    email_configs:
+      - to: 'ops@yourdomain.com'
+        send_resolved: true
+        headers:
+          Subject: '[SmartHome Pro] WARNING {{ .GroupLabels.alertname }}'
+        html: |
+          {{ range .Alerts }}
+          <b>Alert:</b> {{ .Labels.alertname }}<br/>
+          <b>Status:</b> {{ .Status }}<br/>
+          <b>Severity:</b> {{ .Labels.severity }}<br/>
+          <b>Summary:</b> {{ .Annotations.summary }}<br/>
+          <b>Description:</b> {{ .Annotations.description }}<br/>
+          <b>Started:</b> {{ .StartsAt }}<br/>
+          {{ if .EndsAt }}<b>Ended:</b> {{ .EndsAt }}<br/>{{ end }}
+          <hr/>
+          {{ end }}

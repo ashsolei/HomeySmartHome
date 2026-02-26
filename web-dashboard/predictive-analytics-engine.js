@@ -6,6 +6,8 @@
  */
 class PredictiveAnalyticsEngine {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.dataStreams = new Map();
     this.correlations = [];
@@ -598,43 +600,43 @@ class PredictiveAnalyticsEngine {
 
   startAnalytics() {
     // Find correlations weekly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const day = new Date().getDay();
       if (day === 0) { // Sunday
         this.findCorrelations();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Analyze trends daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const hour = new Date().getHours();
       if (hour === 3) { // 3 AM
         this.analyzeTrends();
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Generate predictions every 6 hours
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const hour = new Date().getHours();
       if (hour % 6 === 0) {
         this.predictFuture('energy', 24);
         this.predictFuture('temperature', 24);
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Check for optimization opportunities daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const hour = new Date().getHours();
       if (hour === 8) { // 8 AM
         this.generateOptimizationSuggestions();
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial analysis
-    setTimeout(() => {
+    this._timeouts.push(setTimeout(() => {
       this.findCorrelations();
       this.analyzeTrends();
-    }, 5000);
+    }, 5000));
   }
 
   // ============================================
@@ -706,6 +708,17 @@ class PredictiveAnalyticsEngine {
         message: a.message,
         date: new Date(a.timestamp).toLocaleDateString('sv-SE')
       }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

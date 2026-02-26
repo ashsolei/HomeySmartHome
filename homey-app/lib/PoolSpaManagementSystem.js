@@ -351,16 +351,20 @@ class PoolSpaManagementSystem {
   //  INITIALIZATION
   // ====================================================================
   async initialize() {
-    this.log('Initializing PoolSpaManagementSystem...');
     try {
-      this._initializeDefaultWaterBodies();
-      this._loadPumpSchedule();
-      this._initializeMaintenanceDates();
-      this._startMonitoringCycle();
-      this.initialized = true;
-      this.log('PoolSpaManagementSystem initialized successfully');
-    } catch (err) {
-      this.error(`Initialization failed: ${err.message}`);
+      this.log('Initializing PoolSpaManagementSystem...');
+      try {
+        this._initializeDefaultWaterBodies();
+        this._loadPumpSchedule();
+        this._initializeMaintenanceDates();
+        this._startMonitoringCycle();
+        this.initialized = true;
+        this.log('PoolSpaManagementSystem initialized successfully');
+      } catch (err) {
+        this.error(`Initialization failed: ${err.message}`);
+      }
+    } catch (error) {
+      this.homey.error(`[PoolSpaManagementSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -1457,7 +1461,7 @@ class PoolSpaManagementSystem {
       this._trackEnergy();
 
       // Rainbow cycle update
-      for (const [zone, state] of Object.entries(this.lightingZones)) {
+      for (const [_zone, state] of Object.entries(this.lightingZones)) {
         if (state.on && state.preset === 'rainbow_cycle') {
           this._advanceRainbowCycle();
         }

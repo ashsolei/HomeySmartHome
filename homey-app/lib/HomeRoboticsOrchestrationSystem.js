@@ -694,7 +694,7 @@ class HomeRoboticsOrchestrationSystem {
     return null;
   }
 
-  _adjustSequenceForEnergyPrices(sequence) {
+  _adjustSequenceForEnergyPrices(_sequence) {
     if (this.energyPrices.length === 0) return;
     const currentHour = new Date().getHours();
     const cheap = this.energyPrices.filter(p => p.hour >= currentHour).sort((a, b) => a.price - b.price).slice(0, 4).map(p => p.hour);

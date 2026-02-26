@@ -6,6 +6,7 @@
  */
 class ComfortOptimizer {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.zones = new Map();
     this.comfortProfiles = new Map();
@@ -138,14 +139,14 @@ class ComfortOptimizer {
 
   startComfortMonitoring() {
     // Update readings every 30 seconds
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateZoneReadings();
-    }, 30000);
+    }, 30000));
 
     // Calculate comfort scores every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.calculateComfortScores();
-    }, 60000);
+    }, 60000));
 
     // Initial update
     this.updateZoneReadings();
@@ -225,7 +226,7 @@ class ComfortOptimizer {
   // ============================================
 
   calculateComfortScores() {
-    for (const [zoneId, zone] of this.zones) {
+    for (const [_zoneId, zone] of this.zones) {
       const readings = zone.currentReadings;
       const profile = this.getActiveProfile();
       
@@ -367,9 +368,9 @@ class ComfortOptimizer {
 
   startOptimization() {
     // Run optimization every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.optimizeAllZones();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Initial optimization
     this.optimizeAllZones();
@@ -649,7 +650,7 @@ class ComfortOptimizer {
     }
 
     // Deactivate all profiles
-    for (const [id, p] of this.comfortProfiles) {
+    for (const [_id, p] of this.comfortProfiles) {
       p.active = false;
     }
 
@@ -725,7 +726,7 @@ class ComfortOptimizer {
 
   getZoneRecommendations(zone) {
     const recommendations = [];
-    const profile = this.getActiveProfile();
+    const _profile = this.getActiveProfile();
 
     for (const issue of zone.issues) {
       if (issue.type === 'temperature') {
@@ -796,7 +797,7 @@ class ComfortOptimizer {
   getActiveIssues() {
     const issues = [];
     
-    for (const [zoneId, zone] of this.zones) {
+    for (const [_zoneId, zone] of this.zones) {
       zone.issues.forEach(issue => {
         issues.push({
           zone: zone.name,
@@ -814,6 +815,13 @@ class ComfortOptimizer {
       name: p.name,
       active: p.active
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

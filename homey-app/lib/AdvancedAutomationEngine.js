@@ -3,11 +3,74 @@
 const { BaseSystem } = require('./utils/BaseSystem');
 
 /**
+ * @typedef {object} AutomationConfig
+ * @property {string} [id] - Unique automation identifier (auto-generated if omitted)
+ * @property {string} name - Human-readable automation name
+ * @property {boolean} [enabled=true] - Whether the automation is active
+ * @property {number} [priority=5] - Execution priority (1–10)
+ * @property {object[]} [triggers=[]] - Trigger definitions
+ * @property {object[]} [conditions=[]] - Condition definitions
+ * @property {'AND'|'OR'|'CUSTOM'} [conditionLogic='AND'] - How conditions are combined
+ * @property {string|null} [customLogic=null] - Custom boolean expression for conditions
+ * @property {object[]} [actions=[]] - Action definitions
+ * @property {boolean} [learningEnabled=true] - Enable ML-based learning
+ * @property {boolean} [adaptiveThresholds=false] - Auto-adjust condition thresholds
+ * @property {boolean} [contextAware=true] - Consider environmental context
+ * @property {object|null} [schedule=null] - Time-based schedule definition
+ * @property {number|null} [maxExecutionsPerDay=null] - Daily execution cap
+ * @property {number} [cooldownMinutes=0] - Minimum minutes between executions
+ * @property {string[]} [requiredScenes=[]] - Scenes that must be active
+ * @property {string[]} [excludedScenes=[]] - Scenes that must not be active
+ */
+
+/**
+ * @typedef {object} Automation
+ * @property {string} id - Unique identifier
+ * @property {string} name - Human-readable name
+ * @property {boolean} enabled - Whether the automation is active
+ * @property {number} priority - Execution priority
+ * @property {object[]} triggers - Trigger definitions
+ * @property {object[]} conditions - Condition definitions
+ * @property {'AND'|'OR'|'CUSTOM'} conditionLogic - Condition combination logic
+ * @property {object|null} customLogic - Custom logic expression
+ * @property {object[]} actions - Action definitions
+ * @property {boolean} learningEnabled - ML learning enabled flag
+ * @property {boolean} adaptiveThresholds - Adaptive threshold flag
+ * @property {boolean} contextAware - Context-aware flag
+ * @property {object|null} schedule - Schedule definition
+ * @property {object} constraints - Execution constraints
+ * @property {object} statistics - Runtime statistics
+ */
+
+/**
+ * @typedef {object} ExecutionResult
+ * @property {boolean} success - Whether execution succeeded
+ * @property {object[]} [actions] - Per-action results
+ * @property {object[]} [errors] - Per-action errors
+ * @property {string} [reason] - Failure reason if not successful
+ * @property {string} [error] - Error message on exception
+ */
+
+/**
+ * @typedef {object} Prediction
+ * @property {string} automationId - ID of the predicted automation
+ * @property {number} confidence - Prediction confidence (0–1)
+ * @property {object} context - Context snapshot that produced the prediction
+ */
+
+/**
  * Advanced Automation Engine
+ *
  * Provides intelligent automation with learning capabilities, predictive actions,
- * and complex condition evaluation
+ * and complex condition evaluation. Extends {@link BaseSystem} for lifecycle and
+ * interval management.
+ *
+ * @extends BaseSystem
  */
 class AdvancedAutomationEngine extends BaseSystem {
+  /**
+   * @param {import('homey').Homey} homey - Homey application instance
+   */
   constructor(homey) {
     super(homey);
     this.automations = new Map();
@@ -18,58 +81,65 @@ class AdvancedAutomationEngine extends BaseSystem {
   }
 
   async initialize() {
-    await super.initialize();
-    this.log('Initializing Advanced Automation Engine...');
-    
-    // Load saved automations
-    const saved = await this.homey.settings.get('advancedAutomations') || {};
-    Object.entries(saved).forEach(([id, automation]) => {
-      this.automations.set(id, automation);
-    });
+    try {
+      await super.initialize();
+      this.log('Initializing Advanced Automation Engine...');
 
-    // Seed from automation-library.json if no automations exist
-    if (this.automations.size === 0) {
-      try {
-        const path = require('path');
-        const fs = require('fs');
-        const libraryPath = path.resolve(__dirname, '../../automations/automation-library.json');
-        if (fs.existsSync(libraryPath)) {
-          const library = JSON.parse(fs.readFileSync(libraryPath, 'utf8'));
-          for (const entry of library) {
-            this.automations.set(entry.id, {
-              ...entry,
-              enabled: true,
-              statistics: {
-                created: Date.now(),
-                lastExecuted: null,
-                executionCount: 0,
-                successCount: 0,
-                failureCount: 0,
-                averageExecutionTime: 0,
-                userOverrides: 0
-              }
-            });
+      // Load saved automations
+      const saved = await this.homey.settings.get('advancedAutomations') || {};
+      Object.entries(saved).forEach(([id, automation]) => {
+        this.automations.set(id, automation);
+      });
+
+      // Seed from automation-library.json if no automations exist
+      if (this.automations.size === 0) {
+        try {
+          const path = require('path');
+          const fs = require('fs');
+          const libraryPath = path.resolve(__dirname, '../../automations/automation-library.json');
+          if (fs.existsSync(libraryPath)) {
+            const library = JSON.parse(fs.readFileSync(libraryPath, 'utf8'));
+            for (const entry of library) {
+              this.automations.set(entry.id, {
+                ...entry,
+                enabled: true,
+                statistics: {
+                  created: Date.now(),
+                  lastExecuted: null,
+                  executionCount: 0,
+                  successCount: 0,
+                  failureCount: 0,
+                  averageExecutionTime: 0,
+                  userOverrides: 0
+                }
+              });
+            }
+            await this.saveAutomations();
+            this.log(`Seeded ${library.length} automations from library`);
           }
-          await this.saveAutomations();
-          this.log(`Seeded ${library.length} automations from library`);
+        } catch (err) {
+          this.log('Could not seed automation library:', err.message);
         }
-      } catch (err) {
-        this.log('Could not seed automation library:', err.message);
       }
+
+      // Load learning data
+      this.executionHistory = await this.homey.settings.get('automationEngine:executionHistory') || [];
+      this.patterns = new Map(await this.homey.settings.get('patterns') || []);
+
+      // Start automation engine
+      this.startEngine();
+
+      this.log('Advanced Automation Engine initialized');
+    } catch (error) {
+      console.error(`[AdvancedAutomationEngine] Failed to initialize:`, error.message);
     }
-
-    // Load learning data
-    this.executionHistory = await this.homey.settings.get('automationEngine:executionHistory') || [];
-    this.patterns = new Map(await this.homey.settings.get('patterns') || []);
-
-    // Start automation engine
-    this.startEngine();
-    
-    this.log('Advanced Automation Engine initialized');
   }
 
   /**
-   * Create a new advanced automation
+   * Create a new advanced automation from the provided configuration.
+   *
+   * @param {AutomationConfig} config - Automation configuration
+   * @returns {Promise<Automation>} The created automation object with generated statistics
    */
   async createAutomation(config) {
     const automation = {
@@ -125,7 +195,14 @@ class AdvancedAutomationEngine extends BaseSystem {
   }
 
   /**
-   * Evaluate complex conditions with support for nested logic
+   * Evaluate all conditions of an automation using its configured logic.
+   *
+   * Returns `true` immediately when the automation has no conditions.
+   * Applies AND, OR, or custom boolean logic across individual condition results.
+   *
+   * @param {Automation} automation - Automation whose conditions to evaluate
+   * @param {object} [context={}] - Runtime context (presence, weather, energy state, etc.)
+   * @returns {Promise<boolean>} Whether the overall condition set is satisfied
    */
   async evaluateConditions(automation, context = {}) {
     const { conditions, conditionLogic, customLogic } = automation;
@@ -148,7 +225,18 @@ class AdvancedAutomationEngine extends BaseSystem {
   }
 
   /**
-   * Evaluate a single condition with advanced operators
+   * Evaluate a single condition against a live value using an advanced operator.
+   *
+   * Supported condition types: `device`, `time`, `presence`, `weather`, `energy`, `custom`.
+   * Returns `false` on error to avoid blocking automation execution.
+   *
+   * @param {object} condition - Condition definition
+   * @param {string} condition.type - Condition type (device, time, presence, weather, energy, custom)
+   * @param {string} condition.operator - Comparison operator (e.g. '==', '>', 'between', 'in')
+   * @param {*} condition.value - Expected value or range to compare against
+   * @param {object} condition.target - Target descriptor (deviceId, capability, zone, property, scope)
+   * @param {object} context - Runtime context
+   * @returns {Promise<boolean>} Whether the condition is satisfied
    */
   async evaluateCondition(condition, context) {
     const { type, operator, value, target } = condition;
@@ -187,7 +275,15 @@ class AdvancedAutomationEngine extends BaseSystem {
   }
 
   /**
-   * Compare values with advanced operators
+   * Compare an actual value to an expected value using the given operator.
+   *
+   * Supported operators: `equals`/`==`, `not_equals`/`!=`, `greater_than`/`>`,
+   * `less_than`/`<`, `gte`/`>=`, `lte`/`<=`, `between`, `contains`, `in`, `regex`.
+   *
+   * @param {*} actual - The live value retrieved from a device or service
+   * @param {string} operator - Comparison operator string
+   * @param {*} expected - Expected value, range object `{min, max}`, array, or regex string
+   * @returns {boolean} Comparison result; `false` for unknown operators
    */
   compareValues(actual, operator, expected) {
     switch (operator) {
@@ -223,7 +319,15 @@ class AdvancedAutomationEngine extends BaseSystem {
   }
 
   /**
-   * Execute automation with context awareness
+   * Execute an automation by ID, checking constraints and conditions first.
+   *
+   * Updates execution statistics and records the result for learning. Returns a
+   * structured result even on constraint/condition failures for caller inspection.
+   *
+   * @param {string} automationId - ID of the automation to execute
+   * @param {object} [context={}] - Runtime context passed to condition/action evaluation
+   * @param {string} [reason='manual'] - Trigger reason ('manual', 'automatic', 'scheduled', etc.)
+   * @returns {Promise<ExecutionResult>} Execution result with per-action details
    */
   async executeAutomation(automationId, context = {}, reason = 'manual') {
     const automation = this.automations.get(automationId);
@@ -280,7 +384,18 @@ class AdvancedAutomationEngine extends BaseSystem {
   }
 
   /**
-   * Execute a single action
+   * Execute a single action from an automation action list.
+   *
+   * Supported action types: `device_control`, `scene`, `notification`, `delay`,
+   * `conditional_action`, `loop`, `api_call`, `script`.
+   *
+   * @param {object} action - Action definition
+   * @param {string} action.type - Action type
+   * @param {object} action.target - Target descriptor (deviceId, sceneId, etc.)
+   * @param {object} action.params - Action parameters (value, message, milliseconds, etc.)
+   * @param {object} context - Runtime context
+   * @returns {Promise<object>} Action-specific result object
+   * @throws {Error} When the action type is unknown
    */
   async executeAction(action, context) {
     const { type, target, params } = action;
@@ -325,7 +440,12 @@ class AdvancedAutomationEngine extends BaseSystem {
   }
 
   /**
-   * Predictive automation based on learned patterns
+   * Predict the most likely next automation to execute based on learned patterns.
+   *
+   * Returns `null` when no patterns exist or when the top prediction's confidence
+   * is below the 0.7 threshold.
+   *
+   * @returns {Promise<Prediction|null>} Highest-confidence prediction, or `null`
    */
   async predictNextAction() {
     const currentContext = await this.getCurrentContext();
@@ -347,7 +467,16 @@ class AdvancedAutomationEngine extends BaseSystem {
   }
 
   /**
-   * Learn from user behavior and automation outcomes
+   * Record an execution outcome and update the pattern store for ML learning.
+   *
+   * Each unique context key can store up to 100 patterns; older entries are
+   * evicted when the limit is reached. Does nothing when learning is disabled.
+   *
+   * @param {string} automationId - ID of the executed automation
+   * @param {object} context - Runtime context at the time of execution
+   * @param {ExecutionResult} outcome - Execution result to record
+   * @param {boolean} [userOverride=false] - Whether a user manually overrode this execution
+   * @returns {Promise<void>}
    */
   async learnFromExecution(automationId, context, outcome, userOverride = false) {
     if (!this.learningEnabled) return;
@@ -388,7 +517,15 @@ class AdvancedAutomationEngine extends BaseSystem {
   }
 
   /**
-   * Adaptive threshold adjustment
+   * Adaptively adjust condition thresholds for an automation based on recent
+   * successful executions.
+   *
+   * Requires at least 10 recent executions and `adaptiveThresholds` enabled on the
+   * automation. Uses mean ± standard deviation of observed values to recalibrate
+   * numeric device-condition thresholds.
+   *
+   * @param {string} automationId - ID of the automation to adjust
+   * @returns {Promise<void>}
    */
   async adjustThresholds(automationId) {
     const automation = this.automations.get(automationId);
@@ -426,7 +563,13 @@ class AdvancedAutomationEngine extends BaseSystem {
   }
 
   /**
-   * Check automation constraints
+   * Check whether an automation's constraints are satisfied before execution.
+   *
+   * Evaluates: cooldown period since last execution, active time-window, and
+   * daily execution cap.
+   *
+   * @param {Automation} automation - Automation to check
+   * @returns {boolean} `true` if all constraints are met and execution may proceed
    */
   checkConstraints(automation) {
     const { constraints, statistics } = automation;
@@ -552,7 +695,7 @@ class AdvancedAutomationEngine extends BaseSystem {
     return await this.homey.app.presenceManager.getStatus(zone);
   }
 
-  async getWeatherValue(property) {
+  async getWeatherValue(_property) {
     // Implement weather API integration
     return 20; // Placeholder
   }
@@ -561,12 +704,12 @@ class AdvancedAutomationEngine extends BaseSystem {
     return await this.homey.app.energyManager.getCurrentConsumption(scope);
   }
 
-  async makeApiCall(url, method, data) {
+  async makeApiCall(_url, _method, _data) {
     // Implement HTTP request
     return { status: 'not_implemented' };
   }
 
-  async executeScript(script, context) {
+  async executeScript(_script, _context) {
     // Safely execute user script
     return { status: 'not_implemented' };
   }

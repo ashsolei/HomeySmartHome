@@ -1,123 +1,182 @@
 'use strict';
 
 const Homey = require('homey');
+// Waves 1-5: Core, Energy, Security, Climate, Automation, Lifestyle, Monitoring, Outdoor
+// Domain: core
 const AdvancedAutomationEngine = require('./lib/AdvancedAutomationEngine');
 const IntelligentDashboard = require('./lib/IntelligentDashboard');
 const IntelligenceManager = require('./lib/IntelligenceManager');
 const AdvancedAnalytics = require('./lib/AdvancedAnalytics');
-const VoiceControlSystem = require('./lib/VoiceControlSystem');
-const GeofencingEngine = require('./lib/GeofencingEngine');
 const SceneLearningSystem = require('./lib/SceneLearningSystem');
 const AdvancedNotificationManager = require('./lib/AdvancedNotificationManager');
-const DeviceHealthMonitor = require('./lib/DeviceHealthMonitor');
-const EnergyForecastingEngine = require('./lib/EnergyForecastingEngine');
 const SmartSchedulingSystem = require('./lib/SmartSchedulingSystem');
 const IntegrationHub = require('./lib/IntegrationHub');
 const MultiUserPreferenceSystem = require('./lib/MultiUserPreferenceSystem');
-const BackupRecoverySystem = require('./lib/BackupRecoverySystem');
-const PerformanceOptimizer = require('./lib/PerformanceOptimizer');
 const AmbientIntelligenceSystem = require('./lib/AmbientIntelligenceSystem');
 const MoodActivityDetectionSystem = require('./lib/MoodActivityDetectionSystem');
-const EnergyStorageManagementSystem = require('./lib/EnergyStorageManagementSystem');
 const AdvancedSceneTemplateSystem = require('./lib/AdvancedSceneTemplateSystem');
-const PredictiveMaintenanceScheduler = require('./lib/PredictiveMaintenanceScheduler');
 const CrossHomeSynchronizationSystem = require('./lib/CrossHomeSynchronizationSystem');
+// Domain: automation
+const VoiceControlSystem = require('./lib/VoiceControlSystem');
+const AIVoiceAssistantIntegration = require('./lib/AIVoiceAssistantIntegration');
+const SmartApplianceController = require('./lib/SmartApplianceController');
+const SmartWindowManagementSystem = require('./lib/SmartWindowManagementSystem');
+const SmartFurnitureControlSystem = require('./lib/SmartFurnitureControlSystem');
+// Domain: energy
+const EnergyForecastingEngine = require('./lib/EnergyForecastingEngine');
+const EnergyStorageManagementSystem = require('./lib/EnergyStorageManagementSystem');
+const AdvancedEnergyTradingSystem = require('./lib/AdvancedEnergyTradingSystem');
+// Domain: security
+const GeofencingEngine = require('./lib/GeofencingEngine');
+const AdvancedSecuritySystem = require('./lib/AdvancedSecuritySystem');
+const SmartLockManagementSystem = require('./lib/SmartLockManagementSystem');
+// Domain: monitoring
+const DeviceHealthMonitor = require('./lib/DeviceHealthMonitor');
+const BackupRecoverySystem = require('./lib/BackupRecoverySystem');
+const PerformanceOptimizer = require('./lib/PerformanceOptimizer');
+const PredictiveMaintenanceScheduler = require('./lib/PredictiveMaintenanceScheduler');
+// Domain: climate
 const SmartWaterManagementSystem = require('./lib/SmartWaterManagementSystem');
 const AirQualityManagementSystem = require('./lib/AirQualityManagementSystem');
-const AdvancedSecuritySystem = require('./lib/AdvancedSecuritySystem');
-const WellnessSleepOptimizer = require('./lib/WellnessSleepOptimizer');
-const SmartApplianceController = require('./lib/SmartApplianceController');
-const GardenPlantCareSystem = require('./lib/GardenPlantCareSystem');
-const AIVoiceAssistantIntegration = require('./lib/AIVoiceAssistantIntegration');
-const SmartLockManagementSystem = require('./lib/SmartLockManagementSystem');
-const PetCareAutomationSystem = require('./lib/PetCareAutomationSystem');
+const AdvancedAirPurificationSystem = require('./lib/AdvancedAirPurificationSystem');
 const AdvancedWeatherIntegration = require('./lib/AdvancedWeatherIntegration');
+// Domain: lifestyle
+const WellnessSleepOptimizer = require('./lib/WellnessSleepOptimizer');
+const PetCareAutomationSystem = require('./lib/PetCareAutomationSystem');
+const HomeGymFitnessSystem = require('./lib/HomeGymFitnessSystem');
+const AdvancedWakeUpRoutineSystem = require('./lib/AdvancedWakeUpRoutineSystem');
+// Domain: outdoor
+const GardenPlantCareSystem = require('./lib/GardenPlantCareSystem');
 const SmartWasteManagementSystem = require('./lib/SmartWasteManagementSystem');
 const VehicleIntegrationSystem = require('./lib/VehicleIntegrationSystem');
-const AdvancedAVAutomation = require('./lib/AdvancedAVAutomation');
 const OutdoorLightingScenarios = require('./lib/OutdoorLightingScenarios');
-const PoolSpaManagementSystem = require('./lib/PoolSpaManagementSystem');
-const AdvancedEnergyTradingSystem = require('./lib/AdvancedEnergyTradingSystem');
-const HomeGymFitnessSystem = require('./lib/HomeGymFitnessSystem');
-const SmartWindowManagementSystem = require('./lib/SmartWindowManagementSystem');
-const WineCellarManagementSystem = require('./lib/WineCellarManagementSystem');
-const AdvancedWakeUpRoutineSystem = require('./lib/AdvancedWakeUpRoutineSystem');
 const MailboxPackageTrackingSystem = require('./lib/MailboxPackageTrackingSystem');
-const AdvancedAirPurificationSystem = require('./lib/AdvancedAirPurificationSystem');
-const SmartFurnitureControlSystem = require('./lib/SmartFurnitureControlSystem');
+// Domain: entertainment
+const AdvancedAVAutomation = require('./lib/AdvancedAVAutomation');
+const PoolSpaManagementSystem = require('./lib/PoolSpaManagementSystem');
+const WineCellarManagementSystem = require('./lib/WineCellarManagementSystem');
 const HomeOfficeOptimizationSystem = require('./lib/HomeOfficeOptimizationSystem');
-// Sixth wave of autonomous features
+// Wave 6 - Entertainment & Lifestyle
+// Domain: entertainment
 const SmartHomeTheaterSystem = require('./lib/SmartHomeTheaterSystem');
-const AdvancedKitchenAutomationSystem = require('./lib/AdvancedKitchenAutomationSystem');
 const HomeSpaAndSaunaSystem = require('./lib/HomeSpaAndSaunaSystem');
-const SmartWardrobeManagementSystem = require('./lib/SmartWardrobeManagementSystem');
 const HomeBarManagementSystem = require('./lib/HomeBarManagementSystem');
-const AdvancedBabyAndChildCareSystem = require('./lib/AdvancedBabyAndChildCareSystem');
+// Domain: automation
+const AdvancedKitchenAutomationSystem = require('./lib/AdvancedKitchenAutomationSystem');
 const HomeCleaningAutomationSystem = require('./lib/HomeCleaningAutomationSystem');
 const SmartGarageManagementSystem = require('./lib/SmartGarageManagementSystem');
-// Seventh wave of autonomous features - Home, Hobbies & Lifestyle
+// Domain: lifestyle
+const SmartWardrobeManagementSystem = require('./lib/SmartWardrobeManagementSystem');
+const AdvancedBabyAndChildCareSystem = require('./lib/AdvancedBabyAndChildCareSystem');
+// Wave 7 - Home, Hobbies & Lifestyle
+// Domain: automation
 const SmartLaundryManagementSystem = require('./lib/SmartLaundryManagementSystem');
+const HomeRoboticsOrchestrationSystem = require('./lib/HomeRoboticsOrchestrationSystem');
+// Domain: outdoor
 const HomeWorkshopSafetySystem = require('./lib/HomeWorkshopSafetySystem');
-const AdvancedMusicAudioSystem = require('./lib/AdvancedMusicAudioSystem');
 const SmartAquariumManagementSystem = require('./lib/SmartAquariumManagementSystem');
-const HomeOfficeProductivityHub = require('./lib/HomeOfficeProductivityHub');
 const AdvancedIndoorPlantCareSystem = require('./lib/AdvancedIndoorPlantCareSystem');
-const SmartPetDoorActivitySystem = require('./lib/SmartPetDoorActivitySystem');
 const HomeLibraryManagementSystem = require('./lib/HomeLibraryManagementSystem');
-// Eighth wave of autonomous features - Home Safety, Security & Infrastructure
+const SmartPetDoorActivitySystem = require('./lib/SmartPetDoorActivitySystem');
+// Domain: entertainment
+const AdvancedMusicAudioSystem = require('./lib/AdvancedMusicAudioSystem');
+const HomeOfficeProductivityHub = require('./lib/HomeOfficeProductivityHub');
+// Wave 8 - Home Safety, Security & Infrastructure
+// Domain: energy
 const SolarEnergyOptimizationSystem = require('./lib/SolarEnergyOptimizationSystem');
+// Domain: monitoring
 const HomeEmergencyResponseSystem = require('./lib/HomeEmergencyResponseSystem');
+// Domain: security
 const AdvancedHomeNetworkSecuritySystem = require('./lib/AdvancedHomeNetworkSecuritySystem');
-const SmartIrrigationWaterConservationSystem = require('./lib/SmartIrrigationWaterConservationSystem');
-const AdvancedAirQualityVentilationControlSystem = require('./lib/AdvancedAirQualityVentilationControlSystem');
-const HomeAccessibilityElderlyCareSystem = require('./lib/HomeAccessibilityElderlyCareSystem');
 const AdvancedPackageDeliveryManagementSystem = require('./lib/AdvancedPackageDeliveryManagementSystem');
 const SmartHomeInsuranceRiskAssessmentSystem = require('./lib/SmartHomeInsuranceRiskAssessmentSystem');
-// Ninth wave of autonomous features - AI & Advanced Integration
+// Domain: climate
+const SmartIrrigationWaterConservationSystem = require('./lib/SmartIrrigationWaterConservationSystem');
+const AdvancedAirQualityVentilationControlSystem = require('./lib/AdvancedAirQualityVentilationControlSystem');
+// Domain: outdoor
+const HomeAccessibilityElderlyCareSystem = require('./lib/HomeAccessibilityElderlyCareSystem');
+// Wave 9 - AI & Advanced Integration
+// Domain: core
 const AdvancedAIPredictionEngine = require('./lib/AdvancedAIPredictionEngine');
 const CrossSystemAIOrchestrationHub = require('./lib/CrossSystemAIOrchestrationHub');
-// Tenth wave of autonomous features - Deep Learning & NLP
+// Wave 10 - Deep Learning & NLP
+// Domain: core
 const DeepLearningVisionSystem = require('./lib/DeepLearningVisionSystem');
 const NaturalLanguageAutomationEngine = require('./lib/NaturalLanguageAutomationEngine');
-// System optimizer
-const { SystemOptimizer, optimizeSystem } = require('./lib/utils/SystemOptimizer');
 // Wave 11 - Infrastructure & Optimization Systems
-const { BaseSystem } = require('./lib/utils/BaseSystem');
-const { CentralizedCacheManager, TTL_LEVELS } = require('./lib/utils/CentralizedCacheManager');
+// Domain: infrastructure
+const { SystemOptimizer, optimizeSystem: _optimizeSystem } = require('./lib/utils/SystemOptimizer');
+const { BaseSystem: _BaseSystem } = require('./lib/utils/BaseSystem');
+const { CentralizedCacheManager, TTL_LEVELS: _TTL_LEVELS } = require('./lib/utils/CentralizedCacheManager');
 const { UnifiedEventScheduler } = require('./lib/utils/UnifiedEventScheduler');
+// Domain: monitoring
 const ErrorHandlingMiddleware = require('./lib/ErrorHandlingMiddleware');
 const MemoryGuardSystem = require('./lib/MemoryGuardSystem');
-const APIAuthenticationGateway = require('./lib/APIAuthenticationGateway');
 const SystemHealthDashboard = require('./lib/SystemHealthDashboard');
+// Domain: security
+const APIAuthenticationGateway = require('./lib/APIAuthenticationGateway');
 // Wave 12 - New Feature Systems & Coverage Expansion
+// Domain: security
 const SmartDoorbellIntercomSystem = require('./lib/SmartDoorbellIntercomSystem');
-const IndoorLightingSceneEngine = require('./lib/IndoorLightingSceneEngine');
-const EnergyBillingAnalyticsSystem = require('./lib/EnergyBillingAnalyticsSystem');
 const VisitorGuestManagementSystem = require('./lib/VisitorGuestManagementSystem');
+// Domain: automation
+const IndoorLightingSceneEngine = require('./lib/IndoorLightingSceneEngine');
 const RoomOccupancyMappingSystem = require('./lib/RoomOccupancyMappingSystem');
+// Domain: energy
+const EnergyBillingAnalyticsSystem = require('./lib/EnergyBillingAnalyticsSystem');
 const PowerContinuityUPSSystem = require('./lib/PowerContinuityUPSSystem');
 // Wave 13 - Smart Living & Disaster Resilience
+// Domain: outdoor
 const SmartFoodPantryManagementSystem = require('./lib/SmartFoodPantryManagementSystem');
+// Domain: energy
 const HomeSustainabilityTrackerSystem = require('./lib/HomeSustainabilityTrackerSystem');
+// Domain: security
 const SmartPerimeterManagementSystem = require('./lib/SmartPerimeterManagementSystem');
-const HomeRoboticsOrchestrationSystem = require('./lib/HomeRoboticsOrchestrationSystem');
+// Domain: automation
+const SmartHomePredictiveCleaningSystem = require('./lib/SmartHomePredictiveCleaningSystem');
+// Domain: core
 const SmartHomeDigitalTwinSystem = require('./lib/SmartHomeDigitalTwinSystem');
+// Domain: monitoring
 const SmartDisasterResilienceSystem = require('./lib/SmartDisasterResilienceSystem');
 // Wave 14 - EV Charging, Nutrition, Noise, Child Education, Seasonal, Guest Entertainment
+// Domain: energy
 const SmartEVChargingManagementSystem = require('./lib/SmartEVChargingManagementSystem');
+// Domain: lifestyle
 const HomeNutritionWellnessSystem = require('./lib/HomeNutritionWellnessSystem');
 const SmartNoiseManagementSystem = require('./lib/SmartNoiseManagementSystem');
 const HomeChildEducationSystem = require('./lib/HomeChildEducationSystem');
+// Domain: core
 const SmartSeasonalAdaptationSystem = require('./lib/SmartSeasonalAdaptationSystem');
+// Domain: security
 const AdvancedGuestEntertainmentSystem = require('./lib/AdvancedGuestEntertainmentSystem');
-
 // Wave 15 - Smart Mirror, Energy Audit, Fireplace, Sleep Environment, HVAC Zone, Security Drone
+// Domain: monitoring
 const SmartMirrorDashboardSystem = require('./lib/SmartMirrorDashboardSystem');
+// Domain: energy
 const HomeEnergyAuditSystem = require('./lib/HomeEnergyAuditSystem');
+// Domain: climate
 const SmartFireplaceManagementSystem = require('./lib/SmartFireplaceManagementSystem');
-const AdvancedSleepEnvironmentSystem = require('./lib/AdvancedSleepEnvironmentSystem');
 const SmartHVACZoneControlSystem = require('./lib/SmartHVACZoneControlSystem');
+// Domain: lifestyle
+const AdvancedSleepEnvironmentSystem = require('./lib/AdvancedSleepEnvironmentSystem');
+// Domain: security
 const HomeSecurityDroneSystem = require('./lib/HomeSecurityDroneSystem');
+// Wave 16 - Circadian, Wellness, Composting, Neighborhood, Water Leak, Blinds, Floor Heating, Weather Station, Ventilation, Roof Solar
+const SmartCircadianLightingSystem = require('./lib/SmartCircadianLightingSystem');
+const HomeDigitalWellnessSystem = require('./lib/HomeDigitalWellnessSystem');
+const SmartCompostingGardenSystem = require('./lib/SmartCompostingGardenSystem');
+const AdvancedNeighborhoodIntegrationSystem = require('./lib/AdvancedNeighborhoodIntegrationSystem');
+const HomeWaterLeakProtectionSystem = require('./lib/HomeWaterLeakProtectionSystem');
+const SmartBlindsShutterControlSystem = require('./lib/SmartBlindsShutterControlSystem');
+const SmartFloorHeatingControlSystem = require('./lib/SmartFloorHeatingControlSystem');
+const SmartWeatherStationSystem = require('./lib/SmartWeatherStationSystem');
+const SmartHomeVentilationHeatRecoverySystem = require('./lib/SmartHomeVentilationHeatRecoverySystem');
+const SmartRoofSolarMonitoringSystem = require('./lib/SmartRoofSolarMonitoringSystem');
+// Wave 17 - Audit
+const AuditLogSystem = require('./lib/AuditLogSystem');
+// Wave 18 - Adaptive Learning & Automated Testing
+const SmartHomeAdaptiveLearningSystem = require('./lib/SmartHomeAdaptiveLearningSystem');
+const SmartHomeAutomatedTestingSystem = require('./lib/SmartHomeAutomatedTestingSystem');
 
 class SmartHomeProApp extends Homey.App {
   
@@ -298,6 +357,24 @@ class SmartHomeProApp extends Homey.App {
     this.advancedSleepEnvironmentSystem = new AdvancedSleepEnvironmentSystem(this.homey);
     this.smartHVACZoneControlSystem = new SmartHVACZoneControlSystem(this.homey);
     this.homeSecurityDroneSystem = new HomeSecurityDroneSystem(this.homey);
+    // Wave 13 - missing instantiation
+    this.smartHomePredictiveCleaningSystem = new SmartHomePredictiveCleaningSystem(this.homey);
+    // Wave 16 - Circadian, Wellness, Composting, etc.
+    this.smartCircadianLightingSystem = new SmartCircadianLightingSystem(this.homey);
+    this.homeDigitalWellnessSystem = new HomeDigitalWellnessSystem(this.homey);
+    this.smartCompostingGardenSystem = new SmartCompostingGardenSystem(this.homey);
+    this.advancedNeighborhoodIntegrationSystem = new AdvancedNeighborhoodIntegrationSystem(this.homey);
+    this.homeWaterLeakProtectionSystem = new HomeWaterLeakProtectionSystem(this.homey);
+    this.smartBlindsShutterControlSystem = new SmartBlindsShutterControlSystem(this.homey);
+    this.smartFloorHeatingControlSystem = new SmartFloorHeatingControlSystem(this.homey);
+    this.smartWeatherStationSystem = new SmartWeatherStationSystem(this.homey);
+    this.smartHomeVentilationHeatRecoverySystem = new SmartHomeVentilationHeatRecoverySystem(this.homey);
+    this.smartRoofSolarMonitoringSystem = new SmartRoofSolarMonitoringSystem(this.homey);
+    // Wave 17
+    this.auditLogSystem = new AuditLogSystem(this.homey);
+    // Wave 18
+    this.smartHomeAdaptiveLearningSystem = new SmartHomeAdaptiveLearningSystem(this.homey);
+    this.smartHomeAutomatedTestingSystem = new SmartHomeAutomatedTestingSystem(this.homey);
 
     await Promise.all([
       this.deviceManager.initialize(),
@@ -407,7 +484,24 @@ class SmartHomeProApp extends Homey.App {
       this.smartFireplaceManagementSystem.initialize(),
       this.advancedSleepEnvironmentSystem.initialize(),
       this.smartHVACZoneControlSystem.initialize(),
-      this.homeSecurityDroneSystem.initialize()
+      this.homeSecurityDroneSystem.initialize(),
+      // Wave 16
+      this.smartCircadianLightingSystem.initialize(),
+      this.homeDigitalWellnessSystem.initialize(),
+      this.smartCompostingGardenSystem.initialize(),
+      this.advancedNeighborhoodIntegrationSystem.initialize(),
+      this.homeWaterLeakProtectionSystem.initialize(),
+      this.smartBlindsShutterControlSystem.initialize(),
+      this.smartFloorHeatingControlSystem.initialize(),
+      this.smartWeatherStationSystem.initialize(),
+      this.smartHomeVentilationHeatRecoverySystem.initialize(),
+      this.smartRoofSolarMonitoringSystem.initialize(),
+      // Wave 17
+      this.auditLogSystem.initialize(),
+      // Wave 18
+      this.smartHomeAdaptiveLearningSystem.initialize(),
+      this.smartHomeAutomatedTestingSystem.initialize(),
+      this.smartHomePredictiveCleaningSystem.initialize()
     ]);
     
     // Wave 11 post-initialization setup
@@ -460,7 +554,7 @@ class SmartHomeProApp extends Homey.App {
   
   registerAllSystemsForHealthMonitoring() {
     const systems = {
-      'AdvancedAutomationEngine': this.advancedAutomationEngine,
+      'AdvancedAutomationEngine': this.automationEngine,
       'IntelligentDashboard': this.intelligentDashboard,
       'IntelligenceManager': this.intelligenceManager,
       'AdvancedAnalytics': this.advancedAnalytics,
@@ -482,15 +576,13 @@ class SmartHomeProApp extends Homey.App {
       'WineCellarManagement': this.wineCellarManagementSystem,
       'MoodActivityDetection': this.moodActivityDetectionSystem,
       'AmbientIntelligence': this.ambientIntelligenceSystem,
-      'GardenAutomation': this.gardenAutomationSystem,
+      'GardenPlantCare': this.gardenPlantCareSystem,
       'SmartWasteManagement': this.smartWasteManagementSystem,
       'AdvancedWakeUpRoutine': this.advancedWakeUpRoutineSystem,
-      'EVChargingOptimization': this.evChargingOptimizationSystem,
       'HomeGymFitness': this.homeGymFitnessSystem,
-      'WeatherAdaptiveHome': this.weatherAdaptiveHomeSystem,
-      'SmartPetManagement': this.smartPetManagementSystem,
-      'AdvancedSleepOptimization': this.advancedSleepOptimizationSystem,
-      'AdvancedWaterLeakPrevention': this.advancedWaterLeakPreventionSystem,
+      'AdvancedWeatherIntegration': this.advancedWeatherIntegration,
+      'PetCareAutomation': this.petCareAutomationSystem,
+      'HomeWaterLeakProtection': this.homeWaterLeakProtectionSystem,
       'MailboxPackageTracking': this.mailboxPackageTrackingSystem,
       'AdvancedAirPurification': this.advancedAirPurificationSystem,
       'SmartFurnitureControl': this.smartFurnitureControlSystem,
@@ -555,7 +647,20 @@ class SmartHomeProApp extends Homey.App {
       'SmartFireplaceManagement': this.smartFireplaceManagementSystem,
       'AdvancedSleepEnvironment': this.advancedSleepEnvironmentSystem,
       'SmartHVACZoneControl': this.smartHVACZoneControlSystem,
-      'HomeSecurityDrone': this.homeSecurityDroneSystem
+      'HomeSecurityDrone': this.homeSecurityDroneSystem,
+      // Wave 16
+      'SmartCircadianLighting': this.smartCircadianLightingSystem,
+      'HomeDigitalWellness': this.homeDigitalWellnessSystem,
+      'SmartCompostingGarden': this.smartCompostingGardenSystem,
+      'AdvancedNeighborhoodIntegration': this.advancedNeighborhoodIntegrationSystem,
+      'SmartBlindsShutterControl': this.smartBlindsShutterControlSystem,
+      'SmartFloorHeatingControl': this.smartFloorHeatingControlSystem,
+      'SmartWeatherStation': this.smartWeatherStationSystem,
+      'SmartHomeVentilationHeatRecovery': this.smartHomeVentilationHeatRecoverySystem,
+      'SmartRoofSolarMonitoring': this.smartRoofSolarMonitoringSystem,
+      // Wave 17
+      'AuditLogSystem': this.auditLogSystem,
+      'SmartHomePredictiveCleaning': this.smartHomePredictiveCleaningSystem
     };
     
     for (const [name, ref] of Object.entries(systems)) {
@@ -1075,14 +1180,14 @@ class SmartHomeProApp extends Homey.App {
     
     // Power continuity events
     if (this.powerContinuityUPSSystem.on) {
-      this.powerContinuityUPSSystem.on('outage-detected', (data) => {
+      this.powerContinuityUPSSystem.on('outage-detected', (_data) => {
         this.error('[PowerUPS] Power outage detected!');
         this.homey.notifications.createNotification({
           excerpt: '⚡ Strömavbrott upptäckt! UPS-system aktiverat.'
         }).catch(() => {});
       });
-      
-      this.powerContinuityUPSSystem.on('power-restored', (data) => {
+
+      this.powerContinuityUPSSystem.on('power-restored', (_data) => {
         this.log('[PowerUPS] Power restored');
         this.homey.notifications.createNotification({
           excerpt: '✅ Strömmen har återställts. System återställs.'
@@ -1458,7 +1563,7 @@ class SmartHomeProApp extends Homey.App {
     const executeOrchestration = this.homey.flow.getActionCard('execute-orchestration');
     executeOrchestration.registerRunListener(async (args) => {
       try {
-        const result = await this.crossSystemAIOrchestrationHub.orchestrateAction(args.trigger, {
+        const _result = await this.crossSystemAIOrchestrationHub.orchestrateAction(args.trigger, {
           manual: true,
           timestamp: Date.now()
         });
@@ -2402,7 +2507,7 @@ class NotificationManager {
     if (priority === 'critical') {
       try {
         await this.app.homey.speechOutput.say(message);
-      } catch (error) {
+      } catch (_error) {
         this.app.log('Speech output not available');
       }
     }

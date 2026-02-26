@@ -6,6 +6,7 @@
  */
 class PresenceTracker {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.rooms = new Map();
     this.presenceHistory = [];
@@ -96,14 +97,14 @@ class PresenceTracker {
 
   startPresenceMonitoring() {
     // Check presence every 5 seconds
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updatePresenceStatus();
-    }, 5000);
+    }, 5000));
 
     // Analyze patterns every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.analyzePresencePatterns();
-    }, 60000);
+    }, 60000));
   }
 
   async updatePresenceStatus() {
@@ -334,7 +335,7 @@ class PresenceTracker {
     const now = Date.now();
     const hour = new Date().getHours();
 
-    for (const [roomId, room] of this.rooms) {
+    for (const [_roomId, room] of this.rooms) {
       // Unusual nighttime activity
       if (hour >= 2 && hour <= 5 && room.occupied) {
         anomalies.push({
@@ -615,7 +616,7 @@ class PresenceTracker {
     });
 
     return Array.from(roomCounts.entries())
-      .filter(([room, count]) => count >= eventSets.length * 0.6) // Present in 60%+ of days
+      .filter(([_room, count]) => count >= eventSets.length * 0.6) // Present in 60%+ of days
       .map(([room]) => this.rooms.get(room)?.name || room);
   }
 
@@ -654,6 +655,13 @@ class PresenceTracker {
 
   isHomeOccupied() {
     return Array.from(this.rooms.values()).some(room => room.occupied);
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

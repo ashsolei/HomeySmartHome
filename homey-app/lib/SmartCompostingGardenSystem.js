@@ -41,19 +41,23 @@ class SmartCompostingGardenSystem extends EventEmitter {
    * @returns {Promise<boolean>}
    */
   async initialize() {
-    if (this.initialized) return true;
+    try {
+      if (this.initialized) return true;
 
-    this.homey.log('[SmartCompostingGardenSystem] Initializing...');
+      this.homey.log('[SmartCompostingGardenSystem] Initializing...');
 
-    await this.loadSettings();
-    this.initializeDefaultCompostBin();
-    this.startSensorPolling();
-    this.startWateringCheck();
+      await this.loadSettings();
+      this.initializeDefaultCompostBin();
+      this.startSensorPolling();
+      this.startWateringCheck();
 
-    this.initialized = true;
-    this.homey.log('[SmartCompostingGardenSystem] Initialized');
-    this.homey.emit('composting-garden:initialized');
-    return true;
+      this.initialized = true;
+      this.homey.log('[SmartCompostingGardenSystem] Initialized');
+      this.homey.emit('composting-garden:initialized');
+      return true;
+    } catch (error) {
+      this.homey.error(`[SmartCompostingGardenSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**

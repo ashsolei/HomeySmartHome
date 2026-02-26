@@ -1,10 +1,47 @@
 'use strict';
 
 /**
- * Advanced Notification Manager
- * Intelligent notification routing, priority management, and smart delivery
+ * @typedef {1|2|3|4|5} PriorityLevel
+ * INFO=1, LOW=2, NORMAL=3, HIGH=4, CRITICAL=5
+ */
+
+/**
+ * @typedef {object} NotificationInput
+ * @property {string} [title] - Short notification title
+ * @property {string} [message] - Full notification message
+ * @property {string} [category='general'] - Category (e.g. 'security', 'energy', 'device')
+ * @property {string} [source='system'] - Originating module/source
+ * @property {PriorityLevel} [priority] - Override priority (auto-detected if omitted)
+ * @property {string} [deviceId] - Related device identifier
+ * @property {string} [zoneId] - Related zone identifier
+ */
+
+/**
+ * @typedef {object} NotificationRule
+ * @property {string} id - Unique rule identifier
+ * @property {string} name - Human-readable rule name
+ * @property {{category?: string, keywords?: string[], deviceId?: string, zoneId?: string}} conditions - Match conditions
+ * @property {PriorityLevel} priority - Resulting priority if rule matches
+ * @property {string[]} channels - Forced delivery channels (e.g. ['push', 'speech'])
+ * @property {boolean} [ignoreDND=false] - Ignore Do Not Disturb if true
+ * @property {boolean} [allowGrouping=true] - Allow grouping with similar notifications
+ * @property {boolean} [canDelay=false] - Whether delivery can be deferred
+ * @property {boolean} [enabled=true] - Whether the rule is active
+ * @property {number} [created] - Creation timestamp (ms)
+ */
+
+/**
+ * Advanced Notification Manager.
+ *
+ * Provides intelligent notification routing with priority determination,
+ * rule-based channel selection, smart delivery (DND / quiet hours / presence /
+ * notification-fatigue awareness), grouping of similar notifications, and a
+ * deferred queue for notifications that should not be delivered immediately.
  */
 class AdvancedNotificationManager {
+  /**
+   * @param {import('homey').Homey} homey - Homey app instance
+   */
   constructor(homey) {
     this.homey = homey;
     this.notificationQueue = [];
@@ -21,28 +58,38 @@ class AdvancedNotificationManager {
     };
   }
 
+  /**
+   * Load persisted preferences, rules, and notification history, then start
+   * the queue-processor interval and register default rules.
+   *
+   * @returns {Promise<void>}
+   */
   async initialize() {
-    this.log('Initializing Advanced Notification Manager...');
-    
-    // Load configuration
-    this.userPreferences = await this.homey.settings.get('notificationPreferences') || this.getDefaultPreferences();
-    this.doNotDisturbSchedules = await this.homey.settings.get('dndSchedules') || [];
-    
-    const savedRules = await this.homey.settings.get('notificationRules') || {};
-    Object.entries(savedRules).forEach(([id, rule]) => {
-      this.notificationRules.set(id, rule);
-    });
+    try {
+      this.log('Initializing Advanced Notification Manager...');
 
-    // Load notification history
-    this.deliveredNotifications = await this.homey.settings.get('notificationHistory') || [];
+      // Load configuration
+      this.userPreferences = await this.homey.settings.get('notificationPreferences') || this.getDefaultPreferences();
+      this.doNotDisturbSchedules = await this.homey.settings.get('dndSchedules') || [];
 
-    // Start notification processor
-    this.startNotificationProcessor();
-    
-    // Setup default rules
-    await this.setupDefaultRules();
-    
-    this.log('Advanced Notification Manager initialized');
+      const savedRules = await this.homey.settings.get('notificationRules') || {};
+      Object.entries(savedRules).forEach(([id, rule]) => {
+        this.notificationRules.set(id, rule);
+      });
+
+      // Load notification history
+      this.deliveredNotifications = await this.homey.settings.get('notificationHistory') || [];
+
+      // Start notification processor
+      this.startNotificationProcessor();
+
+      // Setup default rules
+      await this.setupDefaultRules();
+
+      this.log('Advanced Notification Manager initialized');
+    } catch (error) {
+      console.error(`[AdvancedNotificationManager] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -135,7 +182,12 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Send notification (main entry point)
+   * Main entry point for sending a notification.  Enriches the notification
+   * with metadata, determines priority, applies rules, and either delivers
+   * immediately or queues for later.
+   *
+   * @param {NotificationInput} notification - Notification to send
+   * @returns {Promise<{success: boolean, notificationId: string, delivered: boolean, queued: boolean}>}
    */
   async send(notification) {
     // Enrich notification
@@ -194,7 +246,7 @@ class AdvancedNotificationManager {
     try {
       const presenceStatus = await this.homey.app.presenceManager?.getStatus();
       presence = presenceStatus?.status || 'unknown';
-    } catch (error) {
+    } catch (_error) {
       // Presence manager not available
     }
 
@@ -217,7 +269,7 @@ class AdvancedNotificationManager {
     }
 
     // Check rules for priority
-    for (const [id, rule] of this.notificationRules) {
+    for (const [_id, rule] of this.notificationRules) {
       if (this.matchesRule(notification, rule)) {
         return rule.priority;
       }
@@ -234,7 +286,11 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Analyze content for urgency
+   * Analyse notification title and message for urgency keywords and return a
+   * normalised urgency score in [0, 1].
+   *
+   * @param {object} notification - Partially enriched notification
+   * @returns {number} Urgency score (0 = none, 1 = critical)
    */
   analyzeUrgency(notification) {
     const content = `${notification.title || ''} ${notification.message || ''}`.toLowerCase();
@@ -382,7 +438,11 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Select appropriate channels for notification
+   * Select which delivery channels to use for a notification, respecting
+   * matching rule overrides and per-channel priority thresholds.
+   *
+   * @param {object} notification - Enriched notification with `rules` and `priority`
+   * @returns {string[]} Array of channel names (e.g. ['push', 'speech'])
    */
   selectChannels(notification) {
     const channels = [];
@@ -583,7 +643,10 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Create notification rule
+   * Create a new notification routing rule and persist it.
+   *
+   * @param {Partial<NotificationRule> & {name: string}} rule - Rule configuration
+   * @returns {Promise<NotificationRule>} The stored rule with generated `id` and `created`
    */
   async createRule(rule) {
     const ruleId = rule.id || this.generateRuleId();
@@ -598,7 +661,12 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Update notification rule
+   * Apply partial updates to an existing notification rule.
+   *
+   * @param {string} ruleId - Rule identifier
+   * @param {Partial<NotificationRule>} updates - Fields to update
+   * @returns {Promise<NotificationRule>} Updated rule
+   * @throws {Error} When the rule ID is not found
    */
   async updateRule(ruleId, updates) {
     const rule = this.notificationRules.get(ruleId);
@@ -613,7 +681,10 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Delete notification rule
+   * Delete a notification rule by ID.
+   *
+   * @param {string} ruleId - Rule identifier
+   * @returns {Promise<boolean>} `true` if the rule existed and was deleted
    */
   async deleteRule(ruleId) {
     const deleted = this.notificationRules.delete(ruleId);
@@ -624,7 +695,10 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Set Do Not Disturb schedule
+   * Add a Do Not Disturb schedule entry.
+   *
+   * @param {{start: string, end: string, days?: number[], enabled?: boolean}} schedule - DND schedule (times in 'HH:MM' format, days 0=Sun–6=Sat)
+   * @returns {Promise<void>}
    */
   async setDNDSchedule(schedule) {
     this.doNotDisturbSchedules.push({
@@ -637,7 +711,9 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Check if currently in Do Not Disturb
+   * Check whether any active DND schedule applies at the current time.
+   *
+   * @returns {boolean}
    */
   isDoNotDisturb() {
     const now = new Date();
@@ -704,7 +780,10 @@ class AdvancedNotificationManager {
   }
 
   /**
-   * Get notification statistics
+   * Get delivery statistics for today, this week, the delivery queue, and
+   * breakdowns by priority, category, and channel.
+   *
+   * @returns {Promise<{total: number, today: number, thisWeek: number, queued: number, byPriority: object, byCategory: object, byChannel: object}>}
    */
   async getStatistics() {
     const now = Date.now();
@@ -768,7 +847,7 @@ class AdvancedNotificationManager {
           message: notification.message
         });
       }
-    } catch (error) {
+    } catch (_error) {
       // Flow card might not exist
     }
   }

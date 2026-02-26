@@ -6,6 +6,7 @@
  */
 class SmartGroceryManager {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.inventory = new Map();
     this.shoppingLists = new Map();
@@ -589,14 +590,14 @@ class SmartGroceryManager {
 
   startMonitoring() {
     // Check expiry dates daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkExpiryDates();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Analyze consumption patterns weekly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.analyzeConsumptionPatterns();
-    }, 7 * 24 * 60 * 60 * 1000);
+    }, 7 * 24 * 60 * 60 * 1000));
 
     // Initial checks
     this.checkExpiryDates();
@@ -770,7 +771,7 @@ class SmartGroceryManager {
     // Suggest recipes based on available ingredients
     const suggestions = [];
 
-    for (const [recipeId, recipe] of this.recipes) {
+    for (const [_recipeId, recipe] of this.recipes) {
       let availableIngredients = 0;
       const missingIngredients = [];
 
@@ -837,6 +838,13 @@ class SmartGroceryManager {
       potentialWasteValue: Math.round(potentialWasteValue),
       suggestions
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

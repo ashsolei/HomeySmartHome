@@ -22,20 +22,24 @@ class OutdoorLightingScenarios {
   }
 
   async initialize() {
-    this.log('Initializing Outdoor Lighting Scenarios...');
     try {
-      this._initializeAccentProfiles();
-      this._initializeHolidayThemes();
-      this._initializeMotionZones();
-      this._initializeEnergyBudget();
-      this._initializePathwaySegments();
-      await this._discoverDevices();
-      this._startMonitoring();
-      this.initialized = true;
-      this.log('Outdoor Lighting Scenarios initialized successfully');
-    } catch (err) {
-      this.error('Failed to initialize Outdoor Lighting Scenarios: ' + err.message);
-      throw err;
+      this.log('Initializing Outdoor Lighting Scenarios...');
+      try {
+        this._initializeAccentProfiles();
+        this._initializeHolidayThemes();
+        this._initializeMotionZones();
+        this._initializeEnergyBudget();
+        this._initializePathwaySegments();
+        await this._discoverDevices();
+        this._startMonitoring();
+        this.initialized = true;
+        this.log('Outdoor Lighting Scenarios initialized successfully');
+      } catch (err) {
+        this.error('Failed to initialize Outdoor Lighting Scenarios: ' + err.message);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[OutdoorLightingScenarios] Failed to initialize:`, error.message);
     }
   }
 
@@ -878,9 +882,9 @@ class OutdoorLightingScenarios {
   _monitoringCycle() {
     try {
       const now = new Date();
-      const sunPos = this.calculateSunPosition(now);
+      const _sunPos = this.calculateSunPosition(now);
       const brightness = this.getBrightnessForTime(now);
-      const colorTemp = this.getColorTempForTime(now);
+      const _colorTemp = this.getColorTempForTime(now);
 
       const activeTheme = this.getActiveHolidayTheme();
 

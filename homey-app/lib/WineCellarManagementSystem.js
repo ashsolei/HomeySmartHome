@@ -29,16 +29,20 @@ class WineCellarManagementSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Wine Cellar Management System...');
-    
-    await this.loadSettings();
-    this.initializeDefaultCellars();
-    this.initializeSampleWines();
-    
-    this.startMonitoring();
-    
-    this.homey.log('Wine Cellar Management System initialized successfully');
-    return true;
+    try {
+      this.homey.log('Initializing Wine Cellar Management System...');
+
+      await this.loadSettings();
+      this.initializeDefaultCellars();
+      this.initializeSampleWines();
+
+      this.startMonitoring();
+
+      this.homey.log('Wine Cellar Management System initialized successfully');
+      return true;
+    } catch (error) {
+      this.homey.error(`[WineCellarManagementSystem] Failed to initialize:`, error.message);
+    }
   }
 
   async loadSettings() {

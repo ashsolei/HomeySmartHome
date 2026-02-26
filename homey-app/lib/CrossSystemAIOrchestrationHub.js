@@ -431,7 +431,7 @@ class CrossSystemAIOrchestrationHub extends EventEmitter {
         if (this.rulesDatabase[ri].condition(context)) {
           matchedRules.push(this.rulesDatabase[ri]);
         }
-      } catch (err) {
+      } catch (_err) {
         // Rule evaluation error, skip silently
       }
     }
@@ -470,7 +470,7 @@ class CrossSystemAIOrchestrationHub extends EventEmitter {
   /**
    * Calculate confidence for a rule decision
    */
-  _calculateConfidence(rule, context) {
+  _calculateConfidence(rule, _context) {
     var confidence = 0.75;
 
     // Adjust based on historical success rate

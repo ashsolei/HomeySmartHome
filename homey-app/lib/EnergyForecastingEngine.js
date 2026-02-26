@@ -3,10 +3,82 @@
 const { BaseSystem } = require('./utils/BaseSystem');
 
 /**
- * Energy Forecasting Engine
- * Advanced energy prediction, cost forecasting, and optimization
+ * @typedef {'24h'|'7d'|'30d'|string} ForecastPeriod
+ */
+
+/**
+ * @typedef {object} HourlyForecast
+ * @property {number} hour - Hours from now (0 = current hour)
+ * @property {number} timestamp - Absolute timestamp (ms)
+ * @property {Date} datetime - Absolute date/time
+ * @property {number} predicted - Predicted consumption in watts
+ * @property {number} confidence - Confidence in [0, 1]
+ * @property {{low: number, high: number}} range - 1-σ confidence interval
+ */
+
+/**
+ * @typedef {object} DailyForecast
+ * @property {number} day - Days from today (0 = today)
+ * @property {Date} date - Absolute date
+ * @property {number} dayOfWeek - 0 (Sun) – 6 (Sat)
+ * @property {number} predicted - Predicted consumption in watts
+ * @property {number} trend - Linear regression slope of historical values
+ * @property {number} confidence - Confidence in [0, 1]
+ */
+
+/**
+ * @typedef {object} CostForecastEntry
+ * @property {number} hour - Hours from now
+ * @property {number} timestamp - Absolute timestamp (ms)
+ * @property {number} predicted - Predicted consumption in watts
+ * @property {number} price - SEK/kWh for this hour
+ * @property {'low'|'normal'|'high'} priceLevel - Price tier
+ * @property {number} cost - Estimated cost in SEK
+ */
+
+/**
+ * @typedef {object} CostForecast
+ * @property {CostForecastEntry[]} hourly - Per-hour cost forecast
+ * @property {number} totalCost - Total cost for the forecast window (SEK)
+ * @property {'SEK'} currency - Currency
+ */
+
+/**
+ * @typedef {object} OptimizationOpportunity
+ * @property {string} type - Opportunity type identifier
+ * @property {string} title - Short human-readable title (Swedish)
+ * @property {string} description - Longer description (Swedish)
+ * @property {'low'|'medium'|'high'} priority - Implementation priority
+ * @property {'low'|'medium'|'high'} impact - Expected impact
+ * @property {number} [savings] - Estimated monthly savings (SEK), if applicable
+ */
+
+/**
+ * @typedef {object} EnergyStatistics
+ * @property {ForecastPeriod} period - Requested period
+ * @property {number} dataPoints - Number of data points analysed
+ * @property {number} totalConsumption - Total consumption in watts over the period
+ * @property {number} avgConsumption - Average per-interval consumption (W)
+ * @property {number} peakConsumption - Maximum recorded consumption (W)
+ * @property {number} minConsumption - Minimum recorded consumption (W)
+ * @property {number} totalCost - Total cost in SEK
+ * @property {number} avgCost - Average per-interval cost (SEK)
+ * @property {number} trend - Linear regression slope of consumption values
+ */
+
+/**
+ * Energy Forecasting Engine.
+ *
+ * Collects 5-minute energy snapshots, trains statistical forecast models
+ * (hourly, daily, weekly, per-device) on a daily cycle, and exposes
+ * 24-hour energy and cost predictions alongside optimisation opportunities.
+ *
+ * @extends BaseSystem
  */
 class EnergyForecastingEngine extends BaseSystem {
+  /**
+   * @param {import('homey').Homey} homey - Homey app instance
+   */
   constructor(homey) {
     super(homey);
     this.historicalData = [];
@@ -38,7 +110,10 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Start collecting energy data
+   * Start all background intervals: data collection (5 min), forecast update
+   * (1 h), model training (24 h), and price fetch (1 h).
+   *
+   * @returns {Promise<void>}
    */
   async startDataCollection() {
     // Collect energy data every 5 minutes
@@ -103,7 +178,7 @@ class EnergyForecastingEngine extends BaseSystem {
             // Aggregate by zone
             const zone = device.zone?.name || 'unknown';
             dataPoint.byZone[zone] = (dataPoint.byZone[zone] || 0) + power;
-          } catch (error) {
+          } catch (_error) {
             // Device might not support power measurement
           }
         }
@@ -137,7 +212,11 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Train forecasting models
+   * Train all forecasting models (hourly, daily, weekly, per-device).
+   * Silently returns without training if fewer than 100 historical data points
+   * are available.
+   *
+   * @returns {Promise<void>}
    */
   async trainModels() {
     this.log('Training forecasting models...');
@@ -285,7 +364,10 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Identify usage pattern (constant, periodic, random)
+   * Classify a series of power readings by its variability.
+   *
+   * @param {number[]} values - Power readings (W)
+   * @returns {'constant'|'periodic'|'variable'}
    */
   identifyUsagePattern(values) {
     const stdDev = this.calculateStdDev(values);
@@ -298,7 +380,11 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Update forecasts
+   * Regenerate all cached predictions (24-hour energy, 7-day daily, 24-hour
+   * cost, and optimisation opportunities) and send notifications for noteworthy
+   * predictions.
+   *
+   * @returns {Promise<void>}
    */
   async updateForecasts() {
     this.log('Updating forecasts...');
@@ -323,7 +409,11 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Forecast next N hours
+   * Produce an hourly energy consumption forecast for the next N hours using
+   * the trained hourly model and a recent-trend adjustment factor.
+   *
+   * @param {number} hours - Number of hours to forecast
+   * @returns {Promise<HourlyForecast[]>}
    */
   async forecastNextHours(hours) {
     const model = this.forecastModels.get('hourly');
@@ -359,7 +449,11 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Forecast next N days
+   * Produce a daily energy consumption forecast for the next N days using the
+   * trained daily (day-of-week) model.
+   *
+   * @param {number} days - Number of days to forecast
+   * @returns {Promise<DailyForecast[]>}
    */
   async forecastNextDays(days) {
     const model = this.forecastModels.get('daily');
@@ -389,7 +483,11 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Forecast energy cost
+   * Combine the hourly energy forecast with predicted electricity prices to
+   * produce a cost forecast for the next N hours.
+   *
+   * @param {number} hours - Number of hours to forecast
+   * @returns {Promise<CostForecast>}
    */
   async forecastCost(hours) {
     const energyForecast = await this.forecastNextHours(hours);
@@ -417,7 +515,11 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Predict energy price for future time
+   * Estimate the electricity price tier and SEK/kWh rate for a given future
+   * datetime using a simple peak/off-peak heuristic for Swedish pricing.
+   *
+   * @param {Date} datetime - Future date/time to price
+   * @returns {Promise<{price: number, level: 'low'|'normal'|'high', timestamp: number}>}
    */
   async predictPriceForTime(datetime) {
     const hour = datetime.getHours();
@@ -445,7 +547,11 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Identify optimization opportunities
+   * Analyse current forecasts and historical patterns to build a ranked list
+   * of energy optimisation opportunities (load shifting, peak shaving,
+   * predictive climate control, high-consumer reduction).
+   *
+   * @returns {Promise<OptimizationOpportunity[]>}
    */
   async identifyOptimizationOpportunities() {
     const opportunities = [];
@@ -474,7 +580,7 @@ class EnergyForecastingEngine extends BaseSystem {
       .filter(([key, _]) => key.startsWith('device_'));
 
     const highConsumers = deviceModels
-      .map(([key, model]) => model)
+      .map(([_key, model]) => model)
       .filter(m => m.avgPower > 500) // > 500W
       .sort((a, b) => b.avgPower - a.avgPower)
       .slice(0, 3);
@@ -522,7 +628,12 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Calculate potential savings
+   * Estimate monthly savings (SEK) achievable by shifting load from high-cost
+   * hours to low-cost hours.
+   *
+   * @param {CostForecastEntry[]} highCostHours - High-cost forecast entries
+   * @param {CostForecastEntry[]} lowCostHours - Low-cost forecast entries
+   * @returns {number} Estimated monthly savings in SEK (rounded)
    */
   calculateSavings(highCostHours, lowCostHours) {
     if (highCostHours.length === 0 || lowCostHours.length === 0) return 0;
@@ -534,7 +645,9 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Get comprehensive forecast report
+   * Assemble a comprehensive forecast report from the latest cached predictions.
+   *
+   * @returns {Promise<{timestamp: number, hourlyForecast: HourlyForecast[], dailyForecast: DailyForecast[], costForecast: CostForecast|undefined, insights: {peakHour: object|null, lowestCostHour: object|null, expectedDailyCost: number, optimization: OptimizationOpportunity[]}}>}
    */
   async getForecastReport() {
     const hourly = this.predictions.get('hourly_24h') || [];
@@ -571,7 +684,11 @@ class EnergyForecastingEngine extends BaseSystem {
   }
 
   /**
-   * Get energy statistics
+   * Compute descriptive statistics over the stored historical data for the
+   * requested time period.
+   *
+   * @param {ForecastPeriod} [period='24h'] - Time window to analyse
+   * @returns {Promise<EnergyStatistics|{error: string}>}
    */
   async getEnergyStatistics(period = '24h') {
     let data = [];

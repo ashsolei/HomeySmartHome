@@ -6,6 +6,8 @@
  */
 class EmergencyResponseCoordinator {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.emergencyTypes = new Map();
     this.emergencyProtocols = new Map();
@@ -543,17 +545,17 @@ class EmergencyResponseCoordinator {
 
   startMonitoring() {
     // Check for active emergencies every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.monitorActiveEmergencies();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Test emergency systems weekly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const day = new Date().getDay();
       if (day === 0) { // Sunday
         this.testEmergencySystems();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     console.log('🚨 Emergency Response Coordinator active');
   }
@@ -653,6 +655,17 @@ class EmergencyResponseCoordinator {
                   c.priority === 1 ? 'High' : 'Medium',
         timesNotified: c.timesNotified
       }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

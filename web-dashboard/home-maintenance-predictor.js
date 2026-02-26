@@ -6,6 +6,8 @@
  */
 class HomeMaintenancePredictor {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.systems = new Map();
     this.maintenanceTasks = new Map();
@@ -279,7 +281,7 @@ class HomeMaintenancePredictor {
     // If seasonal, schedule for appropriate season
     if (task.season) {
       const now = new Date();
-      const currentMonth = now.getMonth();
+      const _currentMonth = now.getMonth();
       
       const seasonMonths = {
         spring: 3, // April
@@ -337,9 +339,9 @@ class HomeMaintenancePredictor {
     console.log(`✅ Completed: ${task.name} (Cost: ${data.actualCost || task.cost} SEK)`);
 
     // Reset status after logging
-    setTimeout(() => {
+    this._timeouts.push(setTimeout(() => {
       task.status = 'pending';
-    }, 1000);
+    }, 1000));
 
     return { success: true, task };
   }
@@ -438,7 +440,7 @@ class HomeMaintenancePredictor {
       const events = [];
 
       // Regular maintenance
-      for (const [taskId, task] of this.maintenanceTasks) {
+      for (const [_taskId, task] of this.maintenanceTasks) {
         const occurrencesPerYear = 365 / task.frequency;
         const yearlyCost = task.cost * occurrencesPerYear;
         totalCost += yearlyCost;
@@ -453,7 +455,7 @@ class HomeMaintenancePredictor {
       }
 
       // Predicted replacements
-      for (const [systemId, system] of this.systems) {
+      for (const [_systemId, system] of this.systems) {
         const age = (Date.now() - system.installedDate) / (365 * 24 * 60 * 60 * 1000);
         const yearsUntilReplacement = system.expectedLifespan - age;
 
@@ -620,25 +622,25 @@ class HomeMaintenancePredictor {
 
   startMonitoring() {
     // Check maintenance tasks daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkMaintenanceTasks();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Analyze systems weekly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const day = new Date().getDay();
       if (day === 0) { // Sunday
         this.analyzeSystems();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Check warranties monthly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const date = new Date().getDate();
       if (date === 1) {
         this.checkWarranties();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Initial analysis
     this.analyzeSystems();
@@ -648,7 +650,7 @@ class HomeMaintenancePredictor {
     const now = Date.now();
     const thirtyDays = 30 * 24 * 60 * 60 * 1000;
 
-    for (const [taskId, task] of this.maintenanceTasks) {
+    for (const [_taskId, task] of this.maintenanceTasks) {
       if (task.status === 'completed') continue;
 
       const daysUntilDue = Math.ceil((task.nextDue - now) / (24 * 60 * 60 * 1000));
@@ -664,7 +666,7 @@ class HomeMaintenancePredictor {
   async checkWarranties() {
     console.log('📜 Checking warranties...');
 
-    for (const [warrantyId, warranty] of this.warranties) {
+    for (const [_warrantyId, warranty] of this.warranties) {
       if (warranty.daysRemaining < 90 && warranty.active) {
         console.log(`⚠️ Warranty expiring soon: ${this.systems.get(warranty.system)?.name} (${warranty.daysRemaining} days)`);
       }
@@ -711,7 +713,7 @@ class HomeMaintenancePredictor {
   getSystemHealthReport() {
     const systems = [];
 
-    for (const [systemId, system] of this.systems) {
+    for (const [_systemId, system] of this.systems) {
       const age = ((Date.now() - system.installedDate) / (365 * 24 * 60 * 60 * 1000)).toFixed(1);
       const lifeRemaining = (system.expectedLifespan - parseFloat(age)).toFixed(1);
 
@@ -789,6 +791,17 @@ class HomeMaintenancePredictor {
     }
 
     return calendar;
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

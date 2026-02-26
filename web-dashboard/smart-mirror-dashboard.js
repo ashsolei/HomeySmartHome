@@ -6,6 +6,7 @@
  */
 class SmartMirrorDashboard {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.widgets = new Map();
     this.layouts = new Map();
@@ -261,7 +262,7 @@ class SmartMirrorDashboard {
     }
 
     // Disable all widgets
-    for (const [id, widget] of this.widgets) {
+    for (const [_id, widget] of this.widgets) {
       widget.enabled = false;
     }
 
@@ -284,7 +285,7 @@ class SmartMirrorDashboard {
   // USER RECOGNITION
   // ============================================
 
-  async detectUser(faceData) {
+  async detectUser(_faceData) {
     // Simplified face recognition (would use real facial recognition)
     const users = ['anna', 'erik', 'emma', 'oscar'];
     const detectedUser = users[Math.floor(Math.random() * users.length)];
@@ -415,7 +416,7 @@ class SmartMirrorDashboard {
     return { success: false, error: 'No widget at position' };
   }
 
-  isInBounds(x, y, position) {
+  isInBounds(_x, _y, _position) {
     // Simplified bounds checking
     return true;  // Would calculate actual bounds
   }
@@ -489,14 +490,14 @@ class SmartMirrorDashboard {
 
   startMonitoring() {
     // Update widgets according to refresh intervals
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateActiveWidgets();
-    }, 60000);  // Check every minute
+    }, 60000));  // Check every minute
 
     // Auto-activate layouts based on schedule
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkAutoActivateLayouts();
-    }, 60000);
+    }, 60000));
 
     console.log('🪞 Smart Mirror active');
   }
@@ -504,7 +505,7 @@ class SmartMirrorDashboard {
   async updateActiveWidgets() {
     const now = Date.now();
 
-    for (const [id, widget] of this.widgets) {
+    for (const [_id, widget] of this.widgets) {
       if (widget.enabled) {
         const lastUpdate = widget.lastUpdate || 0;
         
@@ -578,6 +579,13 @@ class SmartMirrorDashboard {
       widgets: l.activeWidgets.length,
       brightness: l.brightness + '%'
     }));
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

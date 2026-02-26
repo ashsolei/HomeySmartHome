@@ -6,6 +6,7 @@
  */
 class SecurityMonitor {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.securityEvents = [];
     this.anomalies = [];
@@ -76,14 +77,14 @@ class SecurityMonitor {
 
   startMonitoring() {
     // Monitor every 10 seconds
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.performSecurityCheck();
-    }, 10000);
+    }, 10000));
 
     // Periodic anomaly analysis (every 5 minutes)
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.analyzeAnomalies();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
   }
 
   async performSecurityCheck() {
@@ -113,7 +114,7 @@ class SecurityMonitor {
   }
 
   async checkUnauthorizedAccess() {
-    const events = [];
+    const _events = [];
     const now = Date.now();
     const accessProfile = this.baselineProfiles.get('access');
 
@@ -144,9 +145,9 @@ class SecurityMonitor {
   }
 
   async checkUnusualDeviceActivity() {
-    const deviceProfile = this.baselineProfiles.get('device_usage');
+    const _deviceProfile = this.baselineProfiles.get('device_usage');
     const now = Date.now();
-    const hour = new Date().getHours();
+    const _hour = new Date().getHours();
 
     // Simulate unusual device activation
     const unusualActivity = Math.random() > 0.97; // 3% chance
@@ -171,7 +172,7 @@ class SecurityMonitor {
   }
 
   async checkUnusualPresence() {
-    const presenceProfile = this.baselineProfiles.get('presence');
+    const _presenceProfile = this.baselineProfiles.get('presence');
     const now = Date.now();
     const hour = new Date().getHours();
 
@@ -232,7 +233,7 @@ class SecurityMonitor {
   }
 
   async checkNetworkAnomalies() {
-    const networkProfile = this.baselineProfiles.get('network');
+    const _networkProfile = this.baselineProfiles.get('network');
     const now = Date.now();
 
     // Simulate network anomaly detection
@@ -322,7 +323,7 @@ class SecurityMonitor {
     // Multiple anomalies in short time
     this.alertRules.set('multiple_anomalies', {
       name: 'Flera avvikelser',
-      condition: (event) => {
+      condition: (_event) => {
         const recentAnomalies = this.anomalies.filter(a => 
           Date.now() - a.timestamp < 15 * 60 * 1000
         );
@@ -679,6 +680,13 @@ class SecurityMonitor {
     return this.anomalies
       .slice(-limit)
       .sort((a, b) => b.timestamp - a.timestamp);
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

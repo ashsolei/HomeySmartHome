@@ -18,23 +18,27 @@ class AdvancedIndoorPlantCareSystem {
   }
 
   async initialize() {
-    this.log('Initializing Advanced Indoor Plant Care System...');
     try {
-      this._initializePlantProfiles();
-      this._initializeGrowLightProfiles();
-      this._initializePestDatabase();
-      this._initializeHumidityZones();
-      this._initializeRoomMicroclimates();
-      this._initializePropagationTracker();
-      this._initializeFertilizationSchedules();
-      await this._discoverSensors();
-      this._startMonitoring();
-      this._startLightCompensation();
-      this.initialized = true;
-      this.log('Advanced Indoor Plant Care System initialized successfully');
-    } catch (err) {
-      this.error('Failed to initialize Advanced Indoor Plant Care System: ' + err.message);
-      throw err;
+      this.log('Initializing Advanced Indoor Plant Care System...');
+      try {
+        this._initializePlantProfiles();
+        this._initializeGrowLightProfiles();
+        this._initializePestDatabase();
+        this._initializeHumidityZones();
+        this._initializeRoomMicroclimates();
+        this._initializePropagationTracker();
+        this._initializeFertilizationSchedules();
+        await this._discoverSensors();
+        this._startMonitoring();
+        this._startLightCompensation();
+        this.initialized = true;
+        this.log('Advanced Indoor Plant Care System initialized successfully');
+      } catch (err) {
+        this.error('Failed to initialize Advanced Indoor Plant Care System: ' + err.message);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[AdvancedIndoorPlantCareSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -349,7 +353,7 @@ class AdvancedIndoorPlantCareSystem {
     let targetInstance = null;
     let targetSpecies = null;
 
-    for (const [speciesId, species] of this.plantProfiles) {
+    for (const [_speciesId, species] of this.plantProfiles) {
       const inst = species.instances.find(i => i.instanceId === instanceId);
       if (inst) {
         targetInstance = inst;
@@ -364,7 +368,7 @@ class AdvancedIndoorPlantCareSystem {
 
     const daysSinceWatered = (Date.now() - targetInstance.lastWatered) / 86400000;
     const moistureLow = targetInstance.currentMoisture < targetSpecies.optimalMoisture[0];
-    const pastDue = daysSinceWatered >= targetSpecies.waterFrequencyDays;
+    const _pastDue = daysSinceWatered >= targetSpecies.waterFrequencyDays;
 
     const room = this.roomMicroclimates.get(targetInstance.room);
     let tempAdjustment = 1.0;
@@ -400,13 +404,13 @@ class AdvancedIndoorPlantCareSystem {
 
   waterPlant(instanceId, amountMl) {
     let targetInstance = null;
-    let targetSpecies = null;
+    let _targetSpecies = null;
 
     for (const [, species] of this.plantProfiles) {
       const inst = species.instances.find(i => i.instanceId === instanceId);
       if (inst) {
         targetInstance = inst;
-        targetSpecies = species;
+        _targetSpecies = species;
         break;
       }
     }
@@ -465,11 +469,11 @@ class AdvancedIndoorPlantCareSystem {
     const ratio = npkRatio || schedule.npkRatio;
     schedule.lastFertilized = Date.now();
 
-    let targetInstance = null;
+    let _targetInstance = null;
     for (const [, species] of this.plantProfiles) {
       const inst = species.instances.find(i => i.instanceId === instanceId);
       if (inst) {
-        targetInstance = inst;
+        _targetInstance = inst;
         inst.lastFertilized = Date.now();
         break;
       }
@@ -491,13 +495,13 @@ class AdvancedIndoorPlantCareSystem {
 
   detectPestRisk(instanceId) {
     let targetInstance = null;
-    let targetSpecies = null;
+    let _targetSpecies = null;
 
     for (const [, species] of this.plantProfiles) {
       const inst = species.instances.find(i => i.instanceId === instanceId);
       if (inst) {
         targetInstance = inst;
-        targetSpecies = species;
+        _targetSpecies = species;
         break;
       }
     }

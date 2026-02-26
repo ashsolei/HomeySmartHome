@@ -6,6 +6,7 @@
  */
 class SceneSuggester {
   constructor(app, intelligenceEngine) {
+    this._intervals = [];
     this.app = app;
     this.intelligenceEngine = intelligenceEngine;
     this.existingScenes = new Map();
@@ -83,9 +84,9 @@ class SceneSuggester {
 
   startSuggestionEngine() {
     // Generate suggestions every hour
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.generateSuggestions();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial generation
     this.generateSuggestions();
@@ -262,7 +263,7 @@ class SceneSuggester {
     return suggestions;
   }
 
-  async suggestEnergyOptimizationScenes(patterns) {
+  async suggestEnergyOptimizationScenes(_patterns) {
     const suggestions = [];
 
     // Low energy price scene
@@ -314,7 +315,7 @@ class SceneSuggester {
     return suggestions;
   }
 
-  async suggestComfortScenes(patterns) {
+  async suggestComfortScenes(_patterns) {
     const suggestions = [];
 
     // Wake up gently scene
@@ -369,7 +370,7 @@ class SceneSuggester {
     return suggestions;
   }
 
-  async suggestActivityScenes(patterns) {
+  async suggestActivityScenes(_patterns) {
     const suggestions = [];
 
     // Workout scene
@@ -422,7 +423,7 @@ class SceneSuggester {
     return suggestions;
   }
 
-  async suggestSequenceScenes(patterns) {
+  async suggestSequenceScenes(_patterns) {
     const suggestions = [];
 
     // Bedtime sequence
@@ -655,6 +656,13 @@ class SceneSuggester {
 
   getImplementedScenes() {
     return Array.from(this.implementedSuggestions);
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

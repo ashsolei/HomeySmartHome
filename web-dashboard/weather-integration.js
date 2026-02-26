@@ -6,6 +6,7 @@
  */
 class WeatherIntegration {
   constructor() {
+    this._intervals = [];
     this.apiKey = process.env.OPENWEATHER_API_KEY || '';
     this.location = {
       lat: 59.3293,  // Stockholm default
@@ -27,9 +28,9 @@ class WeatherIntegration {
     await this.updateWeatherData();
     
     // Auto-refresh every 10 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateWeatherData();
-    }, this.cacheDuration);
+    }, this.cacheDuration));
   }
 
   // ============================================
@@ -569,6 +570,13 @@ class WeatherIntegration {
       daily: this.aggregateDailyForecast(hourly),
       raw: hourly
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

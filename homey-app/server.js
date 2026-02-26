@@ -163,6 +163,10 @@ const SmartRoofSolarMonitoringSystem = require('./lib/SmartRoofSolarMonitoringSy
 
 // Wave 17 — Audit & Backup
 const AuditLogSystem = require('./lib/AuditLogSystem');
+// Wave 18 — Missing module registrations
+const SmartHomeAdaptiveLearningSystem = require('./lib/SmartHomeAdaptiveLearningSystem');
+const SmartHomeAutomatedTestingSystem = require('./lib/SmartHomeAutomatedTestingSystem');
+const SmartHomePredictiveCleaningSystem = require('./lib/SmartHomePredictiveCleaningSystem');
 
 // ============================================
 // BOOT SEQUENCE
@@ -372,6 +376,11 @@ async function boot() {
   // ── Wave 17: Audit & Backup ──
   app.auditLogSystem = new AuditLogSystem(homey);
 
+  // ── Wave 18: Missing registrations ──
+  app.smartHomeAdaptiveLearningSystem = new SmartHomeAdaptiveLearningSystem(homey);
+  app.smartHomeAutomatedTestingSystem = new SmartHomeAutomatedTestingSystem(homey);
+  app.smartHomePredictiveCleaningSystem = new SmartHomePredictiveCleaningSystem(homey);
+
   // 4. Wire homey.app
   homey.app = app;
 
@@ -513,6 +522,10 @@ async function boot() {
     { name: 'SmartRoofSolarMonitoringSystem', ref: app.smartRoofSolarMonitoringSystem },
     // Wave 17
     { name: 'AuditLogSystem', ref: app.auditLogSystem },
+    // Wave 18
+    { name: 'SmartHomeAdaptiveLearningSystem', ref: app.smartHomeAdaptiveLearningSystem },
+    { name: 'SmartHomeAutomatedTestingSystem', ref: app.smartHomeAutomatedTestingSystem },
+    { name: 'SmartHomePredictiveCleaningSystem', ref: app.smartHomePredictiveCleaningSystem },
   ];
 
   // 6. Initialize all systems with Promise.allSettled for resilience

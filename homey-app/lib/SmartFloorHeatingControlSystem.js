@@ -253,37 +253,41 @@ class SmartFloorHeatingControlSystem extends EventEmitter {
    * @returns {Promise<void>}
    */
   async initialize() {
-    if (this.initialized) return;
-    this.homey.log('[FloorHeating] Initializing Smart Floor Heating Control System…');
+    try {
+      if (this.initialized) return;
+      this.homey.log('[FloorHeating] Initializing Smart Floor Heating Control System…');
 
-    this._determineSeason();
-    this._checkSummerShutdown();
-    this._buildEnergyDayBucket();
+      this._determineSeason();
+      this._checkSummerShutdown();
+      this._buildEnergyDayBucket();
 
-    // Primary control loop
-    this.intervals.push(setInterval(() => this._controlLoop(), this.config.controlIntervalMs));
+      // Primary control loop
+      this.intervals.push(setInterval(() => this._controlLoop(), this.config.controlIntervalMs));
 
-    // Energy logging
-    this.intervals.push(setInterval(() => this._logEnergy(), this.config.energyLogIntervalMs));
+      // Energy logging
+      this.intervals.push(setInterval(() => this._logEnergy(), this.config.energyLogIntervalMs));
 
-    // Weather update
-    this.intervals.push(setInterval(() => this._updateWeather(), this.config.weatherUpdateIntervalMs));
+      // Weather update
+      this.intervals.push(setInterval(() => this._updateWeather(), this.config.weatherUpdateIntervalMs));
 
-    // Occupancy check
-    this.intervals.push(setInterval(() => this._checkOccupancy(), this.config.occupancyCheckIntervalMs));
+      // Occupancy check
+      this.intervals.push(setInterval(() => this._checkOccupancy(), this.config.occupancyCheckIntervalMs));
 
-    // Maintenance check
-    this.intervals.push(setInterval(() => this._maintenanceCheck(), this.config.maintenanceCheckIntervalMs));
+      // Maintenance check
+      this.intervals.push(setInterval(() => this._maintenanceCheck(), this.config.maintenanceCheckIntervalMs));
 
-    // Schedule evaluator – every minute
-    this.intervals.push(setInterval(() => this._evaluateSchedules(), 60000));
+      // Schedule evaluator – every minute
+      this.intervals.push(setInterval(() => this._evaluateSchedules(), 60000));
 
-    // Bathroom pre-heat
-    this.intervals.push(setInterval(() => this._bathroomPreHeat(), 60000));
+      // Bathroom pre-heat
+      this.intervals.push(setInterval(() => this._bathroomPreHeat(), 60000));
 
-    this.initialized = true;
-    this.emit('initialized');
-    this.homey.log('[FloorHeating] System initialised with', Object.keys(this.zones).length, 'zones.');
+      this.initialized = true;
+      this.emit('initialized');
+      this.homey.log('[FloorHeating] System initialised with', Object.keys(this.zones).length, 'zones.');
+    } catch (error) {
+      this.homey.error(`[SmartFloorHeatingControlSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -826,7 +830,7 @@ class SmartFloorHeatingControlSystem extends EventEmitter {
    * @private
    */
   _thermalMassCharge() {
-    for (const [zoneId, zone] of Object.entries(this.zones)) {
+    for (const [_zoneId, zone] of Object.entries(this.zones)) {
       if (!zone.enabled || zone.mode === 'frost') continue;
       const limits = this.floorLimits[zone.floorMaterial];
       const boost = Math.min(zone.targetTemp + 2, limits.maxTemp - 1);
@@ -840,7 +844,7 @@ class SmartFloorHeatingControlSystem extends EventEmitter {
    * @private
    */
   _thermalMassCoast() {
-    for (const [zoneId, zone] of Object.entries(this.zones)) {
+    for (const [_zoneId, zone] of Object.entries(this.zones)) {
       if (!zone.enabled || zone.mode === 'frost') continue;
       if (zone.currentTemp > zone.ecoTemp) {
         zone.targetTemp = zone.ecoTemp;
@@ -937,7 +941,7 @@ class SmartFloorHeatingControlSystem extends EventEmitter {
    */
   _outdoorCompensation() {
     const outdoor = this.weather.outdoorTemp;
-    for (const [zoneId, zone] of Object.entries(this.zones)) {
+    for (const [_zoneId, zone] of Object.entries(this.zones)) {
       if (!zone.enabled || zone.mode === 'frost') continue;
       // Simple linear compensation curve
       // At outdoor 15°C → offset 0, at outdoor -20°C → offset +3
@@ -1019,7 +1023,7 @@ class SmartFloorHeatingControlSystem extends EventEmitter {
    * @private
    */
   _preHeatAllZones() {
-    for (const [zoneId, zone] of Object.entries(this.zones)) {
+    for (const [_zoneId, zone] of Object.entries(this.zones)) {
       if (!zone.enabled) continue;
       zone.mode = 'comfort';
       zone.targetTemp = zone.comfortTemp;
@@ -1275,7 +1279,7 @@ class SmartFloorHeatingControlSystem extends EventEmitter {
       return;
     }
     this.maintenance.lastValveCycle = now;
-    for (const [zoneId, zone] of Object.entries(this.zones)) {
+    for (const [_zoneId, zone] of Object.entries(this.zones)) {
       if (zone.type !== 'water' && zone.type !== 'hybrid') continue;
       // Briefly open and close the valve
       const origValve = zone.valvePosition;
@@ -1297,7 +1301,7 @@ class SmartFloorHeatingControlSystem extends EventEmitter {
    */
   _computeSystemHealth() {
     let deductions = 0;
-    const zoneCount = Object.keys(this.zones).length;
+    const _zoneCount = Object.keys(this.zones).length;
 
     // -10 per stuck valve
     deductions += this.maintenance.valveStuckAlerts.filter(a =>

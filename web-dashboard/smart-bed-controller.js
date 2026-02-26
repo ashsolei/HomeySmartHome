@@ -6,6 +6,8 @@
  */
 class SmartBedController {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.beds = new Map();
     this.sleepSessions = [];
@@ -173,9 +175,9 @@ class SmartBedController {
     }
 
     // Auto-stop after 15 minutes
-    setTimeout(() => {
+    this._timeouts.push(setTimeout(() => {
       this.stopMassage(bedId, side);
-    }, 15 * 60 * 1000);
+    }, 15 * 60 * 1000));
 
     return { success: true };
   }
@@ -498,7 +500,7 @@ class SmartBedController {
 
   startMonitoring() {
     // Check bed occupancy every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       for (const [bedId, bed] of this.beds) {
         if (bed.type === 'dual') {
           this.detectOccupancy(bedId, 'left');
@@ -515,10 +517,10 @@ class SmartBedController {
           this.detectOccupancy(bedId);
         }
       }
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Track sleep stages every 5 minutes for active sessions
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       for (const session of this.sleepSessions) {
         if (!session.endTime) {
           this.trackSleepStages(session.id);
@@ -529,7 +531,7 @@ class SmartBedController {
           }
         }
       }
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     console.log('🛏️ Smart Bed Controller active');
   }
@@ -620,6 +622,17 @@ class SmartBedController {
       movements: lastSession.movements,
       snoreEvents: lastSession.snoreEvents
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

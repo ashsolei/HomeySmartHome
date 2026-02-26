@@ -30,15 +30,19 @@ class AdvancedWakeUpRoutineSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Advanced Wake-up Routine System...');
-    
-    await this.loadSettings();
-    this.initializeDefaultProfiles();
-    
-    this.startMonitoring();
-    
-    this.homey.log('Advanced Wake-up Routine System initialized successfully');
-    return true;
+    try {
+      this.homey.log('Initializing Advanced Wake-up Routine System...');
+
+      await this.loadSettings();
+      this.initializeDefaultProfiles();
+
+      this.startMonitoring();
+
+      this.homey.log('Advanced Wake-up Routine System initialized successfully');
+      return true;
+    } catch (error) {
+      this.homey.error(`[AdvancedWakeUpRoutineSystem] Failed to initialize:`, error.message);
+    }
   }
 
   async loadSettings() {
@@ -261,7 +265,7 @@ class AdvancedWakeUpRoutineSystem extends EventEmitter {
     await this.startSoundAlarm(preferences);
   }
 
-  async executeRoutineStep(step, preferences) {
+  async executeRoutineStep(step, _preferences) {
     switch (step.type) {
       case 'lights-on':
         if (step.gradual) {
@@ -506,7 +510,7 @@ class AdvancedWakeUpRoutineSystem extends EventEmitter {
       throw new Error('Ingen aktiv väckning');
     }
     
-    const profile = this.profiles.get(this.activeRoutine.userId);
+    const _profile = this.profiles.get(this.activeRoutine.userId);
     
     this.activeRoutine.dismissed = true;
     this.activeRoutine.dismissTime = Date.now();

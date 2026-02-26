@@ -6,6 +6,7 @@
  */
 class EnergyPriceOptimizer {
   constructor() {
+    this._intervals = [];
     this.priceData = {
       current: null,
       today: [],
@@ -20,9 +21,9 @@ class EnergyPriceOptimizer {
     await this.updatePriceData();
     
     // Auto-refresh hourly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updatePriceData();
-    }, this.updateInterval);
+    }, this.updateInterval));
 
     // Initialize optimization strategies
     this.initializeStrategies();
@@ -172,7 +173,7 @@ class EnergyPriceOptimizer {
     });
   }
 
-  async optimizeHeating(context) {
+  async optimizeHeating(_context) {
     const recommendations = [];
     const prices = this.priceData.today;
     const currentPrice = this.priceData.current;
@@ -219,7 +220,7 @@ class EnergyPriceOptimizer {
     return recommendations;
   }
 
-  async optimizeHotWater(context) {
+  async optimizeHotWater(_context) {
     const recommendations = [];
     const prices = this.priceData.today.concat(this.priceData.tomorrow);
     
@@ -252,7 +253,7 @@ class EnergyPriceOptimizer {
     return recommendations;
   }
 
-  async optimizeCharging(context) {
+  async optimizeCharging(_context) {
     const recommendations = [];
     const allPrices = this.priceData.today.concat(this.priceData.tomorrow);
     
@@ -281,7 +282,7 @@ class EnergyPriceOptimizer {
     return recommendations;
   }
 
-  async optimizeLoadShifting(context) {
+  async optimizeLoadShifting(_context) {
     const recommendations = [];
     const currentPrice = this.priceData.current;
     const todayPrices = this.priceData.today;
@@ -314,7 +315,7 @@ class EnergyPriceOptimizer {
     return recommendations;
   }
 
-  async optimizeAppliances(context) {
+  async optimizeAppliances(_context) {
     const recommendations = [];
     const allPrices = this.priceData.today.concat(this.priceData.tomorrow);
     
@@ -633,6 +634,13 @@ class EnergyPriceOptimizer {
       tomorrow: [],
       lastUpdate: Date.now()
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

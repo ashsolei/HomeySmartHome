@@ -63,41 +63,45 @@ class WellnessSleepOptimizer {
   }
 
   async initialize() {
-    this.log('Initializing Wellness & Sleep Optimizer...');
-
     try {
-      const savedSettings = await this.homey.settings.get('sleepSettings') || {};
-      this.optimalBedtime = savedSettings.bedtime || '22:30';
-      this.optimalWakeTime = savedSettings.wakeTime || '07:00';
-      this.idealSleepHours = savedSettings.idealHours || 8;
-      this.windDownDurationMin = savedSettings.windDownDuration || 30;
-      this.noiseThreshold = savedSettings.noiseThreshold || 45;
-      this.partnerMode = savedSettings.partnerMode || false;
+      this.log('Initializing Wellness & Sleep Optimizer...');
 
-      if (savedSettings.circadianProfile) {
-        Object.assign(this.circadianProfile, savedSettings.circadianProfile);
+      try {
+        const savedSettings = await this.homey.settings.get('sleepSettings') || {};
+        this.optimalBedtime = savedSettings.bedtime || '22:30';
+        this.optimalWakeTime = savedSettings.wakeTime || '07:00';
+        this.idealSleepHours = savedSettings.idealHours || 8;
+        this.windDownDurationMin = savedSettings.windDownDuration || 30;
+        this.noiseThreshold = savedSettings.noiseThreshold || 45;
+        this.partnerMode = savedSettings.partnerMode || false;
+
+        if (savedSettings.circadianProfile) {
+          Object.assign(this.circadianProfile, savedSettings.circadianProfile);
+        }
+
+        if (savedSettings.partnerProfiles) {
+          Object.entries(savedSettings.partnerProfiles).forEach(([id, profile]) => {
+            this.partnerProfiles.set(id, profile);
+          });
+        }
+
+        const savedQuality = await this.homey.settings.get('sleepQualityData') || [];
+        this.sleepQualityData = savedQuality.slice(-90);
+
+        const savedDebt = await this.homey.settings.get('sleepDebtHistory') || [];
+        this.sleepDebtHistory = savedDebt.slice(-30);
+
+        await this.initializeWindDownStages();
+        await this.initializeMorningRoutineStages();
+        await this.startMonitoring();
+      } catch (err) {
+        this.error('Failed to initialize:', err.message);
       }
 
-      if (savedSettings.partnerProfiles) {
-        Object.entries(savedSettings.partnerProfiles).forEach(([id, profile]) => {
-          this.partnerProfiles.set(id, profile);
-        });
-      }
-
-      const savedQuality = await this.homey.settings.get('sleepQualityData') || [];
-      this.sleepQualityData = savedQuality.slice(-90);
-
-      const savedDebt = await this.homey.settings.get('sleepDebtHistory') || [];
-      this.sleepDebtHistory = savedDebt.slice(-30);
-
-      await this.initializeWindDownStages();
-      await this.initializeMorningRoutineStages();
-      await this.startMonitoring();
-    } catch (err) {
-      this.error('Failed to initialize:', err.message);
+      this.log('Wellness & Sleep Optimizer initialized');
+    } catch (error) {
+      console.error(`[WellnessSleepOptimizer] Failed to initialize:`, error.message);
     }
-
-    this.log('Wellness & Sleep Optimizer initialized');
   }
 
   async initializeWindDownStages() {
@@ -353,7 +357,7 @@ class WellnessSleepOptimizer {
 
   async startWindDownRoutine(userId = 'default') {
     this.log(`Starting wind-down routine for user: ${userId}`);
-    const bedtime = this.partnerMode ? (this.partnerProfiles.get(userId)?.bedtime || this.optimalBedtime) : this.optimalBedtime;
+    const _bedtime = this.partnerMode ? (this.partnerProfiles.get(userId)?.bedtime || this.optimalBedtime) : this.optimalBedtime;
 
     for (const stage of this.windDownStages) {
       const delay = stage.minutesBefore * 60000;
@@ -996,7 +1000,7 @@ class WellnessSleepOptimizer {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
     }
-    for (const [id, timer] of this.alarmTimers) {
+    for (const [_id, timer] of this.alarmTimers) {
       clearTimeout(timer);
     }
     this.alarmTimers.clear();

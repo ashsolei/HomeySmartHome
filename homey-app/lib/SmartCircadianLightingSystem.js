@@ -41,20 +41,24 @@ class SmartCircadianLightingSystem extends EventEmitter {
    * @returns {Promise<boolean>}
    */
   async initialize() {
-    if (this.initialized) return true;
+    try {
+      if (this.initialized) return true;
 
-    this.homey.log('[SmartCircadianLightingSystem] Initializing...');
+      this.homey.log('[SmartCircadianLightingSystem] Initializing...');
 
-    await this.loadSettings();
-    this.calculateSunSchedule();
-    this.initializeDefaultProfiles();
-    this.determineCurrentPhase();
-    this.startCircadianMonitoring();
+      await this.loadSettings();
+      this.calculateSunSchedule();
+      this.initializeDefaultProfiles();
+      this.determineCurrentPhase();
+      this.startCircadianMonitoring();
 
-    this.initialized = true;
-    this.homey.log('[SmartCircadianLightingSystem] Initialized');
-    this.homey.emit('circadian-lighting:initialized');
-    return true;
+      this.initialized = true;
+      this.homey.log('[SmartCircadianLightingSystem] Initialized');
+      this.homey.emit('circadian-lighting:initialized');
+      return true;
+    } catch (error) {
+      this.homey.error(`[SmartCircadianLightingSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**

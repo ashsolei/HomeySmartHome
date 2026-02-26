@@ -308,66 +308,70 @@ class SmartFireplaceManagementSystem extends EventEmitter {
   }
 
   async initialize() {
-    if (this.initialized) {
-      this.homey.log('[Fireplace] Already initialized');
-      return;
-    }
-
-    this.homey.log('[Fireplace] Initializing Smart Fireplace Management System...');
-
     try {
-      this._determineHeatingSeason();
-      this._checkStartupChecklist();
-      this._updateWoodStorageStatus();
-      this._loadSessionHistory();
+      if (this.initialized) {
+        this.homey.log('[Fireplace] Already initialized');
+        return;
+      }
 
-      // Safety monitoring interval - every 10 seconds
-      const safetyInterval = setInterval(() => this._runSafetyChecks(), 10000);
-      this.intervals.push(safetyInterval);
+      this.homey.log('[Fireplace] Initializing Smart Fireplace Management System...');
 
-      // Air quality monitoring - every 30 seconds
-      const airQualityInterval = setInterval(() => this._monitorAirQuality(), 30000);
-      this.intervals.push(airQualityInterval);
+      try {
+        this._determineHeatingSeason();
+        this._checkStartupChecklist();
+        this._updateWoodStorageStatus();
+        this._loadSessionHistory();
 
-      // Temperature automation - every 60 seconds
-      const tempInterval = setInterval(() => this._temperatureAutomation(), 60000);
-      this.intervals.push(tempInterval);
+        // Safety monitoring interval - every 10 seconds
+        const safetyInterval = setInterval(() => this._runSafetyChecks(), 10000);
+        this.intervals.push(safetyInterval);
 
-      // Fuel level monitoring - every 5 minutes
-      const fuelInterval = setInterval(() => this._monitorFuelLevels(), 300000);
-      this.intervals.push(fuelInterval);
+        // Air quality monitoring - every 30 seconds
+        const airQualityInterval = setInterval(() => this._monitorAirQuality(), 30000);
+        this.intervals.push(airQualityInterval);
 
-      // Energy tracking - every 15 minutes
-      const energyInterval = setInterval(() => this._updateEnergyContribution(), 900000);
-      this.intervals.push(energyInterval);
+        // Temperature automation - every 60 seconds
+        const tempInterval = setInterval(() => this._temperatureAutomation(), 60000);
+        this.intervals.push(tempInterval);
 
-      // Chimney maintenance check - every hour
-      const chimneyInterval = setInterval(() => this._checkChimneyMaintenance(), 3600000);
-      this.intervals.push(chimneyInterval);
+        // Fuel level monitoring - every 5 minutes
+        const fuelInterval = setInterval(() => this._monitorFuelLevels(), 300000);
+        this.intervals.push(fuelInterval);
 
-      // Burn ban check - every 30 minutes
-      const burnBanInterval = setInterval(() => this._checkBurnBanStatus(), 1800000);
-      this.intervals.push(burnBanInterval);
+        // Energy tracking - every 15 minutes
+        const energyInterval = setInterval(() => this._updateEnergyContribution(), 900000);
+        this.intervals.push(energyInterval);
 
-      // Pellet auto-feed - every 2 minutes
-      const pelletInterval = setInterval(() => this._managePelletAutoFeed(), 120000);
-      this.intervals.push(pelletInterval);
+        // Chimney maintenance check - every hour
+        const chimneyInterval = setInterval(() => this._checkChimneyMaintenance(), 3600000);
+        this.intervals.push(chimneyInterval);
 
-      // Smart damper control - every 20 seconds
-      const damperInterval = setInterval(() => this._smartDamperControl(), 20000);
-      this.intervals.push(damperInterval);
+        // Burn ban check - every 30 minutes
+        const burnBanInterval = setInterval(() => this._checkBurnBanStatus(), 1800000);
+        this.intervals.push(burnBanInterval);
 
-      // Emission tracking - every 5 minutes
-      const emissionInterval = setInterval(() => this._trackEmissions(), 300000);
-      this.intervals.push(emissionInterval);
+        // Pellet auto-feed - every 2 minutes
+        const pelletInterval = setInterval(() => this._managePelletAutoFeed(), 120000);
+        this.intervals.push(pelletInterval);
 
-      this.initialized = true;
-      this.homey.log('[Fireplace] System initialized with ' + Object.keys(this.fireplaces).length + ' fireplaces');
-      this.homey.emit('fireplace-system-ready', { fireplaceCount: Object.keys(this.fireplaces).length });
+        // Smart damper control - every 20 seconds
+        const damperInterval = setInterval(() => this._smartDamperControl(), 20000);
+        this.intervals.push(damperInterval);
 
-    } catch (err) {
-      this.homey.error('[Fireplace] Initialization failed:', err.message);
-      throw err;
+        // Emission tracking - every 5 minutes
+        const emissionInterval = setInterval(() => this._trackEmissions(), 300000);
+        this.intervals.push(emissionInterval);
+
+        this.initialized = true;
+        this.homey.log('[Fireplace] System initialized with ' + Object.keys(this.fireplaces).length + ' fireplaces');
+        this.homey.emit('fireplace-system-ready', { fireplaceCount: Object.keys(this.fireplaces).length });
+
+      } catch (err) {
+        this.homey.error('[Fireplace] Initialization failed:', err.message);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[SmartFireplaceManagementSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -494,7 +498,7 @@ class SmartFireplaceManagementSystem extends EventEmitter {
     }, 600000);
   }
 
-  async _startPelletStove(fireplaceId, options) {
+  async _startPelletStove(fireplaceId, _options) {
     const fp = this.fireplaces[fireplaceId];
 
     if (this.fuelInventory.pellets.currentHopperKg < 1) {
@@ -711,7 +715,7 @@ class SmartFireplaceManagementSystem extends EventEmitter {
   _temperatureAutomation() {
     const indoorTemp = this.weatherContext.indoorTemp;
     const outdoorTemp = this.weatherContext.outdoorTemp;
-    const month = new Date().getMonth() + 1;
+    const _month = new Date().getMonth() + 1;
 
     if (!this.seasonalConfig.isHeatingSeason) return;
 
@@ -831,9 +835,9 @@ class SmartFireplaceManagementSystem extends EventEmitter {
 
   _monitorFuelLevels() {
     // Wood inventory check
-    let totalWood = 0;
+    let _totalWood = 0;
     for (const [type, stock] of Object.entries(this.fuelInventory.wood)) {
-      totalWood += stock.quantity_m3;
+      _totalWood += stock.quantity_m3;
       if (stock.quantity_m3 < 1.0) {
         this.homey.log('[Fireplace] Low ' + type + ' wood stock: ' + stock.quantity_m3 + ' m³');
         this.homey.emit('fireplace-low-wood', { woodType: type, quantity: stock.quantity_m3 });
@@ -1032,7 +1036,7 @@ class SmartFireplaceManagementSystem extends EventEmitter {
     const allDone = Object.values(checklist).every(v => v === true);
 
     if (!allDone) {
-      const pending = Object.entries(checklist).filter(([k, v]) => !v).map(([k]) => k);
+      const pending = Object.entries(checklist).filter(([_k, v]) => !v).map(([k]) => k);
       this.homey.log('[Fireplace] Startup checklist incomplete. Pending: ' + pending.join(', '));
       this.homey.emit('fireplace-startup-checklist-pending', { pending });
     } else {
@@ -1103,7 +1107,7 @@ class SmartFireplaceManagementSystem extends EventEmitter {
     }
 
     // Find suitable fireplace for scene
-    const suitableFp = Object.entries(this.fireplaces).find(([id, fp]) => {
+    const suitableFp = Object.entries(this.fireplaces).find(([_id, fp]) => {
       return fp.location !== 'sauna' && fp.location !== 'patio';
     });
 
@@ -1187,7 +1191,7 @@ class SmartFireplaceManagementSystem extends EventEmitter {
     const now = new Date();
     const monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
-    for (const [id, fp] of Object.entries(this.fireplaces)) {
+    for (const [_id, fp] of Object.entries(this.fireplaces)) {
       if (fp.status !== 'running') continue;
 
       const hours = 5 / 60; // 5-minute interval
@@ -1374,7 +1378,7 @@ class SmartFireplaceManagementSystem extends EventEmitter {
     let totalSeasoned = 0;
     let totalGreen = 0;
 
-    for (const [type, stock] of Object.entries(this.fuelInventory.wood)) {
+    for (const [_type, stock] of Object.entries(this.fuelInventory.wood)) {
       if (stock.status === 'seasoned') {
         totalSeasoned += stock.quantity_m3;
       } else {

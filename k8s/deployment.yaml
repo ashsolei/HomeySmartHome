@@ -29,6 +29,17 @@ data:
 #                --controller-name sealed-secrets \
 #                --format yaml > k8s/sealedsecret-smarthome.yaml
 # Then apply: kubectl apply -f k8s/sealedsecret-smarthome.yaml
+# SealedSecret — application credentials, managed by bitnami/sealed-secrets controller.
+# To generate sealed values:
+#   kubectl create secret generic smarthome-secrets \
+#     --from-literal=HOMEY_TOKEN=<value> \
+#     --from-literal=JWT_SECRET=<value> \
+#     --dry-run=client -o yaml \
+#     | kubeseal --controller-namespace kube-system \
+#                --controller-name sealed-secrets \
+#                --format yaml
+# Paste the resulting encryptedData values below, then apply this file.
+# NEVER commit plaintext secret values — only the kubeseal ciphertext is safe to store.
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
@@ -38,12 +49,41 @@ metadata:
     sealedsecrets.bitnami.com/managed: "true"
 spec:
   encryptedData:
-    # Replace these placeholder values with actual sealed ciphertext produced by kubeseal.
+    # Replace with ciphertext from kubeseal (cluster-specific, non-transferable).
     HOMEY_TOKEN: "REPLACE_WITH_KUBESEAL_ENCRYPTED_VALUE"
     JWT_SECRET: "REPLACE_WITH_KUBESEAL_ENCRYPTED_VALUE"
   template:
     metadata:
       name: smarthome-secrets
+      namespace: smarthome-pro
+    type: Opaque
+---
+# SealedSecret — Alertmanager notification credentials.
+# To generate sealed values:
+#   kubectl create secret generic alertmanager-secrets \
+#     --from-literal=smtp_password=<smtp-password> \
+#     --from-literal=webhook_token=<webhook-bearer-token> \
+#     --dry-run=client -o yaml \
+#     | kubeseal --controller-namespace kube-system \
+#                --controller-name sealed-secrets \
+#                --format yaml
+# Paste the resulting encryptedData values below, then apply this file.
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: alertmanager-secrets
+  namespace: smarthome-pro
+  annotations:
+    sealedsecrets.bitnami.com/managed: "true"
+spec:
+  encryptedData:
+    # smtp_password is mounted as a file at /etc/alertmanager/secrets/smtp_password
+    smtp_password: "REPLACE_WITH_KUBESEAL_ENCRYPTED_VALUE"
+    # webhook_token is mounted as a file at /etc/alertmanager/secrets/webhook_token
+    webhook_token: "REPLACE_WITH_KUBESEAL_ENCRYPTED_VALUE"
+  template:
+    metadata:
+      name: alertmanager-secrets
       namespace: smarthome-pro
     type: Opaque
 ---
@@ -558,3 +598,229 @@ spec:
   selector:
     matchLabels:
       app: dashboard
+---
+# ConfigMap — Alertmanager configuration, sourced from monitoring/alertmanager.yml.
+# Update receiver URLs and email addresses before deploying to production.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: smarthome-pro
+  labels:
+    app: alertmanager
+    component: monitoring
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: 'smtp.yourdomain.com:587'
+      smtp_from: 'alertmanager@yourdomain.com'
+      smtp_auth_username: 'alertmanager@yourdomain.com'
+      smtp_auth_password_file: /etc/alertmanager/secrets/smtp_password
+      smtp_require_tls: true
+
+    route:
+      group_by: ['alertname', 'job', 'severity']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      receiver: 'default-receiver'
+
+      routes:
+        - matchers:
+            - severity = "critical"
+          receiver: 'critical-receiver'
+          group_wait: 10s
+          repeat_interval: 1h
+          continue: false
+
+        - matchers:
+            - severity = "warning"
+          receiver: 'warning-receiver'
+          group_wait: 30s
+          repeat_interval: 4h
+          continue: false
+
+    inhibit_rules:
+      - source_matchers:
+          - severity = "critical"
+        target_matchers:
+          - severity = "warning"
+        equal: ['alertname', 'job', 'instance']
+
+    receivers:
+      - name: 'default-receiver'
+        email_configs:
+          - to: 'ops@yourdomain.com'
+            send_resolved: true
+            headers:
+              Subject: '[SmartHome Pro] {{ .Status | toUpper }} {{ .GroupLabels.alertname }}'
+
+      - name: 'critical-receiver'
+        email_configs:
+          - to: 'ops@yourdomain.com'
+            send_resolved: true
+            headers:
+              Subject: '[SmartHome Pro] CRITICAL {{ .GroupLabels.alertname }}'
+        webhook_configs:
+          - url: 'http://your-webhook-endpoint/alerts'
+            send_resolved: true
+
+      - name: 'warning-receiver'
+        email_configs:
+          - to: 'ops@yourdomain.com'
+            send_resolved: true
+            headers:
+              Subject: '[SmartHome Pro] WARNING {{ .GroupLabels.alertname }}'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: smarthome-pro
+  labels:
+    app: alertmanager
+    component: monitoring
+spec:
+  # Single replica — Alertmanager clustering requires additional peer config.
+  # For HA, scale to 3+ and add --cluster.peer flags.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+        component: monitoring
+    spec:
+      serviceAccountName: smarthome-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534  # nobody
+        runAsGroup: 65534
+        fsGroup: 65534
+      containers:
+      - name: alertmanager
+        image: prom/alertmanager:v0.27.0
+        imagePullPolicy: IfNotPresent
+        args:
+          - '--config.file=/etc/alertmanager/alertmanager.yml'
+          - '--storage.path=/alertmanager'
+          - '--web.listen-address=:9093'
+          - '--log.level=info'
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+        ports:
+        - containerPort: 9093
+          name: http
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+            ephemeral-storage: "64Mi"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+            ephemeral-storage: "128Mi"
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9093
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9093
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: config
+          mountPath: /etc/alertmanager
+          readOnly: true
+        - name: secrets
+          mountPath: /etc/alertmanager/secrets
+          readOnly: true
+        - name: storage
+          mountPath: /alertmanager
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: config
+        configMap:
+          name: alertmanager-config
+      - name: secrets
+        secret:
+          secretName: alertmanager-secrets
+          items:
+          - key: smtp_password
+            path: smtp_password
+            mode: 0400
+          - key: webhook_token
+            path: webhook_token
+            mode: 0400
+      - name: storage
+        emptyDir: {}
+      - name: tmp
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: smarthome-pro
+  labels:
+    app: alertmanager
+    component: monitoring
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9093
+    targetPort: 9093
+    name: http
+  selector:
+    app: alertmanager
+---
+# Allow Prometheus to reach Alertmanager on port 9093
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-to-alertmanager
+  namespace: smarthome-pro
+spec:
+  podSelector:
+    matchLabels:
+      app: alertmanager
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9093
+  egress:
+    # Alertmanager needs outbound access for SMTP and webhook delivery.
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 587
+        - protocol: TCP
+          port: 80
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

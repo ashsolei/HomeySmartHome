@@ -15,35 +15,39 @@ class MultiUserPreferenceSystem {
   }
 
   async initialize() {
-    this.log('Initializing Multi-User Preference System...');
-    
-    // Load users
-    const savedUsers = await this.homey.settings.get('users') || {};
-    Object.entries(savedUsers).forEach(([id, user]) => {
-      this.users.set(id, user);
-    });
+    try {
+      this.log('Initializing Multi-User Preference System...');
 
-    // Load preferences
-    const savedPreferences = await this.homey.settings.get('userPreferences') || {};
-    Object.entries(savedPreferences).forEach(([id, prefs]) => {
-      this.preferences.set(id, prefs);
-    });
+      // Load users
+      const savedUsers = await this.homey.settings.get('users') || {};
+      Object.entries(savedUsers).forEach(([id, user]) => {
+        this.users.set(id, user);
+      });
 
-    // Load profiles
-    const savedProfiles = await this.homey.settings.get('userProfiles') || {};
-    Object.entries(savedProfiles).forEach(([id, profile]) => {
-      this.profiles.set(id, profile);
-    });
+      // Load preferences
+      const savedPreferences = await this.homey.settings.get('userPreferences') || {};
+      Object.entries(savedPreferences).forEach(([id, prefs]) => {
+        this.preferences.set(id, prefs);
+      });
 
-    // Create default profiles if needed
-    if (this.users.size === 0) {
-      await this.createDefaultUser();
+      // Load profiles
+      const savedProfiles = await this.homey.settings.get('userProfiles') || {};
+      Object.entries(savedProfiles).forEach(([id, profile]) => {
+        this.profiles.set(id, profile);
+      });
+
+      // Create default profiles if needed
+      if (this.users.size === 0) {
+        await this.createDefaultUser();
+      }
+
+      // Start preference learning
+      await this.startPreferenceLearning();
+
+      this.log('Multi-User Preference System initialized');
+    } catch (error) {
+      console.error(`[MultiUserPreferenceSystem] Failed to initialize:`, error.message);
     }
-
-    // Start preference learning
-    await this.startPreferenceLearning();
-    
-    this.log('Multi-User Preference System initialized');
   }
 
   /**
@@ -256,7 +260,7 @@ class MultiUserPreferenceSystem {
     }
   }
 
-  async applyDashboardPreferences(userId, dashboardPrefs) {
+  async applyDashboardPreferences(userId, _dashboardPrefs) {
     // Dashboard would read preferences when loading
     this.log('Dashboard preferences ready for user:', userId);
   }
@@ -683,7 +687,7 @@ class MultiUserPreferenceSystem {
   }
 
   async analyzeBehaviorPatterns() {
-    for (const [userId, profile] of this.profiles) {
+    for (const [_userId, profile] of this.profiles) {
       await this.analyzeTemperaturePreferences(profile);
       await this.updateFavoriteDevices(profile);
       await this.identifyRoutinePatterns(profile);

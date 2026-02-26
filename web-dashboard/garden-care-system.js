@@ -6,6 +6,8 @@
  */
 class GardenCareSystem {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.zones = new Map();
     this.plants = new Map();
@@ -329,24 +331,24 @@ class GardenCareSystem {
 
   startMonitoring() {
     // Update soil sensors every 15 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateSensors();
-    }, 15 * 60 * 1000);
+    }, 15 * 60 * 1000));
 
     // Check watering schedules every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkWateringSchedules();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Check weather and adjust schedules hourly
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkWeatherAndAdjust();
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Check plant health daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkPlantHealth();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Initial updates
     this.updateSensors();
@@ -354,7 +356,7 @@ class GardenCareSystem {
   }
 
   async updateSensors() {
-    for (const [sensorId, sensor] of this.sensors) {
+    for (const [_sensorId, sensor] of this.sensors) {
       // Simulate sensor readings
       const zone = this.zones.get(sensor.zoneId);
       const readings = this.simulateSensorReadings(zone);
@@ -537,7 +539,7 @@ class GardenCareSystem {
     if (weather.rain && weather.rainAmount > 5) {
       console.log(`  → Skipping watering due to rain (${weather.rainAmount.toFixed(1)}mm)`);
       
-      for (const [zoneId, schedule] of this.wateringSchedule) {
+      for (const [_zoneId, schedule] of this.wateringSchedule) {
         schedule.rainDelay = 24; // Skip next 24 hours
       }
     }
@@ -545,14 +547,14 @@ class GardenCareSystem {
     if (weather.forecast.rainNext24h && weather.forecast.expectedRain > 10) {
       console.log(`  → Rain expected (${weather.forecast.expectedRain.toFixed(1)}mm), delaying watering`);
       
-      for (const [zoneId, schedule] of this.wateringSchedule) {
+      for (const [_zoneId, schedule] of this.wateringSchedule) {
         schedule.skipNext = true;
       }
     }
   }
 
   async checkPlantHealth() {
-    for (const [plantId, plant] of this.plants) {
+    for (const [_plantId, plant] of this.plants) {
       // Check if harvest time approaching
       if (plant.harvestTime && typeof plant.harvestTime === 'number') {
         const daysUntilHarvest = (plant.harvestTime - Date.now()) / (1000 * 60 * 60 * 24);
@@ -640,7 +642,7 @@ class GardenCareSystem {
     if (!zone) return null;
 
     const sensor = Array.from(this.sensors.values()).find(s => s.zoneId === zoneId);
-    const schedule = this.wateringSchedule.get(zoneId);
+    const _schedule = this.wateringSchedule.get(zoneId);
     const plants = Array.from(this.plants.values()).filter(p => p.zone === zoneId);
 
     return {
@@ -698,7 +700,7 @@ class GardenCareSystem {
     
     if (!schedule) return 0;
 
-    const now = Date.now();
+    const _now = Date.now();
     const monthStart = new Date();
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
@@ -827,6 +829,17 @@ class GardenCareSystem {
     else season = 'winter';
 
     return seasonalTips[season];
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

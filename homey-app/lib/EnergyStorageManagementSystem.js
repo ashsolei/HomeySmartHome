@@ -17,26 +17,30 @@ class EnergyStorageManagementSystem {
   }
 
   async initialize() {
-    this.log('Initializing Energy Storage Management System...');
-    
-    // Load storage devices
-    await this.discoverStorageDevices();
+    try {
+      this.log('Initializing Energy Storage Management System...');
 
-    // Load charging schedule
-    const savedSchedule = await this.homey.settings.get('chargingSchedule') || [];
-    this.chargingSchedule = savedSchedule;
+      // Load storage devices
+      await this.discoverStorageDevices();
 
-    // Load energy strategy
-    const savedStrategy = await this.homey.settings.get('energyStrategy') || 'balanced';
-    this.energyStrategy = savedStrategy;
+      // Load charging schedule
+      const savedSchedule = await this.homey.settings.get('chargingSchedule') || [];
+      this.chargingSchedule = savedSchedule;
 
-    // Setup default strategy
-    await this.setupDefaultStrategy();
+      // Load energy strategy
+      const savedStrategy = await this.homey.settings.get('energyStrategy') || 'balanced';
+      this.energyStrategy = savedStrategy;
 
-    // Start management
-    await this.startManagement();
+      // Setup default strategy
+      await this.setupDefaultStrategy();
 
-    this.log('Energy Storage Management System initialized');
+      // Start management
+      await this.startManagement();
+
+      this.log('Energy Storage Management System initialized');
+    } catch (error) {
+      console.error(`[EnergyStorageManagementSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -417,7 +421,7 @@ class EnergyStorageManagementSystem {
    * Enable battery charging
    */
   async enableBatteryCharging() {
-    for (const [id, storage] of this.storageDevices) {
+    for (const [_id, storage] of this.storageDevices) {
       if (!storage.charging) {
         try {
           // Enable charging (device-specific implementation)
@@ -434,7 +438,7 @@ class EnergyStorageManagementSystem {
    * Disable battery charging
    */
   async disableBatteryCharging() {
-    for (const [id, storage] of this.storageDevices) {
+    for (const [_id, storage] of this.storageDevices) {
       if (storage.charging) {
         try {
           // Disable charging (device-specific implementation)
@@ -575,7 +579,7 @@ class EnergyStorageManagementSystem {
   /**
    * Estimate solar production
    */
-  estimateSolarProduction(day) {
+  estimateSolarProduction(_day) {
     // Simplified estimation based on season and typical patterns
     const month = new Date().getMonth();
     
@@ -693,6 +697,25 @@ class EnergyStorageManagementSystem {
 
   async saveChargingSchedule() {
     await this.homey.settings.set('chargingSchedule', this.chargingSchedule);
+  }
+
+  destroy() {
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+    if (this.optimizationInterval) {
+      clearInterval(this.optimizationInterval);
+      this.optimizationInterval = null;
+    }
+    if (this.strategyInterval) {
+      clearInterval(this.strategyInterval);
+      this.strategyInterval = null;
+    }
+    if (this.forecastInterval) {
+      clearInterval(this.forecastInterval);
+      this.forecastInterval = null;
+    }
   }
 
   log(...args) {

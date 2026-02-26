@@ -6,6 +6,7 @@
  */
 class BackupSystem {
   constructor(app) {
+    this._timeouts = [];
     this.app = app;
     this.backups = new Map();
     this.exportFormats = ['json', 'csv', 'yaml'];
@@ -448,27 +449,27 @@ class BackupSystem {
     }
   }
 
-  async restoreIntelligence(data) {
+  async restoreIntelligence(_data) {
     // Restore patterns, predictions, and learning data
     console.log('Restoring intelligence data...');
   }
 
-  async restoreAutomations(data) {
+  async restoreAutomations(_data) {
     // Restore automation configurations
     console.log('Restoring automations...');
   }
 
-  async restoreAnalytics(data) {
+  async restoreAnalytics(_data) {
     // Restore analytics data
     console.log('Restoring analytics...');
   }
 
-  async restoreConfiguration(data) {
+  async restoreConfiguration(_data) {
     // Restore app configuration
     console.log('Restoring configuration...');
   }
 
-  async restorePreferences(data) {
+  async restorePreferences(_data) {
     // Restore user preferences
     console.log('Restoring preferences...');
   }
@@ -606,7 +607,7 @@ class BackupSystem {
     const data = {};
     
     for (let i = 1; i < lines.length; i++) {
-      const [component, key, value] = lines[i].split(',');
+      const [component, _key, value] = lines[i].split(',');
       if (component && value) {
         data[component] = JSON.parse(value);
       }
@@ -626,7 +627,7 @@ class BackupSystem {
     return data && typeof data === 'object';
   }
 
-  async restoreFromData(data, options) {
+  async restoreFromData(data, _options) {
     // Similar to restoreBackup but from imported data
     const results = {
       restored: [],
@@ -662,10 +663,10 @@ class BackupSystem {
       
       const delay = next.getTime() - now.getTime();
       
-      setTimeout(() => {
+      this._timeouts.push(setTimeout(() => {
         this.performAutoBackup();
         scheduleNextBackup();
-      }, delay);
+      }, delay));
     };
 
     scheduleNextBackup();
@@ -692,7 +693,7 @@ class BackupSystem {
 
   calculateBackupSize(data) {
     const json = JSON.stringify(data);
-    const bytes = new Blob([json]).size;
+    const bytes = Buffer.byteLength(json, 'utf8');
     
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
@@ -771,6 +772,13 @@ class BackupSystem {
       itemCount: backup.itemCount,
       components: Object.keys(backup.data)
     };
+  }
+
+  destroy() {
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

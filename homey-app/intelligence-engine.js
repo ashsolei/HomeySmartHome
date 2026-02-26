@@ -1,6 +1,6 @@
 'use strict';
 
-const Homey = require('homey');
+const _Homey = require('homey');
 
 /**
  * AI Intelligence Engine for Smart Home
@@ -565,7 +565,7 @@ class IntelligenceEngine {
     };
   }
 
-  async getZoneTemperature(zoneId) {
+  async getZoneTemperature(_zoneId) {
     // Would get real temperature from sensors
     return 20 + Math.random() * 3;
   }
@@ -642,7 +642,7 @@ class TemporalPatternModel {
 }
 
 class EnergyPredictionModel {
-  predict(currentHour, historicalData) {
+  predict(currentHour, _historicalData) {
     // Simplified energy prediction
     const baseLoad = 150;
     const timeFactors = [0.5, 0.4, 0.4, 0.4, 0.4, 0.5, 0.7, 0.9, 0.8, 0.7, 0.7, 0.7,
@@ -653,7 +653,7 @@ class EnergyPredictionModel {
 }
 
 class PresencePredictionModel {
-  predict(day, hour, historicalData) {
+  predict(day, hour, _historicalData) {
     // Weekday work schedule prediction
     if (day >= 1 && day <= 5) {
       if (hour >= 8 && hour <= 17) {

@@ -37,22 +37,26 @@ class SmartGarageManagementSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Smart Garage Management System...');
-    
     try {
-      await this.loadSettings();
-      this.initializeGarage();
-      this.initializeVehicles();
-      this.initializeTools();
-      
-      this.startMonitoring();
-      this.startHealthCheck();
-      
-      this.homey.log('Smart Garage Management System initialized successfully');
-      return true;
+      this.homey.log('Initializing Smart Garage Management System...');
+
+      try {
+        await this.loadSettings();
+        this.initializeGarage();
+        this.initializeVehicles();
+        this.initializeTools();
+
+        this.startMonitoring();
+        this.startHealthCheck();
+
+        this.homey.log('Smart Garage Management System initialized successfully');
+        return true;
+      } catch (error) {
+        this.homey.error('Failed to initialize Garage Management:', error);
+        throw error;
+      }
     } catch (error) {
-      this.homey.error('Failed to initialize Garage Management:', error);
-      throw error;
+      this.homey.error(`[SmartGarageManagementSystem] Failed to initialize:`, error.message);
     }
   }
 

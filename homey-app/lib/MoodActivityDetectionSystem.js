@@ -17,27 +17,31 @@ class MoodActivityDetectionSystem {
   }
 
   async initialize() {
-    this.log('Initializing Mood & Activity Detection System...');
-    
-    // Load mood profiles
-    const savedMoods = await this.homey.settings.get('moodProfiles') || {};
-    Object.entries(savedMoods).forEach(([id, profile]) => {
-      this.moodProfiles.set(id, profile);
-    });
+    try {
+      this.log('Initializing Mood & Activity Detection System...');
 
-    // Load activity profiles
-    const savedActivities = await this.homey.settings.get('activityProfiles') || {};
-    Object.entries(savedActivities).forEach(([id, profile]) => {
-      this.activityProfiles.set(id, profile);
-    });
+      // Load mood profiles
+      const savedMoods = await this.homey.settings.get('moodProfiles') || {};
+      Object.entries(savedMoods).forEach(([id, profile]) => {
+        this.moodProfiles.set(id, profile);
+      });
 
-    // Setup default profiles
-    await this.setupDefaultProfiles();
+      // Load activity profiles
+      const savedActivities = await this.homey.settings.get('activityProfiles') || {};
+      Object.entries(savedActivities).forEach(([id, profile]) => {
+        this.activityProfiles.set(id, profile);
+      });
 
-    // Start detection
-    await this.startDetection();
+      // Setup default profiles
+      await this.setupDefaultProfiles();
 
-    this.log('Mood & Activity Detection System initialized');
+      // Start detection
+      await this.startDetection();
+
+      this.log('Mood & Activity Detection System initialized');
+    } catch (error) {
+      console.error(`[MoodActivityDetectionSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -487,7 +491,7 @@ class MoodActivityDetectionSystem {
     let bestMatch = null;
     let highestScore = 0;
 
-    for (const [id, profile] of this.moodProfiles) {
+    for (const [_id, profile] of this.moodProfiles) {
       const score = this.calculateMoodScore(profile, context);
       
       if (score > highestScore && score > 0.5) {
@@ -572,7 +576,7 @@ class MoodActivityDetectionSystem {
     if (indicators.roomActivity) {
       factors++;
       const activeRooms = Object.entries(context.rooms)
-        .filter(([room, count]) => count > 0)
+        .filter(([_room, count]) => count > 0)
         .map(([room]) => room);
       
       if (indicators.roomActivity.some(room => activeRooms.includes(room))) {
@@ -590,7 +594,7 @@ class MoodActivityDetectionSystem {
     let bestMatch = null;
     let highestScore = 0;
 
-    for (const [id, profile] of this.activityProfiles) {
+    for (const [_id, profile] of this.activityProfiles) {
       const score = this.calculateActivityScore(profile, context);
       
       if (score > highestScore && score > 0.6) {

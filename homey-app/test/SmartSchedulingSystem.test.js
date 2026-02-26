@@ -7,7 +7,7 @@
  */
 
 const { describe, it, run } = require('./helpers/runner');
-const { assert, assertEqual, assertType, assertThrows, assertRejects } = require('./helpers/assert');
+const { assert, assertEqual, assertType, assertThrows: _assertThrows, assertRejects } = require('./helpers/assert');
 const { createMockHomey } = require('./helpers/mockHomey');
 const SmartSchedulingSystem = require('../lib/SmartSchedulingSystem');
 
@@ -18,7 +18,7 @@ function makeSystem() {
 
   // Suppress real intervals/timeouts that would keep the process alive.
   system._noTimers = true;
-  const origStart = system.startScheduler.bind(system);
+  const _origStart = system.startScheduler.bind(system);
   system.startScheduler = async () => {
     // Only run the initial checkDueTasks without setting intervals.
     await system.checkDueTasks();

@@ -6,6 +6,7 @@
  */
 class SmartShoppingList {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.items = new Map();
     this.categories = new Map();
@@ -133,12 +134,12 @@ class SmartShoppingList {
 
   startMonitoring() {
     // Check for suggestions every day at 8 AM
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const hour = new Date().getHours();
       if (hour === 8) {
         this.generateSuggestions();
       }
-    }, 60 * 60 * 1000);
+    }, 60 * 60 * 1000));
 
     // Initial suggestions
     this.generateSuggestions();
@@ -696,6 +697,13 @@ class SmartShoppingList {
       itemCount: recentPurchases.length,
       averagePerItem: recentPurchases.length > 0 ? total / recentPurchases.length : 0
     };
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

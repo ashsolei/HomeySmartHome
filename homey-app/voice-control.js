@@ -226,10 +226,9 @@ class VoiceControl {
         };
       }
 
-      let result;
       switch (command) {
         case 'on':
-          result = await device.setCapabilityValue('onoff', true);
+          await device.setCapabilityValue('onoff', true);
           return {
             success: true,
             message: `${device.name} är nu på`,
@@ -237,7 +236,7 @@ class VoiceControl {
           };
 
         case 'off':
-          result = await device.setCapabilityValue('onoff', false);
+          await device.setCapabilityValue('onoff', false);
           return {
             success: true,
             message: `${device.name} är nu av`,
@@ -245,7 +244,7 @@ class VoiceControl {
           };
 
         case 'dim':
-          result = await device.setCapabilityValue('dim', value);
+          await device.setCapabilityValue('dim', value);
           return {
             success: true,
             message: `${device.name} är nu ${Math.round(value * 100)}% ljus`,
@@ -254,7 +253,7 @@ class VoiceControl {
           };
 
         case 'temperature':
-          result = await device.setCapabilityValue('target_temperature', value);
+          await device.setCapabilityValue('target_temperature', value);
           return {
             success: true,
             message: `Temperaturen är satt till ${value}°C`,

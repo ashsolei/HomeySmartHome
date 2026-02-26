@@ -6,6 +6,8 @@
  */
 class FinancialPlanningOptimizer {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.accounts = new Map();
     this.budgets = new Map();
@@ -216,7 +218,7 @@ class FinancialPlanningOptimizer {
 
     // Find matching budget
     let budget = null;
-    for (const [id, b] of this.budgets) {
+    for (const [_id, b] of this.budgets) {
       if (b.category === transaction.category) {
         budget = b;
         break;
@@ -240,7 +242,7 @@ class FinancialPlanningOptimizer {
   async resetMonthlyBudgets() {
     console.log('🔄 Resetting monthly budgets...');
 
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       budget.spent = 0;
       budget.remaining = budget.monthlyLimit || 0;
       budget.lastReset = Date.now();
@@ -382,9 +384,9 @@ class FinancialPlanningOptimizer {
     console.log(`✅ Paid: ${bill.name} (${bill.amount} SEK)`);
 
     // Reset status for next month
-    setTimeout(() => {
+    this._timeouts.push(setTimeout(() => {
       bill.status = 'pending';
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     return { success: true, bill };
   }
@@ -529,14 +531,14 @@ class FinancialPlanningOptimizer {
 
     // Calculate average monthly expenses
     let monthlyExpenses = 0;
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       if (budget.monthlyLimit) {
         monthlyExpenses += budget.monthlyLimit;
       }
     }
 
     // Add recurring bills
-    for (const [id, bill] of this.bills) {
+    for (const [_id, bill] of this.bills) {
       monthlyExpenses += bill.amount;
     }
 
@@ -578,7 +580,7 @@ class FinancialPlanningOptimizer {
     const optimizations = [];
 
     // Check for overspending
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       const percentUsed = budget.monthlyLimit > 0 ? (budget.spent / budget.monthlyLimit) * 100 : 0;
       
       if (percentUsed > 90) {
@@ -615,7 +617,7 @@ class FinancialPlanningOptimizer {
     }
 
     // Check for expensive bills
-    for (const [id, bill] of this.bills) {
+    for (const [_id, bill] of this.bills) {
       if (bill.category === 'utilities') {
         // Check if can be optimized
         if (bill.amount > 500) {
@@ -663,25 +665,25 @@ class FinancialPlanningOptimizer {
 
   startMonitoring() {
     // Check bills daily
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.processBills();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Generate weekly optimization report
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const day = new Date().getDay();
       if (day === 1) { // Monday
         this.generateWeeklyReport();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Reset budgets monthly (first day of month)
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const date = new Date().getDate();
       if (date === 1) {
         this.resetMonthlyBudgets();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Initial checks
     this.processBills();
@@ -706,7 +708,7 @@ class FinancialPlanningOptimizer {
 
     // Budget status
     console.log('\n  Budget Status:');
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       if (budget.monthlyLimit) {
         const percentUsed = (budget.spent / budget.monthlyLimit) * 100;
         console.log(`    ${budget.name}: ${percentUsed.toFixed(0)}% (${budget.spent}/${budget.monthlyLimit} SEK)`);
@@ -715,7 +717,7 @@ class FinancialPlanningOptimizer {
 
     // Financial goals
     console.log('\n  Goal Progress:');
-    for (const [id, goal] of this.financialGoals) {
+    for (const [_id, goal] of this.financialGoals) {
       if (goal.status !== 'achieved') {
         console.log(`    ${goal.name}: ${goal.progress.toFixed(1)}% (${goal.current}/${goal.target} SEK)`);
       }
@@ -730,7 +732,7 @@ class FinancialPlanningOptimizer {
     let totalBalance = 0;
     const accounts = [];
 
-    for (const [id, account] of this.accounts) {
+    for (const [_id, account] of this.accounts) {
       totalBalance += account.balance;
       accounts.push({
         name: account.name,
@@ -742,7 +744,7 @@ class FinancialPlanningOptimizer {
     const monthlyIncome = 87000;
     let monthlyExpenses = 0;
 
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       if (budget.monthlyLimit) {
         monthlyExpenses += budget.spent;
       }
@@ -780,7 +782,7 @@ class FinancialPlanningOptimizer {
     let totalBudget = 0;
     let totalSpent = 0;
 
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       if (budget.monthlyLimit) {
         totalBudget += budget.monthlyLimit;
         totalSpent += budget.spent;
@@ -808,7 +810,7 @@ class FinancialPlanningOptimizer {
   getGoalsReport() {
     const goals = [];
 
-    for (const [id, goal] of this.financialGoals) {
+    for (const [_id, goal] of this.financialGoals) {
       const daysRemaining = Math.ceil((goal.deadline - Date.now()) / (24 * 60 * 60 * 1000));
       
       goals.push({
@@ -857,7 +859,7 @@ class FinancialPlanningOptimizer {
     const trend = [];
     let netWorth = 0;
 
-    for (const [id, account] of this.accounts) {
+    for (const [_id, account] of this.accounts) {
       netWorth += account.balance;
     }
 
@@ -872,6 +874,17 @@ class FinancialPlanningOptimizer {
     }
 
     return trend;
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

@@ -42,8 +42,8 @@ function createMockHomey(overrides = {}) {
     getActionCard() { return null; },
   };
 
-  homey.log = (...args) => {};
-  homey.error = (...args) => {};
+  homey.log = (..._args) => {};
+  homey.error = (..._args) => {};
 
   // Wire up a minimal app stub; tests may override individual managers.
   homey.app = {

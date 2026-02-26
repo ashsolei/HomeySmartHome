@@ -99,12 +99,16 @@ class HomeSustainabilityTrackerSystem {
   // ---------------------------------------------------------------------------
 
   async initialize() {
-    this.log('Initializing HomeSustainabilityTrackerSystem');
-    await this._loadSettings();
-    this._recalculateMonthlyTarget();
-    this._startMonitoringLoop();
-    this.initialized = true;
-    this.log('HomeSustainabilityTrackerSystem initialized successfully');
+    try {
+      this.log('Initializing HomeSustainabilityTrackerSystem');
+      await this._loadSettings();
+      this._recalculateMonthlyTarget();
+      this._startMonitoringLoop();
+      this.initialized = true;
+      this.log('HomeSustainabilityTrackerSystem initialized successfully');
+    } catch (error) {
+      this.homey.error(`[HomeSustainabilityTrackerSystem] Failed to initialize:`, error.message);
+    }
   }
 
   async destroy() {

@@ -18,21 +18,25 @@ class GardenPlantCareSystem {
   }
 
   async initialize() {
-    this.log('Initializing Garden Plant Care System...');
     try {
-      this._initializePlantDatabase();
-      this._initializePestDatabase();
-      this._initializeCompanionMatrix();
-      this._initializeGardenZones();
-      this._initializeDefaultPlants();
-      this._initializeWaterUsage();
-      await this._discoverSoilSensors();
-      this._startMonitoring();
-      this.initialized = true;
-      this.log('Garden Plant Care System initialized successfully');
-    } catch (err) {
-      this.error('Failed to initialize Garden Plant Care System: ' + err.message);
-      throw err;
+      this.log('Initializing Garden Plant Care System...');
+      try {
+        this._initializePlantDatabase();
+        this._initializePestDatabase();
+        this._initializeCompanionMatrix();
+        this._initializeGardenZones();
+        this._initializeDefaultPlants();
+        this._initializeWaterUsage();
+        await this._discoverSoilSensors();
+        this._startMonitoring();
+        this.initialized = true;
+        this.log('Garden Plant Care System initialized successfully');
+      } catch (err) {
+        this.error('Failed to initialize Garden Plant Care System: ' + err.message);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[GardenPlantCareSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -630,7 +634,7 @@ class GardenPlantCareSystem {
 
   _monitoringCycle() {
     try {
-      for (const [plantId, plant] of this.gardenPlants) {
+      for (const [_plantId, plant] of this.gardenPlants) {
         const species = this.plantDatabase.get(plant.speciesId);
         if (!species) continue;
 
@@ -677,7 +681,7 @@ class GardenPlantCareSystem {
     const stageDistribution = {};
 
     for (const [plantId, plant] of this.gardenPlants) {
-      const species = this.plantDatabase.get(plant.speciesId);
+      const _species = this.plantDatabase.get(plant.speciesId);
       const harvest = this.estimateHarvestDate(plantId);
       plantSummary[plantId] = {
         name: plant.name,

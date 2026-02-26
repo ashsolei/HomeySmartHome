@@ -5,7 +5,7 @@
  * RESTful API optimized for mobile applications
  */
 const express = require('express');
-const router = express.Router();
+const _router = express.Router();
 
 class MobileAPI {
   constructor(app, services) {
@@ -124,7 +124,7 @@ class MobileAPI {
 
   async login(req, res) {
     try {
-      const { username, password } = req.body;
+      const { username, _password } = req.body;
       
       // Simplified authentication (use proper auth in production)
       const token = this.generateToken(username);
@@ -320,7 +320,7 @@ class MobileAPI {
 
   async getDeviceHistory(req, res) {
     try {
-      const deviceId = req.params.id;
+      const _deviceId = req.params.id;
       const { period = '24h' } = req.query;
 
       const history = [];
@@ -646,7 +646,7 @@ class MobileAPI {
 
   async getNotifications(req, res) {
     try {
-      const { limit = 20, priority } = req.query;
+      const { _limit = 20, _priority } = req.query;
       
       const notifications = [
         {
@@ -721,7 +721,7 @@ class MobileAPI {
 
   async getSecurityEvents(req, res) {
     try {
-      const { limit = 20 } = req.query;
+      const { _limit = 20 } = req.query;
       
       const events = [];
 

@@ -6,6 +6,8 @@
  */
 class IndoorClimateOptimizer {
   constructor(app) {
+    this._intervals = [];
+    this._timeouts = [];
     this.app = app;
     this.rooms = new Map();
     this.hvacZones = new Map();
@@ -209,7 +211,7 @@ class IndoorClimateOptimizer {
   }
 
   async updateSensorReadings() {
-    for (const [roomId, room] of this.rooms) {
+    for (const [_roomId, room] of this.rooms) {
       // Get HVAC zone influence
       const zone = this.hvacZones.get(room.hvacZone);
       
@@ -290,7 +292,7 @@ class IndoorClimateOptimizer {
   async optimizeClimate() {
     console.log('🌡️ Optimizing climate...');
 
-    for (const [zoneId, zone] of this.hvacZones) {
+    for (const [_zoneId, zone] of this.hvacZones) {
       if (!zone.enabled) continue;
 
       // Get all rooms in zone
@@ -623,24 +625,24 @@ class IndoorClimateOptimizer {
 
   startMonitoring() {
     // Update sensor readings every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.updateSensorReadings();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Optimize climate every 5 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.optimizeClimate();
-    }, 5 * 60 * 1000);
+    }, 5 * 60 * 1000));
 
     // Check schedules every minute
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkSchedules();
-    }, 60 * 1000);
+    }, 60 * 1000));
 
     // Check air quality every 10 minutes
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       this.checkAirQuality();
-    }, 10 * 60 * 1000);
+    }, 10 * 60 * 1000));
 
     // Initial run
     this.updateSensorReadings();
@@ -652,7 +654,7 @@ class IndoorClimateOptimizer {
     
     if (!prefs) return;
 
-    for (const [roomId, room] of this.rooms) {
+    for (const [_roomId, room] of this.rooms) {
       const warnings = [];
 
       if (room.currentCO2 > prefs.maxCO2) {
@@ -843,6 +845,17 @@ class IndoorClimateOptimizer {
       timestamp: h.timestamp,
       ...h.rooms[roomId]
     })).filter(h => h.temp !== undefined);
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
+    if (this._timeouts) {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+    }
   }
 }
 

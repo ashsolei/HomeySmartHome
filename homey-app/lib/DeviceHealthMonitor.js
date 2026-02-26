@@ -3,10 +3,58 @@
 const { BaseSystem } = require('./utils/BaseSystem');
 
 /**
+ * @typedef {'healthy'|'good'|'fair'|'poor'|'critical'} HealthStatus
+ */
+
+/**
+ * @typedef {object} DeviceIssue
+ * @property {string} id - Unique issue identifier
+ * @property {'unavailable'|'slow_response'|'stale_data'|'capability_error'|'went_offline'} type - Issue category
+ * @property {'low'|'medium'|'high'} severity - Issue severity
+ * @property {string} message - Human-readable description
+ * @property {number} detected - Unix timestamp (ms) when first detected
+ * @property {number} count - Number of occurrences
+ * @property {number} [lastOccurrence] - Unix timestamp of most recent occurrence
+ * @property {string} [capability] - Affected capability name (where applicable)
+ */
+
+/**
+ * @typedef {object} DeviceHealth
+ * @property {string} deviceId - Homey device ID
+ * @property {string} deviceName - Device display name
+ * @property {string} driverClass - Driver ID
+ * @property {HealthStatus} status - Current health status
+ * @property {number} score - Health score (0–100)
+ * @property {boolean} available - Whether the device is currently available
+ * @property {number} lastSeen - Unix timestamp of the last successful contact
+ * @property {DeviceIssue[]} issues - Active issues list
+ * @property {object} capabilities - Per-capability value and update metadata
+ * @property {object} performance - Response time history and reliability metrics
+ */
+
+/**
+ * @typedef {object} SystemHealthSnapshot
+ * @property {number} overallScore - Average health score across all devices
+ * @property {number} totalDevices - Total number of monitored devices
+ * @property {number} availableDevices - Number of online devices
+ * @property {{healthy: number, good: number, fair: number, poor: number, critical: number}} byStatus - Device count per status
+ * @property {number} criticalIssues - Number of devices in critical state
+ * @property {number} pendingMaintenance - Pending maintenance task count
+ */
+
+/**
  * Device Health Monitor
+ *
  * Real-time health tracking, predictive maintenance, and anomaly detection
+ * for all Homey devices. Extends {@link BaseSystem} for lifecycle and interval
+ * management.
+ *
+ * @extends BaseSystem
  */
 class DeviceHealthMonitor extends BaseSystem {
+  /**
+   * @param {import('homey').Homey} homey - Homey application instance
+   */
   constructor(homey) {
     super(homey);
     this.deviceHealth = new Map();
@@ -44,7 +92,10 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Start monitoring all devices
+   * Initialise health records for all existing devices, register device-creation
+   * listener, and start the health-check, diagnostics, and anomaly-detection intervals.
+   *
+   * @returns {Promise<void>}
    */
   async startMonitoring() {
     // Monitor all devices
@@ -76,7 +127,11 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Initialize monitoring for a device
+   * Create a health record for the device (if one doesn't exist) and attach
+   * capability-value and availability event listeners.
+   *
+   * @param {object} device - Homey device object
+   * @returns {Promise<void>}
    */
   async initializeDeviceMonitoring(device) {
     const deviceId = device.id;
@@ -121,7 +176,9 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Perform health checks on all devices
+   * Run a health check on every known device and persist the results.
+   *
+   * @returns {Promise<void>}
    */
   async performHealthChecks() {
     this.log('Performing health checks...');
@@ -136,7 +193,11 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Check health of a specific device
+   * Update health data for a single device: availability, response time,
+   * all capability values, health score, and status. Records a history snapshot.
+   *
+   * @param {object} device - Homey device object
+   * @returns {Promise<DeviceHealth|undefined>} Updated health record, or undefined if device is unknown
    */
   async checkDeviceHealth(device) {
     const deviceId = device.id;
@@ -245,7 +306,12 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Measure device response time
+   * Measure the time to read the first capability value from a device.
+   *
+   * Returns 0 for devices with no capabilities and -1 on error.
+   *
+   * @param {object} device - Homey device object
+   * @returns {Promise<number>} Response time in milliseconds (0 = no caps, -1 = error)
    */
   async measureResponseTime(device) {
     if (device.capabilities.length === 0) return 0;
@@ -254,13 +320,20 @@ class DeviceHealthMonitor extends BaseSystem {
       const start = Date.now();
       await device.getCapabilityValue(device.capabilities[0]);
       return Date.now() - start;
-    } catch (error) {
+    } catch (_error) {
       return -1; // Error
     }
   }
 
   /**
-   * Add issue to device health
+   * Append a new issue to a device's health record, or increment the count of
+   * an existing matching issue. Sends a Homey notification for high-severity issues.
+   *
+   * Issues are capped at 20 per device; older entries are evicted first.
+   *
+   * @param {string} deviceId - Device identifier
+   * @param {Omit<DeviceIssue, 'id'|'count'>} issue - Issue definition (id and count are assigned automatically)
+   * @returns {void}
    */
   addIssue(deviceId, issue) {
     const health = this.deviceHealth.get(deviceId);
@@ -293,7 +366,12 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Calculate overall health score
+   * Calculate a composite health score (0–100) by deducting points for
+   * unavailability, recent issues by severity, poor response times, and
+   * capability read errors.
+   *
+   * @param {DeviceHealth} health - Current health record
+   * @returns {number} Health score clamped to [0, 100]
    */
   calculateHealthScore(health) {
     let score = 100;
@@ -326,7 +404,7 @@ class DeviceHealthMonitor extends BaseSystem {
     }
 
     // Deduct for capability errors
-    for (const [capability, data] of Object.entries(health.capabilities)) {
+    for (const [_capability, data] of Object.entries(health.capabilities)) {
       if (data.errors > 0) {
         score -= data.errors * 2;
       }
@@ -336,7 +414,14 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Determine health status from score
+   * Map a numeric health score and issue list to a categorical health status.
+   *
+   * Devices with any high-severity issue are immediately classified as 'critical'
+   * regardless of score.
+   *
+   * @param {number} score - Health score (0–100)
+   * @param {DeviceIssue[]} issues - Current issue list
+   * @returns {HealthStatus}
    */
   determineHealthStatus(score, issues) {
     const criticalIssues = issues.filter(i => i.severity === 'high');
@@ -349,7 +434,13 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Record capability change
+   * Update the stored value and update-count for a capability when its value
+   * changes (called via device event listener).
+   *
+   * @param {string} deviceId - Device identifier
+   * @param {string} capability - Capability name
+   * @param {*} value - New capability value
+   * @returns {Promise<void>}
    */
   async recordCapabilityChange(deviceId, capability, value) {
     const health = this.deviceHealth.get(deviceId);
@@ -370,7 +461,12 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Record availability change
+   * Record a device coming online or going offline, adding or clearing
+   * the 'unavailable' issue accordingly.
+   *
+   * @param {string} deviceId - Device identifier
+   * @param {boolean} isAvailable - Whether the device is now available
+   * @returns {void}
    */
   recordAvailabilityChange(deviceId, isAvailable) {
     const health = this.deviceHealth.get(deviceId);
@@ -397,7 +493,12 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Record health snapshot in history
+   * Append a snapshot of the device's current health to its history ring-buffer
+   * (capped at 1000 entries per device).
+   *
+   * @param {string} deviceId - Device identifier
+   * @param {DeviceHealth} health - Current health state to snapshot
+   * @returns {void}
    */
   recordHealthSnapshot(deviceId, health) {
     if (!this.healthHistory.has(deviceId)) {
@@ -421,7 +522,10 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Run comprehensive diagnostics
+   * Run comprehensive diagnostics across all known devices and store the
+   * results in `this.diagnosticResults`.
+   *
+   * @returns {Promise<void>}
    */
   async runDiagnostics() {
     this.log('Running device diagnostics...');
@@ -435,11 +539,15 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Perform diagnostics on a device
+   * Run a suite of diagnostic tests on a single device (connectivity, response
+   * time, per-capability reads, signal strength, battery) and return a report.
+   *
+   * @param {object} device - Homey device object
+   * @returns {Promise<{deviceId: string, timestamp: number, tests: Array<{name: string, result: 'pass'|'fail'|'warning', message: string, value?: *}>, score: number}>}
    */
   async diagnosticDevice(device) {
     const deviceId = device.id;
-    const health = this.deviceHealth.get(deviceId);
+    const _health = this.deviceHealth.get(deviceId);
     
     const diagnostics = {
       deviceId,
@@ -491,7 +599,7 @@ class DeviceHealthMonitor extends BaseSystem {
           value: rssi,
           message: `Signal: ${rssi} dBm`
         });
-      } catch (error) {
+      } catch (_error) {
         // RSSI not available
       }
     }
@@ -515,7 +623,7 @@ class DeviceHealthMonitor extends BaseSystem {
             message: 'Byt batteri snart'
           });
         }
-      } catch (error) {
+      } catch (_error) {
         // Battery not available
       }
     }
@@ -529,7 +637,10 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Detect anomalies in device behavior
+   * Scan all monitored devices for behavioral anomalies, append newly detected
+   * anomalies to `this.anomalies`, and prune entries older than 7 days.
+   *
+   * @returns {Promise<void>}
    */
   async detectAnomalies() {
     this.log('Detecting anomalies...');
@@ -553,7 +664,13 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Detect anomalies for a specific device
+   * Detect anomalies for a specific device by comparing recent health history
+   * against earlier baselines and looking for repeated disconnections or
+   * out-of-range capability values.
+   *
+   * @param {string} deviceId - Device identifier
+   * @param {DeviceHealth} health - Current health state
+   * @returns {Promise<object[]>} Array of anomaly objects (may be empty)
    */
   async detectDeviceAnomalies(deviceId, health) {
     const anomalies = [];
@@ -611,9 +728,14 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Detect anomaly in capability value
+   * Check whether a single capability's current value is anomalous.
+   *
+   * @param {string} capability - Capability name (e.g. 'measure_temperature')
+   * @param {{value: *, lastUpdate: number, updateCount: number, errors: number}} data - Current capability data
+   * @param {object[]} history - Health history snapshots for the device
+   * @returns {{type: string, severity: string, message: string, detected: number, capability: string, value: *}|null} Anomaly object or null
    */
-  detectCapabilityAnomaly(capability, data, history) {
+  detectCapabilityAnomaly(capability, data, _history) {
     // For numeric capabilities, check for outliers
     if (typeof data.value === 'number') {
       // Would implement statistical outlier detection
@@ -635,7 +757,11 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Schedule maintenance for device
+   * Schedule a maintenance task for a device, persisting the updated schedule.
+   *
+   * @param {string} deviceId - Device identifier
+   * @param {{type: string, priority: 'high'|'medium'|'low', message: string}} maintenance - Maintenance task descriptor
+   * @returns {Promise<void>}
    */
   async scheduleMaintenance(deviceId, maintenance) {
     if (!this.maintenanceSchedule.has(deviceId)) {
@@ -656,7 +782,12 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Get device health report
+   * Get a combined health report for a specific device including current state,
+   * recent history, latest diagnostics, pending maintenance tasks, and
+   * actionable recommendations.
+   *
+   * @param {string} deviceId - Device identifier
+   * @returns {{current: DeviceHealth|undefined, history: object[], diagnostics: object|undefined, maintenance: object[], recommendations: object[]}}
    */
   getDeviceReport(deviceId) {
     const health = this.deviceHealth.get(deviceId);
@@ -674,7 +805,11 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Generate maintenance recommendations
+   * Derive a list of actionable maintenance recommendations from the given
+   * device health state.
+   *
+   * @param {DeviceHealth} health - Current device health state
+   * @returns {Array<{priority: 'high'|'medium'|'low', action: string, reason: string}>}
    */
   generateRecommendations(health) {
     const recommendations = [];
@@ -708,7 +843,9 @@ class DeviceHealthMonitor extends BaseSystem {
   }
 
   /**
-   * Get overall system health
+   * Get an aggregate health summary across all monitored devices.
+   *
+   * @returns {{overallScore: number, totalDevices: number, availableDevices: number, byStatus: {healthy: number, good: number, fair: number, poor: number, critical: number}, criticalIssues: number, pendingMaintenance: number}}
    */
   getSystemHealth() {
     const devices = Array.from(this.deviceHealth.values());

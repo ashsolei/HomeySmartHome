@@ -6,6 +6,7 @@
  */
 class AdvancedSleepOptimizer {
   constructor(app) {
+    this._intervals = [];
     this.app = app;
     this.sleepProfiles = new Map();
     this.sleepSessions = [];
@@ -522,11 +523,11 @@ class AdvancedSleepOptimizer {
 
   startMonitoring() {
     // Check for bedtime routines
-    setInterval(() => {
+    this._intervals.push(setInterval(() => {
       const now = new Date();
       const currentTime = now.getHours() * 60 + now.getMinutes();
 
-      for (const [userId, profile] of this.sleepProfiles) {
+      for (const [_userId, profile] of this.sleepProfiles) {
         const targetBedtime = this.parseTimeToDecimal(profile.targetBedtime);
         const targetMinutes = Math.floor(targetBedtime * 60);
 
@@ -535,7 +536,7 @@ class AdvancedSleepOptimizer {
           console.log(`💤 Bedtime reminder for ${profile.name} in 30 minutes`);
         }
       }
-    }, 60000);  // Check every minute
+    }, 60000));  // Check every minute
 
     console.log('😴 Sleep Optimizer active');
   }
@@ -606,6 +607,13 @@ class AdvancedSleepOptimizer {
         debt: debt > 0 ? '+' + debt.toFixed(1) + 'h' : debt.toFixed(1) + 'h'
       };
     });
+  }
+
+  destroy() {
+    if (this._intervals) {
+      this._intervals.forEach(id => clearInterval(id));
+      this._intervals = [];
+    }
   }
 }
 

@@ -3,10 +3,76 @@
 const { BaseSystem } = require('./utils/BaseSystem');
 
 /**
- * Smart Scheduling System
- * Intelligent task scheduling with conflict resolution and optimization
+ * @typedef {'once'|'recurring'|'conditional'} TaskType
+ */
+
+/**
+ * @typedef {object} TaskSchedule
+ * @property {number} [time] - Absolute timestamp for one-time tasks
+ * @property {'hourly'|'daily'|'weekly'|'monthly'|'interval'} [frequency] - Recurring frequency
+ * @property {number} [hour] - Hour of day (0–23)
+ * @property {number} [minute] - Minute (0–59)
+ * @property {number} [day] - Day of month (1–31)
+ * @property {number} [dayOfWeek] - Day of week (0 = Sun)
+ * @property {number} [intervalMs] - Interval duration in ms for 'interval' frequency
+ */
+
+/**
+ * @typedef {object} TaskData
+ * @property {string} name - Human-readable task name
+ * @property {string} [description] - Optional description
+ * @property {TaskType} type - Execution type
+ * @property {TaskSchedule} schedule - When/how often to run
+ * @property {object} action - Action descriptor (type + params)
+ * @property {number} [priority=5] - Priority 1–10 (10 = highest)
+ * @property {object} [constraints={}] - Execution constraints
+ * @property {object[]} [conditions=[]] - Pre-execution conditions
+ * @property {string[]} [dependencies=[]] - Task IDs that must complete first
+ * @property {number} [maxRetries=3] - Maximum retry attempts on failure
+ * @property {number} [retryDelay=300000] - Delay between retries (ms)
+ * @property {number} [timeout=60000] - Execution timeout (ms)
+ * @property {boolean} [enabled=true] - Whether the task is active
+ * @property {object} [metadata={}] - Arbitrary metadata
+ */
+
+/**
+ * @typedef {object} Task
+ * @property {string} id - Unique task identifier
+ * @property {string} name - Task name
+ * @property {string} [description] - Task description
+ * @property {TaskType} type - Execution type
+ * @property {TaskSchedule} schedule - Schedule configuration
+ * @property {object} action - Action descriptor
+ * @property {number} priority - Priority (1–10)
+ * @property {object} constraints - Execution constraints
+ * @property {object[]} conditions - Pre-execution conditions
+ * @property {string[]} dependencies - Dependency task IDs
+ * @property {number} maxRetries - Maximum retries
+ * @property {number} retryDelay - Retry delay (ms)
+ * @property {number} timeout - Execution timeout (ms)
+ * @property {boolean} enabled - Active flag
+ * @property {'pending'|'queued'|'running'|'completed'|'failed'|'retrying'|'cancelled'} status - Current status
+ * @property {number} created - Creation timestamp (ms)
+ * @property {number|null} nextExecution - Next scheduled run (ms)
+ * @property {number|null} lastExecution - Last run start timestamp (ms)
+ * @property {number} executionCount - Successful execution count
+ * @property {number} failureCount - Consecutive failure count
+ * @property {object} metadata - Arbitrary metadata
+ */
+
+/**
+ * Smart Scheduling System.
+ *
+ * Manages named tasks with full lifecycle support: creation, queuing,
+ * execution, retry logic, conflict resolution, dependency checking, and
+ * automatic daily schedule optimisation based on historical failure patterns.
+ *
+ * @extends BaseSystem
  */
 class SmartSchedulingSystem extends BaseSystem {
+  /**
+   * @param {import('homey').Homey} homey - Homey app instance
+   */
   constructor(homey) {
     super(homey);
     this.tasks = new Map();
@@ -16,28 +82,32 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   async initialize() {
-    await super.initialize();
-    this.log('Initializing Smart Scheduling System...');
-    
-    // Load tasks
-    const savedTasks = await this.homey.settings.get('scheduledTasks') || {};
-    Object.entries(savedTasks).forEach(([id, task]) => {
-      this.tasks.set(id, task);
-    });
+    try {
+      await super.initialize();
+      this.log('Initializing Smart Scheduling System...');
 
-    // Load schedules
-    const savedSchedules = await this.homey.settings.get('schedules') || {};
-    Object.entries(savedSchedules).forEach(([id, schedule]) => {
-      this.schedules.set(id, schedule);
-    });
+      // Load tasks
+      const savedTasks = await this.homey.settings.get('scheduledTasks') || {};
+      Object.entries(savedTasks).forEach(([id, task]) => {
+        this.tasks.set(id, task);
+      });
 
-    // Load execution history
-    this.executionHistory = await this.homey.settings.get('schedulingSystem:executionHistory') || [];
+      // Load schedules
+      const savedSchedules = await this.homey.settings.get('schedules') || {};
+      Object.entries(savedSchedules).forEach(([id, schedule]) => {
+        this.schedules.set(id, schedule);
+      });
 
-    // Start scheduler
-    await this.startScheduler();
-    
-    this.log('Smart Scheduling System initialized');
+      // Load execution history
+      this.executionHistory = await this.homey.settings.get('schedulingSystem:executionHistory') || [];
+
+      // Start scheduler
+      await this.startScheduler();
+
+      this.log('Smart Scheduling System initialized');
+    } catch (error) {
+      this.homey.error(`[SmartSchedulingSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -64,7 +134,11 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Create a scheduled task
+   * Create a new scheduled task, compute its first execution time, persist it,
+   * and return the stored task object.
+   *
+   * @param {TaskData} taskData - Task configuration
+   * @returns {Promise<Task>}
    */
   async createTask(taskData) {
     const task = {
@@ -101,7 +175,11 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Calculate next execution time for a task
+   * Compute the next absolute execution timestamp for a task based on its type
+   * and schedule, returning null for disabled or expired one-time tasks.
+   *
+   * @param {Task} task - Task to compute the next execution for
+   * @returns {Promise<number|null>} Timestamp in ms, or null
    */
   async calculateNextExecution(task) {
     if (!task.enabled) return null;
@@ -125,7 +203,12 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Calculate next execution for recurring task
+   * Calculate the next occurrence timestamp for a recurring task schedule,
+   * measured forward from `fromTime`.
+   *
+   * @param {TaskSchedule} schedule - Recurring schedule config
+   * @param {number} fromTime - Reference timestamp in ms
+   * @returns {number|null} Next execution timestamp in ms, or null
    */
   calculateRecurringExecution(schedule, fromTime) {
     const date = new Date(fromTime);
@@ -190,7 +273,7 @@ class SmartSchedulingSystem extends BaseSystem {
     const now = Date.now();
     const dueTasks = [];
 
-    for (const [id, task] of this.tasks) {
+    for (const [_id, task] of this.tasks) {
       if (!task.enabled || !task.nextExecution) continue;
 
       // Check if task is due
@@ -305,7 +388,7 @@ class SmartSchedulingSystem extends BaseSystem {
     }
   }
 
-  async checkWeather(condition) {
+  async checkWeather(_condition) {
     // Would check weather conditions
     return true;
   }
@@ -333,7 +416,12 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Queue task for execution
+   * Validate constraints and dependencies for a task and, if all checks pass,
+   * append it to the execution queue.  Conflicting tasks are resolved by
+   * priority before queuing.
+   *
+   * @param {Task} task - Task to enqueue
+   * @returns {Promise<void>}
    */
   async queueTask(task) {
     // Check constraints
@@ -372,7 +460,11 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Check task constraints
+   * Test whether all runtime constraints for a task are currently satisfied
+   * (excluded hours, max concurrent tasks, energy price ceiling).
+   *
+   * @param {Task} task - Task to check
+   * @returns {Promise<boolean>}
    */
   async checkConstraints(task) {
     const constraints = task.constraints;
@@ -411,7 +503,11 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Check task dependencies
+   * Verify that all tasks listed in `task.dependencies` have completed
+   * (and are still within `dependencyMaxAge` if specified).
+   *
+   * @param {Task} task - Task whose dependencies to check
+   * @returns {Promise<boolean>}
    */
   async checkDependencies(task) {
     if (!task.dependencies || task.dependencies.length === 0) {
@@ -440,7 +536,11 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Check for conflicting tasks
+   * Check whether any currently running or queued task conflicts with the
+   * given task (same device/scene target or overlapping conflict zones).
+   *
+   * @param {Task} task - Task to check
+   * @returns {boolean}
    */
   hasConflictingTask(task) {
     // Check if any running tasks conflict with this one
@@ -457,7 +557,12 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Check if two tasks conflict
+   * Determine whether two tasks have conflicting targets (same device, same
+   * scene, or overlapping conflict zones).
+   *
+   * @param {Task} task1 - First task
+   * @param {Task} task2 - Second task
+   * @returns {boolean}
    */
   tasksConflict(task1, task2) {
     // Same device actions
@@ -485,7 +590,11 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Resolve task conflict
+   * Resolve a scheduling conflict by priority: cancel lower-priority
+   * conflicting tasks and retry queuing, or reschedule this task if it loses.
+   *
+   * @param {Task} task - Task that has a conflict to resolve
+   * @returns {Promise<void>}
    */
   async resolveConflict(task) {
     const conflictingTasks = Array.from(this.tasks.values())
@@ -519,7 +628,12 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Execute a task
+   * Execute a queued task with timeout enforcement and automatic retry on
+   * failure.  Updates task status and records the result in execution history.
+   *
+   * @param {Task} task - Task to execute
+   * @param {number} [attempt=0] - Zero-based attempt number (used for retries)
+   * @returns {Promise<void>}
    */
   async executeTask(task, attempt = 0) {
     this.log(`Executing task: ${task.name} (attempt ${attempt + 1})`);
@@ -668,7 +782,11 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Cancel a task
+   * Cancel a task: mark it cancelled, clear its next-execution time, and
+   * remove it from the execution queue.
+   *
+   * @param {string} taskId - Task identifier
+   * @returns {Promise<void>}
    */
   async cancelTask(taskId) {
     const task = this.tasks.get(taskId);
@@ -684,7 +802,12 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Reschedule a task
+   * Delay the next execution of a task by `delayMs` milliseconds from now and
+   * reset its status to 'pending'.
+   *
+   * @param {Task} task - Task to reschedule
+   * @param {number} [delayMs=300000] - Delay before next attempt (ms)
+   * @returns {Promise<void>}
    */
   async rescheduleTask(task, delayMs = 300000) {
     task.nextExecution = Date.now() + delayMs;
@@ -693,7 +816,13 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Record task execution
+   * Append an execution result to the in-memory history ring-buffer (capped at
+   * 1000 entries).
+   *
+   * @param {Task} task - Task that was executed
+   * @param {boolean} success - Whether the execution succeeded
+   * @param {string|null} [errorMessage=null] - Error message on failure
+   * @returns {void}
    */
   recordExecution(task, success, errorMessage = null) {
     this.executionHistory.push({
@@ -748,7 +877,9 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   /**
-   * Get task statistics
+   * Get an aggregate statistics summary for all tasks and execution history.
+   *
+   * @returns {{total: number, byStatus: object, queueLength: number, executionHistory: {total: number, successful: number, failed: number}}}
    */
   getStatistics() {
     const tasks = Array.from(this.tasks.values());
