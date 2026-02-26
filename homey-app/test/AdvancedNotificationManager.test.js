@@ -8,7 +8,7 @@
  */
 
 const { describe, it, run } = require('./helpers/runner');
-const { assert, assertEqual, assertNotEqual, assertType, assertDeepEqual, assertRejects } = require('./helpers/assert');
+const { assert, assertEqual, assertNotEqual: _assertNotEqual, assertType, assertDeepEqual, assertRejects } = require('./helpers/assert');
 const { createMockHomey } = require('./helpers/mockHomey');
 const AdvancedNotificationManager = require('../lib/AdvancedNotificationManager');
 

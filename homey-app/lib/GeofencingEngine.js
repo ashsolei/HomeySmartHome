@@ -380,7 +380,7 @@ class GeofencingEngine extends BaseSystem {
   /**
    * Determine if user is approaching geofence
    */
-  async isApproachingGeofence(userId, geofence, currentLocation) {
+  async isApproachingGeofence(userId, geofence, _currentLocation) {
     // Get recent location history for this user
     const recentHistory = this.locationHistory
       .filter(h => h.userId === userId)
@@ -428,7 +428,7 @@ class GeofencingEngine extends BaseSystem {
   /**
    * Analyze travel patterns for better predictions
    */
-  async analyzeTravelPattern(userId, location) {
+  async analyzeTravelPattern(userId, _location) {
     const recentLocations = this.locationHistory
       .filter(h => h.userId === userId)
       .slice(-10);
@@ -480,7 +480,7 @@ class GeofencingEngine extends BaseSystem {
   /**
    * Identify common routes
    */
-  identifyRoutes(locations) {
+  identifyRoutes(_locations) {
     // Simple route detection based on location clusters
     // In a production system, this would use more sophisticated algorithms
     return [];

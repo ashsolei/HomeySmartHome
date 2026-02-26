@@ -55,11 +55,15 @@ class SmartFoodPantryManagementSystem {
   // ---------------------------------------------------------------------------
 
   async initialize() {
-    this.log('Initializing SmartFoodPantryManagementSystem');
-    await this._loadSettings();
-    this._startMonitoringLoop();
-    this.initialized = true;
-    this.log('SmartFoodPantryManagementSystem initialized successfully');
+    try {
+      this.log('Initializing SmartFoodPantryManagementSystem');
+      await this._loadSettings();
+      this._startMonitoringLoop();
+      this.initialized = true;
+      this.log('SmartFoodPantryManagementSystem initialized successfully');
+    } catch (error) {
+      this.homey.error(`[SmartFoodPantryManagementSystem] Failed to initialize:`, error.message);
+    }
   }
 
   async destroy() {
@@ -448,7 +452,7 @@ class SmartFoodPantryManagementSystem {
 
   getConsumptionInsights() {
     const insights = [];
-    for (const [key, rate] of this.consumptionRates.entries()) {
+    for (const [_key, rate] of this.consumptionRates.entries()) {
       if (rate.events.length < 3) continue;
       const weeklyAvg = rate.weeklyAverage;
       const weeklyCost = weeklyAvg * rate.averagePrice;

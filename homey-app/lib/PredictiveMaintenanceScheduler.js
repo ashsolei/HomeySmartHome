@@ -15,30 +15,34 @@ class PredictiveMaintenanceScheduler {
   }
 
   async initialize() {
-    this.log('Initializing Predictive Maintenance Scheduler...');
-    
-    // Load device profiles
-    const savedProfiles = await this.homey.settings.get('deviceProfiles') || {};
-    Object.entries(savedProfiles).forEach(([id, profile]) => {
-      this.deviceProfiles.set(id, profile);
-    });
+    try {
+      this.log('Initializing Predictive Maintenance Scheduler...');
 
-    // Load maintenance tasks
-    const savedTasks = await this.homey.settings.get('maintenanceTasks') || {};
-    Object.entries(savedTasks).forEach(([id, task]) => {
-      this.maintenanceTasks.set(id, task);
-    });
+      // Load device profiles
+      const savedProfiles = await this.homey.settings.get('deviceProfiles') || {};
+      Object.entries(savedProfiles).forEach(([id, profile]) => {
+        this.deviceProfiles.set(id, profile);
+      });
 
-    // Initialize anomaly detector
-    await this.initializeAnomalyDetector();
+      // Load maintenance tasks
+      const savedTasks = await this.homey.settings.get('maintenanceTasks') || {};
+      Object.entries(savedTasks).forEach(([id, task]) => {
+        this.maintenanceTasks.set(id, task);
+      });
 
-    // Setup default maintenance schedules
-    await this.setupDefaultMaintenanceSchedules();
+      // Initialize anomaly detector
+      await this.initializeAnomalyDetector();
 
-    // Start monitoring
-    await this.startMonitoring();
+      // Setup default maintenance schedules
+      await this.setupDefaultMaintenanceSchedules();
 
-    this.log('Predictive Maintenance Scheduler initialized');
+      // Start monitoring
+      await this.startMonitoring();
+
+      this.log('Predictive Maintenance Scheduler initialized');
+    } catch (error) {
+      console.error(`[PredictiveMaintenanceScheduler] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -265,7 +269,7 @@ class PredictiveMaintenanceScheduler {
   /**
    * Calculate error rate
    */
-  async calculateErrorRate(device) {
+  async calculateErrorRate(_device) {
     // Simplified - would track actual errors
     return Math.random() * 0.05; // 0-5% random error rate
   }
@@ -581,7 +585,7 @@ class PredictiveMaintenanceScheduler {
 
     const now = Date.now();
     
-    for (const [taskId, task] of this.maintenanceTasks) {
+    for (const [_taskId, task] of this.maintenanceTasks) {
       // Check if task is due
       if (task.status === 'pending' && task.scheduledFor <= now) {
         this.log(`Maintenance task due: ${task.deviceName}`);

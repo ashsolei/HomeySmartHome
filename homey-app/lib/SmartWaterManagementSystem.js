@@ -29,29 +29,33 @@ class SmartWaterManagementSystem {
    * @returns {Promise<void>}
    */
   async initialize() {
-    this.log('Initializing Smart Water Management System...');
-    
-    // Load saved data
-    const savedMeters = await this.homey.settings.get('waterMeters') || {};
-    Object.entries(savedMeters).forEach(([id, meter]) => {
-      this.waterMeters.set(id, meter);
-    });
+    try {
+      this.log('Initializing Smart Water Management System...');
 
-    const savedZones = await this.homey.settings.get('irrigationZones') || {};
-    Object.entries(savedZones).forEach(([id, zone]) => {
-      this.irrigationZones.set(id, zone);
-    });
+      // Load saved data
+      const savedMeters = await this.homey.settings.get('waterMeters') || {};
+      Object.entries(savedMeters).forEach(([id, meter]) => {
+        this.waterMeters.set(id, meter);
+      });
 
-    // Discover water devices
-    await this.discoverWaterDevices();
+      const savedZones = await this.homey.settings.get('irrigationZones') || {};
+      Object.entries(savedZones).forEach(([id, zone]) => {
+        this.irrigationZones.set(id, zone);
+      });
 
-    // Setup default irrigation zones
-    await this.setupDefaultIrrigationZones();
+      // Discover water devices
+      await this.discoverWaterDevices();
 
-    // Start monitoring
-    await this.startMonitoring();
+      // Setup default irrigation zones
+      await this.setupDefaultIrrigationZones();
 
-    this.log('Smart Water Management System initialized');
+      // Start monitoring
+      await this.startMonitoring();
+
+      this.log('Smart Water Management System initialized');
+    } catch (error) {
+      console.error(`[SmartWaterManagementSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -310,7 +314,7 @@ class SmartWaterManagementSystem {
    * @returns {Promise<void>}
    */
   async detectLeaks() {
-    for (const [id, detector] of this.leakDetectors) {
+    for (const [_id, detector] of this.leakDetectors) {
       try {
         let leakDetected = false;
 
@@ -412,7 +416,7 @@ class SmartWaterManagementSystem {
   async getCurrentFlowRate() {
     let totalFlow = 0;
     
-    for (const [id, meter] of this.waterMeters) {
+    for (const [_id, meter] of this.waterMeters) {
       totalFlow += meter.currentFlow || 0;
     }
     
@@ -668,7 +672,7 @@ class SmartWaterManagementSystem {
 
     if (enabled) {
       // Reduce irrigation durations by 25%
-      for (const [id, zone] of this.irrigationZones) {
+      for (const [_id, zone] of this.irrigationZones) {
         if (zone.schedule) {
           zone.schedule.forEach(s => {
             s.duration = Math.floor(s.duration * 0.75);

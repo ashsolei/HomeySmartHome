@@ -30,17 +30,21 @@ class AdvancedAirPurificationSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Advanced Air Purification System...');
-    
-    await this.loadSettings();
-    this.initializeDefaultZones();
-    this.initializeDefaultPurifiers();
-    this.initializeAutomationRules();
-    
-    this.startMonitoring();
-    
-    this.homey.log('Advanced Air Purification System initialized successfully');
-    return true;
+    try {
+      this.homey.log('Initializing Advanced Air Purification System...');
+
+      await this.loadSettings();
+      this.initializeDefaultZones();
+      this.initializeDefaultPurifiers();
+      this.initializeAutomationRules();
+
+      this.startMonitoring();
+
+      this.homey.log('Advanced Air Purification System initialized successfully');
+      return true;
+    } catch (error) {
+      this.homey.error(`[AdvancedAirPurificationSystem] Failed to initialize:`, error.message);
+    }
   }
 
   async loadSettings() {

@@ -67,22 +67,26 @@ class IndoorLightingSceneEngine {
   // ─── Initialization ────────────────────────────────────────────────
 
   async initialize() {
-    this.log('Initierar Indoor Lighting Scene Engine...');
-
     try {
-      await this.discoverIndoorLights();
-      await this.setupZones();
-      await this.loadPresetLibrary();
-      await this.setupActivityScenes();
-      await this.setupColorThemes();
-      await this.startCircadianCycle();
-      await this.startScheduleMonitor();
-      await this.startEnergyTracking();
+      this.log('Initierar Indoor Lighting Scene Engine...');
 
-      this.log(`Initiering klar — ${this.lights.size} lampor, ${this.zones.size} zoner, ${this.scenes.size} scener`);
-      this._notify('💡 Inomhusbelysning redo', `${this.lights.size} lampor och ${this.scenes.size} scener tillgängliga`);
-    } catch (err) {
-      this.error('Initiering misslyckades:', err.message);
+      try {
+        await this.discoverIndoorLights();
+        await this.setupZones();
+        await this.loadPresetLibrary();
+        await this.setupActivityScenes();
+        await this.setupColorThemes();
+        await this.startCircadianCycle();
+        await this.startScheduleMonitor();
+        await this.startEnergyTracking();
+
+        this.log(`Initiering klar — ${this.lights.size} lampor, ${this.zones.size} zoner, ${this.scenes.size} scener`);
+        this._notify('💡 Inomhusbelysning redo', `${this.lights.size} lampor och ${this.scenes.size} scener tillgängliga`);
+      } catch (err) {
+        this.error('Initiering misslyckades:', err.message);
+      }
+    } catch (error) {
+      console.error(`[IndoorLightingSceneEngine] Failed to initialize:`, error.message);
     }
   }
 
@@ -159,7 +163,7 @@ class IndoorLightingSceneEngine {
       const zoneLower = light.zone.toLowerCase();
       let assigned = false;
 
-      for (const [zoneId, zone] of this.zones) {
+      for (const [_zoneId, zone] of this.zones) {
         if (zone.keywords.some(kw => zoneLower.includes(kw))) {
           zone.lights.push(id);
           assigned = true;
@@ -510,7 +514,7 @@ class IndoorLightingSceneEngine {
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const { colorTemp, brightness } = this._interpolateCircadian(currentMinutes);
 
-    for (const [zoneId, zone] of this.zones) {
+    for (const [_zoneId, zone] of this.zones) {
       if (zone.activeScene && zone.activeScene !== 'circadian') continue;
 
       for (const lightId of zone.lights) {
@@ -901,7 +905,7 @@ class IndoorLightingSceneEngine {
     this.log('Energispårning startad');
   }
 
-  _trackEnergy(sceneId, zones, brightness) {
+  _trackEnergy(sceneId, _zones, _brightness) {
     if (!this.energyTracking.perScene.has(sceneId)) {
       this.energyTracking.perScene.set(sceneId, { totalActivations: 0, totalMinutes: 0 });
     }

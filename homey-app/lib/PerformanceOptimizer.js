@@ -680,7 +680,7 @@ class PerformanceOptimizer extends BaseSystem {
     const oneHourAgo = now - 3600000;
 
     const recentMemory = this.perfMetrics.memory.filter(m => m.timestamp > oneHourAgo);
-    const recentCPU = this.perfMetrics.cpu.filter(c => c.timestamp > oneHourAgo);
+    const _recentCPU = this.perfMetrics.cpu.filter(c => c.timestamp > oneHourAgo);
     const recentEventLoop = this.perfMetrics.eventLoop.filter(e => e.timestamp > oneHourAgo);
 
     return {

@@ -922,7 +922,7 @@ class AdvancedMusicAudioSystem extends EventEmitter {
     this.monitoring.lastCheck = Date.now();
     
     // Update speaker connectivity
-    for (const [id, speaker] of this.speakers) {
+    for (const [_id, speaker] of this.speakers) {
       // Simulate occasional connectivity check
       speaker.lastSeen = Date.now();
     }
@@ -932,7 +932,7 @@ class AdvancedMusicAudioSystem extends EventEmitter {
    * Monitor speakers
    */
   monitorSpeakers() {
-    for (const [id, speaker] of this.speakers) {
+    for (const [_id, speaker] of this.speakers) {
       const minutesSinceLastSeen = (Date.now() - speaker.lastSeen) / 60000;
       
       if (minutesSinceLastSeen > 10) {

@@ -125,22 +125,26 @@ class SmartHomeDigitalTwinSystem {
   // ---------------------------------------------------------------------------
 
   async initialize() {
-    if (this._initialized) {
-      this.log('Already initialized');
-      return;
-    }
-
-    this.log('Initializing Smart Home Digital Twin System...');
-
     try {
-      await this._loadSettings();
-      await this._restoreState();
-      this._startMonitoringLoop();
-      this._initialized = true;
-      this.log('Initialization complete');
-    } catch (err) {
-      this.error('Initialization failed: ' + err.message);
-      throw err;
+      if (this._initialized) {
+        this.log('Already initialized');
+        return;
+      }
+
+      this.log('Initializing Smart Home Digital Twin System...');
+
+      try {
+        await this._loadSettings();
+        await this._restoreState();
+        this._startMonitoringLoop();
+        this._initialized = true;
+        this.log('Initialization complete');
+      } catch (err) {
+        this.error('Initialization failed: ' + err.message);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[SmartHomeDigitalTwinSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -1352,7 +1356,7 @@ class SmartHomeDigitalTwinSystem {
   _archiveDailyOccupancy() {
     const now = new Date();
     if (now.getHours() === 0 && now.getMinutes() < this._settings.snapshotIntervalMinutes) {
-      for (const [roomId, data] of this.occupancyData) {
+      for (const [_roomId, data] of this.occupancyData) {
         const dailySummary = {
           date: new Date(now.getTime() - 86400000).toISOString().split('T')[0],
           buckets: data.hourlyBuckets.map(b => ({

@@ -45,16 +45,20 @@ class AdvancedAnalytics {
    * @returns {Promise<void>}
    */
   async initialize() {
-    this.log('Initializing Advanced Analytics...');
-    
-    // Load historical metrics
-    this.metrics = new Map(await this.homey.settings.get('analyticsMetrics') || []);
-    this.trends = new Map(await this.homey.settings.get('analyticsTrends') || []);
-    
-    // Start collecting metrics
-    this.startMetricsCollection();
-    
-    this.log('Advanced Analytics initialized');
+    try {
+      this.log('Initializing Advanced Analytics...');
+
+      // Load historical metrics
+      this.metrics = new Map(await this.homey.settings.get('analyticsMetrics') || []);
+      this.trends = new Map(await this.homey.settings.get('analyticsTrends') || []);
+
+      // Start collecting metrics
+      this.startMetricsCollection();
+
+      this.log('Advanced Analytics initialized');
+    } catch (error) {
+      console.error(`[AdvancedAnalytics] Failed to initialize:`, error.message);
+    }
   }
 
   // ============================================

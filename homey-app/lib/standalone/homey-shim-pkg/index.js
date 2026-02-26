@@ -30,7 +30,7 @@ const ManagerSettings = {
 
 // ManagerDrivers shim
 const ManagerDrivers = {
-  getDriver(id) { return null; },
+  getDriver(_id) { return null; },
   getDrivers() { return {}; },
   on() {},
   removeListener() {}
@@ -39,14 +39,14 @@ const ManagerDrivers = {
 // ManagerDevices shim
 const ManagerDevices = {
   getDevices() { return {}; },
-  getDevice(id) { return null; },
+  getDevice(_id) { return null; },
   on() {},
   removeListener() {}
 };
 
 // ManagerFlow shim
 const ManagerFlow = {
-  getCard(type, id) {
+  getCard(_type, _id) {
     return {
       registerRunListener() { return this; },
       register() { return this; },

@@ -148,27 +148,31 @@ class SmartPetDoorActivitySystem {
    * Initialize the pet door activity system
    */
   async initialize() {
-    if (this.initialized) {
-      this.log('System already initialized');
-      return;
-    }
-
-    this.log('Initializing SmartPetDoorActivitySystem...');
-
     try {
-      this._initializeDefaultDoors();
-      this._initializeMonitoring();
-      this._initializeDailyReset();
+      if (this.initialized) {
+        this.log('System already initialized');
+        return;
+      }
 
-      this.stats.systemStartedAt = new Date().toISOString();
-      this.initialized = true;
+      this.log('Initializing SmartPetDoorActivitySystem...');
 
-      this.log('SmartPetDoorActivitySystem initialized successfully');
-      this.log(`Doors configured: ${this.doors.size}, Pets registered: ${this.pets.size}`);
-      this.log(`Monitoring interval: ${this.monitoringIntervalMs / 1000}s`);
-    } catch (err) {
-      this.error(`Failed to initialize SmartPetDoorActivitySystem: ${err.message}`);
-      throw err;
+      try {
+        this._initializeDefaultDoors();
+        this._initializeMonitoring();
+        this._initializeDailyReset();
+
+        this.stats.systemStartedAt = new Date().toISOString();
+        this.initialized = true;
+
+        this.log('SmartPetDoorActivitySystem initialized successfully');
+        this.log(`Doors configured: ${this.doors.size}, Pets registered: ${this.pets.size}`);
+        this.log(`Monitoring interval: ${this.monitoringIntervalMs / 1000}s`);
+      } catch (err) {
+        this.error(`Failed to initialize SmartPetDoorActivitySystem: ${err.message}`);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[SmartPetDoorActivitySystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -921,7 +925,7 @@ class SmartPetDoorActivitySystem {
 
     // Check UV warning for light-colored pets
     if (this.weatherRules.uvWarningForLightPets && weather.uvIndex > 6) {
-      for (const [petId, pet] of this.pets) {
+      for (const [_petId, pet] of this.pets) {
         if (pet.lightColored) {
           this.log(`UV WARNING for ${pet.name}: UV index is ${weather.uvIndex}. Consider keeping indoors.`);
         }

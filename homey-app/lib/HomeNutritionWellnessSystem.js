@@ -139,14 +139,18 @@ class HomeNutritionWellnessSystem {
   }
 
   async initialize() {
-    this.log('Initializing HomeNutritionWellnessSystem...');
     try {
-      this._loadDefaults();
-      this._startMonitoringCycle();
-      this.initialized = true;
-      this.log('HomeNutritionWellnessSystem initialized successfully');
-    } catch (err) {
-      this.error(`Initialization failed: ${err.message}`);
+      this.log('Initializing HomeNutritionWellnessSystem...');
+      try {
+        this._loadDefaults();
+        this._startMonitoringCycle();
+        this.initialized = true;
+        this.log('HomeNutritionWellnessSystem initialized successfully');
+      } catch (err) {
+        this.error(`Initialization failed: ${err.message}`);
+      }
+    } catch (error) {
+      this.homey.error(`[HomeNutritionWellnessSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -319,7 +323,7 @@ class HomeNutritionWellnessSystem {
     });
   }
 
-  _selectRecipeForMeal(recipes, targetCalories, mealType) {
+  _selectRecipeForMeal(recipes, targetCalories, _mealType) {
     if (recipes.length === 0) return null;
     const tolerance = 200;
     const suitable = recipes.filter(r => Math.abs(r.calories - targetCalories) <= tolerance);

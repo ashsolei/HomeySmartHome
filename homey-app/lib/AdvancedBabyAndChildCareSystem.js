@@ -36,20 +36,24 @@ class AdvancedBabyAndChildCareSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Advanced Baby & Child Care System...');
-    
     try {
-      await this.loadSettings();
-      this.initializeDefaultChildren();
-      this.initializeNurseryRooms();
-      
-      this.startMonitoring();
-      
-      this.homey.log('Advanced Baby & Child Care System initialized successfully');
-      return true;
+      this.homey.log('Initializing Advanced Baby & Child Care System...');
+
+      try {
+        await this.loadSettings();
+        this.initializeDefaultChildren();
+        this.initializeNurseryRooms();
+
+        this.startMonitoring();
+
+        this.homey.log('Advanced Baby & Child Care System initialized successfully');
+        return true;
+      } catch (error) {
+        this.homey.error('Failed to initialize Baby & Child Care System:', error);
+        throw error;
+      }
     } catch (error) {
-      this.homey.error('Failed to initialize Baby & Child Care System:', error);
-      throw error;
+      this.homey.error(`[AdvancedBabyAndChildCareSystem] Failed to initialize:`, error.message);
     }
   }
 

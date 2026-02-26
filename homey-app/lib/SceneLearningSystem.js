@@ -15,21 +15,25 @@ class SceneLearningSystem {
   }
 
   async initialize() {
-    this.log('Initializing Scene Learning System...');
-    
-    // Load learned scenes
-    const saved = await this.homey.settings.get('learnedScenes') || {};
-    Object.entries(saved).forEach(([id, scene]) => {
-      this.learnedScenes.set(id, scene);
-    });
+    try {
+      this.log('Initializing Scene Learning System...');
 
-    // Load device state history
-    this.deviceStateHistory = await this.homey.settings.get('deviceStateHistory') || [];
+      // Load learned scenes
+      const saved = await this.homey.settings.get('learnedScenes') || {};
+      Object.entries(saved).forEach(([id, scene]) => {
+        this.learnedScenes.set(id, scene);
+      });
 
-    // Start monitoring
-    await this.startMonitoring();
-    
-    this.log('Scene Learning System initialized');
+      // Load device state history
+      this.deviceStateHistory = await this.homey.settings.get('deviceStateHistory') || [];
+
+      // Start monitoring
+      await this.startMonitoring();
+
+      this.log('Scene Learning System initialized');
+    } catch (error) {
+      console.error(`[SceneLearningSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -70,7 +74,7 @@ class SceneLearningSystem {
     for (const capability of device.capabilities) {
       try {
         state.capabilities[capability] = await device.getCapabilityValue(capability);
-      } catch (error) {
+      } catch (_error) {
         // Capability might not be readable
       }
     }
@@ -272,7 +276,7 @@ class SceneLearningSystem {
    */
   async generateSceneName(actions, context) {
     const hour = context.hour;
-    const devices = new Set(actions.map(a => a.target.deviceName));
+    const _devices = new Set(actions.map(a => a.target.deviceName));
     const zones = new Set(actions.map(a => a.zone).filter(Boolean));
 
     // Determine time of day
@@ -398,7 +402,7 @@ class SceneLearningSystem {
    * Optimize existing learned scenes
    */
   async optimizeLearnedScenes() {
-    for (const [id, scene] of this.learnedScenes) {
+    for (const [_id, scene] of this.learnedScenes) {
       // Remove actions that are consistently reversed
       scene.actions = await this.removeReversedActions(scene);
 
@@ -526,7 +530,7 @@ class SceneLearningSystem {
 
     const suggestions = [];
 
-    for (const [id, scene] of this.learnedScenes) {
+    for (const [_id, scene] of this.learnedScenes) {
       if (scene.status !== 'suggested' && scene.status !== 'approved') {
         continue;
       }
@@ -617,7 +621,7 @@ class SceneLearningSystem {
     return windows;
   }
 
-  findRepeatingPatterns(states) {
+  findRepeatingPatterns(_states) {
     // Simplified pattern detection
     // In production, use more sophisticated clustering algorithms
     return [];
@@ -643,7 +647,7 @@ class SceneLearningSystem {
   }
 
   sceneNameExists(name) {
-    for (const [id, scene] of this.learnedScenes) {
+    for (const [_id, scene] of this.learnedScenes) {
       if (scene.name.sv === name || scene.name.en === name) {
         return true;
       }

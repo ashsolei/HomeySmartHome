@@ -38,21 +38,25 @@ class AdvancedKitchenAutomationSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Advanced Kitchen Automation System...');
-    
     try {
-      await this.loadSettings();
-      this.initializeDefaultAppliances();
-      this.initializeRecipes();
-      this.initializeInventory();
-      
-      this.startMonitoring();
-      
-      this.homey.log('Advanced Kitchen Automation System initialized successfully');
-      return true;
+      this.homey.log('Initializing Advanced Kitchen Automation System...');
+
+      try {
+        await this.loadSettings();
+        this.initializeDefaultAppliances();
+        this.initializeRecipes();
+        this.initializeInventory();
+
+        this.startMonitoring();
+
+        this.homey.log('Advanced Kitchen Automation System initialized successfully');
+        return true;
+      } catch (error) {
+        this.homey.error('Failed to initialize Kitchen Automation System:', error);
+        throw error;
+      }
     } catch (error) {
-      this.homey.error('Failed to initialize Kitchen Automation System:', error);
-      throw error;
+      this.homey.error(`[AdvancedKitchenAutomationSystem] Failed to initialize:`, error.message);
     }
   }
 

@@ -101,20 +101,24 @@ class SmartApplianceController {
   }
 
   async initialize() {
-    this.log('Initializing Smart Appliance Controller...');
-
     try {
-      await this.discoverAppliances();
-      await this.loadCycleHistory();
-      await this.loadEnergyCostHistory();
-      await this.loadConsumables();
-      await this.loadUsagePatterns();
-      await this.startMonitoring();
-    } catch (err) {
-      this.error('Initialization failed:', err.message);
-    }
+      this.log('Initializing Smart Appliance Controller...');
 
-    this.log('Smart Appliance Controller initialized');
+      try {
+        await this.discoverAppliances();
+        await this.loadCycleHistory();
+        await this.loadEnergyCostHistory();
+        await this.loadConsumables();
+        await this.loadUsagePatterns();
+        await this.startMonitoring();
+      } catch (err) {
+        this.error('Initialization failed:', err.message);
+      }
+
+      this.log('Smart Appliance Controller initialized');
+    } catch (error) {
+      console.error(`[SmartApplianceController] Failed to initialize:`, error.message);
+    }
   }
 
   async discoverAppliances() {
@@ -280,7 +284,7 @@ class SmartApplianceController {
 
   // ── Smart Scheduling (Peak Pricing Avoidance) ─────────────────────────
 
-  async findOptimalStartTime(applianceId = null) {
+  async findOptimalStartTime(_applianceId = null) {
     // Check external energy forecasting first
     try {
       const energyForecasting = this.homey.app.energyForecastingEngine;
@@ -396,11 +400,11 @@ class SmartApplianceController {
 
     // Check connectivity
     try {
-      const isOn = appliance.device.hasCapability('onoff')
+      const _isOn = appliance.device.hasCapability('onoff')
         ? await appliance.device.getCapabilityValue('onoff')
         : null;
       diagnostic.checks.push({ check: 'connectivity', status: 'ok', message: 'Device responsive' });
-    } catch (err) {
+    } catch (_err) {
       diagnostic.checks.push({ check: 'connectivity', status: 'error', message: 'Device not responding' });
       diagnostic.faultCodes.push('E06');
       diagnostic.status = 'critical';
@@ -602,7 +606,7 @@ class SmartApplianceController {
   }
 
   async updateConsumableAfterCycle(applianceId) {
-    for (const [key, consumable] of this.consumables) {
+    for (const [_key, consumable] of this.consumables) {
       if (consumable.applianceId !== applianceId) continue;
       consumable.level = Math.max(0, consumable.level - consumable.usagePerCycle);
 
@@ -618,7 +622,7 @@ class SmartApplianceController {
 
   async checkConsumableLevels() {
     const now = Date.now();
-    for (const [key, consumable] of this.consumables) {
+    for (const [_key, consumable] of this.consumables) {
       if (consumable.replacementDate && now > consumable.replacementDate) {
         await this.sendNotification(
           '🔄 Filterbyte förfallet',
@@ -640,7 +644,7 @@ class SmartApplianceController {
 
   getConsumableStatus(applianceId = null) {
     const result = [];
-    for (const [key, consumable] of this.consumables) {
+    for (const [_key, consumable] of this.consumables) {
       if (applianceId && consumable.applianceId !== applianceId) continue;
       result.push({
         applianceId: consumable.applianceId,
@@ -726,7 +730,7 @@ class SmartApplianceController {
   // ── Core Appliance Methods ────────────────────────────────────────────
 
   async checkApplianceStatus() {
-    for (const [id, appliance] of this.appliances) {
+    for (const [_id, appliance] of this.appliances) {
       try {
         if (appliance.device.hasCapability('onoff')) {
           const isOn = await appliance.device.getCapabilityValue('onoff');
@@ -836,7 +840,7 @@ class SmartApplianceController {
   }
 
   async checkMaintenanceNeeds() {
-    for (const [id, appliance] of this.appliances) {
+    for (const [_id, appliance] of this.appliances) {
       try {
         const needsMaintenance = await this.calculateMaintenanceNeed(appliance);
         if (needsMaintenance && !appliance.maintenanceNeeded) {
@@ -992,7 +996,7 @@ class SmartApplianceController {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
     }
-    for (const [key, timer] of this.escalationTimers) {
+    for (const [_key, timer] of this.escalationTimers) {
       clearTimeout(timer);
     }
     this.escalationTimers.clear();

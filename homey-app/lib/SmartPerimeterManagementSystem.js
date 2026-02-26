@@ -95,11 +95,15 @@ class SmartPerimeterManagementSystem {
   // ---------------------------------------------------------------------------
 
   async initialize() {
-    this.log('Initializing SmartPerimeterManagementSystem');
-    await this._loadSettings();
-    this._startMonitoringLoop();
-    this.initialized = true;
-    this.log('SmartPerimeterManagementSystem initialized successfully');
+    try {
+      this.log('Initializing SmartPerimeterManagementSystem');
+      await this._loadSettings();
+      this._startMonitoringLoop();
+      this.initialized = true;
+      this.log('SmartPerimeterManagementSystem initialized successfully');
+    } catch (error) {
+      this.homey.error(`[SmartPerimeterManagementSystem] Failed to initialize:`, error.message);
+    }
   }
 
   async destroy() {

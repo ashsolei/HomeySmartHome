@@ -67,23 +67,27 @@ class IntelligentDashboard {
    * @returns {Promise<void>}
    */
   async initialize() {
-    this.log('Initializing Intelligent Dashboard...');
-    
-    // Load saved layouts
-    const layouts = await this.homey.settings.get('dashboardLayouts') || {};
-    Object.entries(layouts).forEach(([id, layout]) => {
-      this.dashboardLayouts.set(id, layout);
-    });
+    try {
+      this.log('Initializing Intelligent Dashboard...');
 
-    // Create default widgets if none exist
-    if (this.dashboardLayouts.size === 0) {
-      await this.createDefaultDashboards();
+      // Load saved layouts
+      const layouts = await this.homey.settings.get('dashboardLayouts') || {};
+      Object.entries(layouts).forEach(([id, layout]) => {
+        this.dashboardLayouts.set(id, layout);
+      });
+
+      // Create default widgets if none exist
+      if (this.dashboardLayouts.size === 0) {
+        await this.createDefaultDashboards();
+      }
+
+      // Start real-time updates
+      this.startRealTimeUpdates();
+
+      this.log('Intelligent Dashboard initialized');
+    } catch (error) {
+      console.error(`[IntelligentDashboard] Failed to initialize:`, error.message);
     }
-
-    // Start real-time updates
-    this.startRealTimeUpdates();
-    
-    this.log('Intelligent Dashboard initialized');
   }
 
   /**
@@ -613,7 +617,7 @@ class IntelligentDashboard {
     };
   }
 
-  async getSecurityPanelData(config) {
+  async getSecurityPanelData(_config) {
     return await this.homey.app.securityManager.getDetailedStatus();
   }
 
@@ -640,11 +644,11 @@ class IntelligentDashboard {
     return await this.homey.app.intelligenceManager.getAIInsights(config);
   }
 
-  async getAutomationStatsData(config) {
+  async getAutomationStatsData(_config) {
     return await this.homey.app.automationEngine.getStatistics();
   }
 
-  async getDeviceStatsData(config) {
+  async getDeviceStatsData(_config) {
     return await this.homey.app.deviceManager.getStatistics();
   }
 
@@ -721,17 +725,17 @@ class IntelligentDashboard {
     return Object.values(zones);
   }
 
-  async getZoneTemperature(zone) {
+  async getZoneTemperature(_zone) {
     // Implement zone temperature retrieval
     return 21; // Placeholder
   }
 
-  async getZoneHumidity(zone) {
+  async getZoneHumidity(_zone) {
     // Implement zone humidity retrieval
     return 45; // Placeholder
   }
 
-  async getZoneTargetTemperature(zone) {
+  async getZoneTargetTemperature(_zone) {
     // Implement zone target temperature retrieval
     return 21; // Placeholder
   }
@@ -800,7 +804,7 @@ class IntelligentDashboard {
     return [];
   }
 
-  async getTrendData(metric, period) {
+  async getTrendData(_metric, _period) {
     // Implement trend data retrieval
     return [];
   }

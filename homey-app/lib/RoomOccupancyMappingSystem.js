@@ -513,7 +513,7 @@ class RoomOccupancyMappingSystem {
     }
   }
 
-  _handleAutomationTrigger(eventType, roomId, payload) {
+  _handleAutomationTrigger(eventType, roomId, _payload) {
     const room = this.rooms.get(roomId);
     if (!room) return;
 
@@ -585,7 +585,7 @@ class RoomOccupancyMappingSystem {
   // ════════════════════════════════════════════════════════════════════
   //  11 · Multi-floor mapping & stairway transitions
   // ════════════════════════════════════════════════════════════════════
-  _detectFloorTransition(fromRoomId, toRoomId, timestamp) {
+  _detectFloorTransition(fromRoomId, toRoomId, _timestamp) {
     const fromRoom = this.rooms.get(fromRoomId);
     const toRoom = this.rooms.get(toRoomId);
     if (!fromRoom || !toRoom) return;

@@ -62,27 +62,31 @@ class VehicleIntegrationSystem {
   }
 
   async initialize() {
-    this.log('Initializing Vehicle Integration System...');
-
     try {
-      const savedSettings = await this.homey.settings.get('vehicleSettings') || {};
-      this.smartChargingEnabled = savedSettings.smartChargingEnabled !== false;
-      this.garageAutomationEnabled = savedSettings.garageAutomationEnabled !== false;
-      this.electricityCostPerKwh = savedSettings.electricityCostPerKwh || 1.5;
-      this.fuelCostPerLiter = savedSettings.fuelCostPerLiter || 18.5;
-      this.rangeAlertThresholdKm = savedSettings.rangeAlertThresholdKm || 50;
+      this.log('Initializing Vehicle Integration System...');
 
-      await this.discoverVehicleDevices();
-      await this.loadVehicleProfiles();
-      await this.loadTripHistory();
-      await this.loadMaintenanceSchedules();
-      await this.loadDepartureLearning();
-      await this.startMonitoring();
-    } catch (err) {
-      this.error('Initialization failed:', err.message);
+      try {
+        const savedSettings = await this.homey.settings.get('vehicleSettings') || {};
+        this.smartChargingEnabled = savedSettings.smartChargingEnabled !== false;
+        this.garageAutomationEnabled = savedSettings.garageAutomationEnabled !== false;
+        this.electricityCostPerKwh = savedSettings.electricityCostPerKwh || 1.5;
+        this.fuelCostPerLiter = savedSettings.fuelCostPerLiter || 18.5;
+        this.rangeAlertThresholdKm = savedSettings.rangeAlertThresholdKm || 50;
+
+        await this.discoverVehicleDevices();
+        await this.loadVehicleProfiles();
+        await this.loadTripHistory();
+        await this.loadMaintenanceSchedules();
+        await this.loadDepartureLearning();
+        await this.startMonitoring();
+      } catch (err) {
+        this.error('Initialization failed:', err.message);
+      }
+
+      this.log('Vehicle Integration System initialized');
+    } catch (error) {
+      console.error(`[VehicleIntegrationSystem] Failed to initialize:`, error.message);
     }
-
-    this.log('Vehicle Integration System initialized');
   }
 
   async discoverVehicleDevices() {
@@ -536,7 +540,7 @@ class VehicleIntegrationSystem {
     const now = Date.now();
     const alerts = [];
 
-    for (const [key, reminder] of this.maintenanceSchedules) {
+    for (const [_key, reminder] of this.maintenanceSchedules) {
       if (!reminder.active) continue;
       const vehicle = this.vehicles.get(reminder.vehicleId);
       if (!vehicle) continue;
@@ -622,7 +626,7 @@ class VehicleIntegrationSystem {
 
   getMaintenanceStatus(vehicleId = null) {
     const result = [];
-    for (const [key, reminder] of this.maintenanceSchedules) {
+    for (const [_key, reminder] of this.maintenanceSchedules) {
       if (vehicleId && reminder.vehicleId !== vehicleId) continue;
       const vehicle = this.vehicles.get(reminder.vehicleId);
       result.push({
@@ -771,7 +775,7 @@ class VehicleIntegrationSystem {
 
     vehicle.lastKnownLocation = { latitude, longitude, updatedAt: Date.now() };
 
-    for (const [id, trigger] of this.locationTriggers) {
+    for (const [_id, trigger] of this.locationTriggers) {
       if (!trigger.active) continue;
 
       const distance = this.calculateDistance(
@@ -798,7 +802,7 @@ class VehicleIntegrationSystem {
     }
   }
 
-  async executeLocationAction(action, vehicleId) {
+  async executeLocationAction(action, _vehicleId) {
     try {
       if (action.type === 'scene' && action.sceneName) {
         this.log(`Executing scene: ${action.sceneName}`);
@@ -891,7 +895,7 @@ class VehicleIntegrationSystem {
   }
 
   async checkChargingStatus() {
-    for (const [id, charger] of this.chargers) {
+    for (const [_id, charger] of this.chargers) {
       try {
         if (charger.device.hasCapability('onoff')) {
           charger.charging = await charger.device.getCapabilityValue('onoff');
@@ -999,7 +1003,7 @@ class VehicleIntegrationSystem {
     }
   }
 
-  async findOptimalChargingTime(vehicle) {
+  async findOptimalChargingTime(_vehicle) {
     try {
       const energyForecasting = this.homey.app.energyForecastingEngine;
       if (energyForecasting) {
@@ -1063,7 +1067,7 @@ class VehicleIntegrationSystem {
   }
 
   async checkGarageDoors() {
-    for (const [id, door] of this.garageDoors) {
+    for (const [_id, door] of this.garageDoors) {
       try {
         if (door.device.hasCapability('alarm_contact')) {
           const open = await door.device.getCapabilityValue('alarm_contact');
@@ -1223,7 +1227,7 @@ class VehicleIntegrationSystem {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
     }
-    for (const [id, timer] of this.preconditioningTimers) {
+    for (const [_id, timer] of this.preconditioningTimers) {
       clearTimeout(timer);
     }
     this.preconditioningTimers.clear();

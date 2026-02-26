@@ -153,34 +153,38 @@ class SmartHomeAutomatedTestingSystem extends EventEmitter {
    * @returns {Promise<void>}
    */
   async initialize() {
-    if (this.initialized) {
-      this._log('Already initialized, skipping');
-      return;
-    }
-
     try {
-      this._log('Initializing SmartHomeAutomatedTestingSystem...');
+      if (this.initialized) {
+        this._log('Already initialized, skipping');
+        return;
+      }
 
-      await this._discoverSystems();
-      this._initializeCircuitBreakers();
-      this._setupSchedules();
-      this._startAlertRateLimiter();
+      try {
+        this._log('Initializing SmartHomeAutomatedTestingSystem...');
 
-      this.initialized = true;
-      this.stats.uptimeStart = Date.now();
+        await this._discoverSystems();
+        this._initializeCircuitBreakers();
+        this._setupSchedules();
+        this._startAlertRateLimiter();
 
-      this._log(`Initialization complete. ${this.registeredSystems.size} systems registered.`);
-      this.emit('initialized', { systemCount: this.registeredSystems.size });
+        this.initialized = true;
+        this.stats.uptimeStart = Date.now();
 
-      // Run an initial smoke test after a short delay
-      setTimeout(() => {
-        this.runSmokeTests().catch(err => {
-          this._logError('Initial smoke test failed', err);
-        });
-      }, 10000);
-    } catch (err) {
-      this._logError('Initialization failed', err);
-      throw err;
+        this._log(`Initialization complete. ${this.registeredSystems.size} systems registered.`);
+        this.emit('initialized', { systemCount: this.registeredSystems.size });
+
+        // Run an initial smoke test after a short delay
+        setTimeout(() => {
+          this.runSmokeTests().catch(err => {
+            this._logError('Initial smoke test failed', err);
+          });
+        }, 10000);
+      } catch (err) {
+        this._logError('Initialization failed', err);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[SmartHomeAutomatedTestingSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -222,7 +226,7 @@ class SmartHomeAutomatedTestingSystem extends EventEmitter {
     this._intervals = [];
 
     // Clear schedule handlers
-    for (const [id, schedule] of this.schedules) {
+    for (const [_id, schedule] of this.schedules) {
       if (schedule.handler) {
         clearInterval(schedule.handler);
         schedule.handler = null;
@@ -486,7 +490,7 @@ class SmartHomeAutomatedTestingSystem extends EventEmitter {
       }
 
       return estimate;
-    } catch (err) {
+    } catch (_err) {
       return 0;
     }
   }

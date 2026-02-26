@@ -1949,7 +1949,7 @@ class SmartNoiseManagementSystem {
    * Run a single monitoring cycle
    */
   _runMonitoringCycle() {
-    for (const [roomId, profile] of this.roomProfiles) {
+    for (const [roomId, _profile] of this.roomProfiles) {
       // Simulate sampling microphone (in production, read from actual sensor)
       const noiseData = this.realtimeNoise.get(roomId);
       if (!noiseData) continue;
@@ -2031,7 +2031,7 @@ class SmartNoiseManagementSystem {
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
     // Clean health tracking data
-    for (const [key, data] of this.healthTracking.dailyExposure) {
+    for (const [key, _data] of this.healthTracking.dailyExposure) {
       const dateParts = key.split('_');
       const dateStr = dateParts[dateParts.length - 1];
       if (new Date(dateStr).getTime() < thirtyDaysAgo) {

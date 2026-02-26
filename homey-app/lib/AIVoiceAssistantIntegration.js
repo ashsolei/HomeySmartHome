@@ -7,7 +7,7 @@
  * for the Homey Smart Home platform.
  */
 
-const EventEmitter = require('events');
+const _EventEmitter = require('events');
 
 // ── Language Packs ──────────────────────────────────────────────────────────
 
@@ -495,23 +495,27 @@ class AIVoiceAssistantIntegration {
   // ═══════════════════════════════════════════════════════════════════════
 
   async initialize() {
-    if (this._initialized) return;
-    this.log('Initializing AI Voice Assistant Integration…');
-
     try {
-      this._registerAllIntents();
-      this._loadDefaultProfiles();
-      this._startWhisperModeScheduler();
-      this._startProactiveSuggestionEngine();
-      this._bindHomeyEvents();
-      this._startListening();
-      this._tickInterval = setInterval(() => this._tick(), 60000);
+      if (this._initialized) return;
+      this.log('Initializing AI Voice Assistant Integration…');
 
-      this._initialized = true;
-      this.log(`Initialized — ${this.intents.size} intents, ${this.voiceProfiles.size} profiles, lang=${this.defaultLanguage}`);
-    } catch (err) {
-      this.error(`Initialization failed: ${err.message}`);
-      throw err;
+      try {
+        this._registerAllIntents();
+        this._loadDefaultProfiles();
+        this._startWhisperModeScheduler();
+        this._startProactiveSuggestionEngine();
+        this._bindHomeyEvents();
+        this._startListening();
+        this._tickInterval = setInterval(() => this._tick(), 60000);
+
+        this._initialized = true;
+        this.log(`Initialized — ${this.intents.size} intents, ${this.voiceProfiles.size} profiles, lang=${this.defaultLanguage}`);
+      } catch (err) {
+        this.error(`Initialization failed: ${err.message}`);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[AIVoiceAssistantIntegration] Failed to initialize:`, error.message);
     }
   }
 
@@ -553,7 +557,7 @@ class AIVoiceAssistantIntegration {
       good_morning_routine: (params, profile) => this._handleGoodMorningRoutine(params, profile),
       emergency_alert: (params, profile) => this._handleEmergencyAlert(params, profile)
     };
-    return handlers[intentName] || ((params) => ({ success: false, message: `No handler for intent ${intentName}` }));
+    return handlers[intentName] || ((_params) => ({ success: false, message: `No handler for intent ${intentName}` }));
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -880,7 +884,7 @@ class AIVoiceAssistantIntegration {
   //  Intent Classification
   // ═══════════════════════════════════════════════════════════════════════
 
-  _classifyIntent(text, lang) {
+  _classifyIntent(text, _lang) {
     let bestIntent = null;
     let bestConfidence = 0;
     let bestMatch = null;
@@ -907,7 +911,7 @@ class AIVoiceAssistantIntegration {
     return null;
   }
 
-  _calculateWordOverlap(text, pattern) {
+  _calculateWordOverlap(text, _pattern) {
     const words = text.toLowerCase().split(/\s+/).length;
     return Math.min(words / 5, 1.0);
   }
@@ -916,7 +920,7 @@ class AIVoiceAssistantIntegration {
   //  Parameter Extraction
   // ═══════════════════════════════════════════════════════════════════════
 
-  _extractParameters(text, classification, lang) {
+  _extractParameters(text, classification, _lang) {
     const params = {};
     const match = classification.match;
 
@@ -1068,7 +1072,7 @@ class AIVoiceAssistantIntegration {
     return { success: true, message: `Calendar for ${timeframe}`, data: { timeframe, events: [] } };
   }
 
-  async _handleTimerSet(params, profile) {
+  async _handleTimerSet(params, _profile) {
     const duration = params.duration || (params._numbers && params._numbers[0]) || 5;
     const unit = params.unit || 'minutes';
     const label = params.label || `Timer ${this.activeTimers.size + 1}`;
@@ -1589,7 +1593,7 @@ class AIVoiceAssistantIntegration {
       try {
         this.homey.on(event, handler);
         this._listeners.push({ event, handler });
-      } catch (e) {
+      } catch (_e) {
         // Event binding may not be available in all environments
       }
     }
@@ -1616,7 +1620,7 @@ class AIVoiceAssistantIntegration {
   _emitEvent(eventName, data) {
     try {
       this.homey.emit(`voice:${eventName}`, { ...data, timestamp: Date.now() });
-    } catch (e) {
+    } catch (_e) {
       // Silently ignore emit errors in non-Homey environments
     }
   }
@@ -1721,7 +1725,7 @@ class AIVoiceAssistantIntegration {
     }
 
     // Clear active timers
-    for (const [id, timer] of this.activeTimers) {
+    for (const [_id, timer] of this.activeTimers) {
       if (timer.timeout) clearTimeout(timer.timeout);
     }
     this.activeTimers.clear();

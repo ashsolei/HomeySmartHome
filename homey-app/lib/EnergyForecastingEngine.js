@@ -178,7 +178,7 @@ class EnergyForecastingEngine extends BaseSystem {
             // Aggregate by zone
             const zone = device.zone?.name || 'unknown';
             dataPoint.byZone[zone] = (dataPoint.byZone[zone] || 0) + power;
-          } catch (error) {
+          } catch (_error) {
             // Device might not support power measurement
           }
         }
@@ -580,7 +580,7 @@ class EnergyForecastingEngine extends BaseSystem {
       .filter(([key, _]) => key.startsWith('device_'));
 
     const highConsumers = deviceModels
-      .map(([key, model]) => model)
+      .map(([_key, model]) => model)
       .filter(m => m.avgPower > 500) // > 500W
       .sort((a, b) => b.avgPower - a.avgPower)
       .slice(0, 3);

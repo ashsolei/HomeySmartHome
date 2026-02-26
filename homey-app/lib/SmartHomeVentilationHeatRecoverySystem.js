@@ -144,18 +144,22 @@ class SmartHomeVentilationHeatRecoverySystem {
    * @returns {Promise<void>}
    */
   async initialize() {
-    if (this._initialized) return;
-    this.homey.log('[VentHR] Initializing Smart Home Ventilation Heat Recovery System');
+    try {
+      if (this._initialized) return;
+      this.homey.log('[VentHR] Initializing Smart Home Ventilation Heat Recovery System');
 
-    await this._restoreState();
-    this._startMonitoringLoop();
-    this._startFilterCheckLoop();
-    this._startEnergyCalculationLoop();
-    this._startDefrostCheckLoop();
-    this._startZoneBalancingLoop();
+      await this._restoreState();
+      this._startMonitoringLoop();
+      this._startFilterCheckLoop();
+      this._startEnergyCalculationLoop();
+      this._startDefrostCheckLoop();
+      this._startZoneBalancingLoop();
 
-    this._initialized = true;
-    this.homey.log(`[VentHR] Initialized — ${this.units.size} unit(s), ${this.zones.size} zone(s)`);
+      this._initialized = true;
+      this.homey.log(`[VentHR] Initialized — ${this.units.size} unit(s), ${this.zones.size} zone(s)`);
+    } catch (error) {
+      this.homey.error(`[SmartHomeVentilationHeatRecoverySystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -429,7 +433,7 @@ class SmartHomeVentilationHeatRecoverySystem {
    * @param {Object} extras - Additional air quality metrics
    * @private
    */
-  _evaluateVentilationNeed(zone, { pm25, voc }) {
+  _evaluateVentilationNeed(zone, { pm25, voc: _voc }) {
     const outdoor = this._outdoorAirQuality || { co2: 420, pm25: 10 };
 
     // Only increase ventilation if outdoor air is better than indoor

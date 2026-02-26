@@ -183,21 +183,21 @@ class HomeyShim extends EventEmitter {
       },
       getTriggerCard(id) {
         return {
-          registerRunListener(fn) { return this; },
+          registerRunListener(_fn) { return this; },
           trigger(tokens, state) {
             self.emit(`flow:trigger:${id}`, tokens, state);
             return Promise.resolve();
           }
         };
       },
-      getConditionCard(id) {
+      getConditionCard(_id) {
         return {
-          registerRunListener(fn) { return this; }
+          registerRunListener(_fn) { return this; }
         };
       },
-      getActionCard(id) {
+      getActionCard(_id) {
         return {
-          registerRunListener(fn) { return this; }
+          registerRunListener(_fn) { return this; }
         };
       }
     };
@@ -208,7 +208,7 @@ class HomeyShim extends EventEmitter {
     return {
       getApiUrl() { return `http://localhost:${process.env.PORT || 3000}`; },
       getLocalUrl() { return `http://localhost:${process.env.PORT || 3000}`; },
-      realtime(event, data) {
+      realtime(_event, _data) {
         // WebSocket push stub
       }
     };
@@ -236,7 +236,7 @@ class HomeyShim extends EventEmitter {
       getUnits() {
         return { temperature: 'celsius', length: 'metric' };
       },
-      __(key, tokens) {
+      __(key, _tokens) {
         // Simple pass-through
         if (typeof key === 'string') return key;
         return key.en || Object.values(key)[0] || '';

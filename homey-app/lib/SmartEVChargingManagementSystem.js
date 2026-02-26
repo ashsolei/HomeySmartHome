@@ -315,7 +315,7 @@ class SmartEVChargingManagementSystem {
   }
 
   _checkSoCLevels() {
-    for (const [id, vehicle] of this.vehicleProfiles) {
+    for (const [_id, vehicle] of this.vehicleProfiles) {
       if (vehicle.currentSoC < 20) {
         this.log(`Vehicle "${vehicle.name}" SoC critically low: ${vehicle.currentSoC.toFixed(1)}%`);
       }
@@ -362,7 +362,7 @@ class SmartEVChargingManagementSystem {
   }
 
   _tryStartScheduledOffPeakCharges() {
-    for (const [schedId, sched] of this.schedules) {
+    for (const [_schedId, sched] of this.schedules) {
       if (sched.mode !== 'off_peak' || sched.active) continue;
       const vehicle = this.vehicleProfiles.get(sched.vehicleId);
       if (!vehicle || vehicle.currentSoC >= sched.targetSoC) continue;
@@ -462,7 +462,7 @@ class SmartEVChargingManagementSystem {
     station.currentA = 0;
     this.log(`Emergency stop activated for station "${stationId}"`);
 
-    for (const [sessionId, session] of this.activeSessions) {
+    for (const [_sessionId, session] of this.activeSessions) {
       if (session.stationId === stationId && session.status === 'charging') {
         session.status = 'interrupted';
         session.endTime = Date.now();
@@ -476,7 +476,7 @@ class SmartEVChargingManagementSystem {
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-    for (const [schedId, sched] of this.schedules) {
+    for (const [_schedId, sched] of this.schedules) {
       if (sched.active) continue;
       if (!sched.enabled) continue;
 
@@ -531,7 +531,7 @@ class SmartEVChargingManagementSystem {
 
   _updateWeatherImpact() {
     const temp = this.weatherData.temperatureC;
-    for (const [id, vehicle] of this.vehicleProfiles) {
+    for (const [_id, vehicle] of this.vehicleProfiles) {
       const factor = this._temperatureRangeFactor(temp);
       vehicle.adjustedRangePerKwh = (vehicle.estimatedRangePerKwh || 6) * factor;
     }
@@ -685,7 +685,7 @@ class SmartEVChargingManagementSystem {
   // Battery Health
   // ════════════════════════════════════════════════════════════
 
-  _initializeBatteryHealth(vehicleId, vehicle) {
+  _initializeBatteryHealth(vehicleId, _vehicle) {
     this.batteryHealth.set(vehicleId, {
       chargeCycles: 0,
       averageChargeRateKw: 0,
@@ -879,7 +879,7 @@ class SmartEVChargingManagementSystem {
   }
 
   _applySolarCharging(availablePowerKw) {
-    for (const [sessionId, session] of this.activeSessions) {
+    for (const [_sessionId, session] of this.activeSessions) {
       if (session.status !== 'charging') continue;
       if (session.source !== 'solar') continue;
 
@@ -1116,7 +1116,7 @@ class SmartEVChargingManagementSystem {
     return result;
   }
 
-  evaluatePreConditioningRecommendation(vehicleId) {
+  evaluatePreConditioningRecommendation(_vehicleId) {
     const temp = this.weatherData.temperatureC;
     const recommendations = [];
 
@@ -1216,7 +1216,7 @@ class SmartEVChargingManagementSystem {
 
   getPlannedTrips(vehicleId) {
     const result = [];
-    for (const [id, trip] of this.plannedTrips) {
+    for (const [_id, trip] of this.plannedTrips) {
       if (!vehicleId || trip.vehicleId === vehicleId) {
         result.push(trip);
       }
@@ -1763,7 +1763,7 @@ class SmartEVChargingManagementSystem {
     this.emergencyState.overCurrent = false;
     this.emergencyState.fireRiskLevel = 'none';
 
-    for (const [id, station] of this.chargingStations) {
+    for (const [_id, station] of this.chargingStations) {
       if (station.status === 'fault') {
         station.status = 'available';
       }

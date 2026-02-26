@@ -133,33 +133,37 @@ class AdvancedSecuritySystem {
    * @returns {Promise<void>}
    */
   async initialize() {
-    this.log('Initializing Advanced Security System...');
-
     try {
-      const savedSettings = await this.homey.settings.get('securitySettings') || {};
-      if (savedSettings.geofenceConfig) Object.assign(this.geofenceConfig, savedSettings.geofenceConfig);
-      if (savedSettings.silentAlarmContacts) this.silentAlarmContacts = savedSettings.silentAlarmContacts;
-      if (savedSettings.escalationConfig) Object.assign(this.escalationConfig, savedSettings.escalationConfig);
+      this.log('Initializing Advanced Security System...');
 
-      const savedAudit = await this.homey.settings.get('securityAuditTrail') || [];
-      this.auditTrail = savedAudit.slice(-500);
+      try {
+        const savedSettings = await this.homey.settings.get('securitySettings') || {};
+        if (savedSettings.geofenceConfig) Object.assign(this.geofenceConfig, savedSettings.geofenceConfig);
+        if (savedSettings.silentAlarmContacts) this.silentAlarmContacts = savedSettings.silentAlarmContacts;
+        if (savedSettings.escalationConfig) Object.assign(this.escalationConfig, savedSettings.escalationConfig);
 
-      const savedDuress = await this.homey.settings.get('duressCodes') || {};
-      Object.entries(savedDuress).forEach(([code, data]) => this.duressCodes.set(code, data));
+        const savedAudit = await this.homey.settings.get('securityAuditTrail') || [];
+        this.auditTrail = savedAudit.slice(-500);
 
-      const savedVisitors = await this.homey.settings.get('visitorSchedules') || {};
-      Object.entries(savedVisitors).forEach(([id, schedule]) => this.visitorSchedules.set(id, schedule));
+        const savedDuress = await this.homey.settings.get('duressCodes') || {};
+        Object.entries(savedDuress).forEach(([code, data]) => this.duressCodes.set(code, data));
 
-      await this.discoverSecurityDevices();
-      await this.setupSecurityZones();
-      await this.loadAuthorizedPersons();
-      await this.startMonitoring();
-      await this.startSensorHealthMonitoring();
-    } catch (err) {
-      this.error('Failed to initialize:', err.message);
+        const savedVisitors = await this.homey.settings.get('visitorSchedules') || {};
+        Object.entries(savedVisitors).forEach(([id, schedule]) => this.visitorSchedules.set(id, schedule));
+
+        await this.discoverSecurityDevices();
+        await this.setupSecurityZones();
+        await this.loadAuthorizedPersons();
+        await this.startMonitoring();
+        await this.startSensorHealthMonitoring();
+      } catch (err) {
+        this.error('Failed to initialize:', err.message);
+      }
+
+      this.log('Advanced Security System initialized');
+    } catch (error) {
+      console.error(`[AdvancedSecuritySystem] Failed to initialize:`, error.message);
     }
-
-    this.log('Advanced Security System initialized');
   }
 
   /**
@@ -334,7 +338,7 @@ class AdvancedSecuritySystem {
   }
 
   areAllUsersAway() {
-    for (const [userId, loc] of this.geofenceConfig.userLocations) {
+    for (const [_userId, loc] of this.geofenceConfig.userLocations) {
       const dist = this.calculateDistance(
         this.geofenceConfig.latitude, this.geofenceConfig.longitude,
         loc.latitude, loc.longitude
@@ -461,7 +465,7 @@ class AdvancedSecuritySystem {
   }
 
   isDeviceInArmedZone(deviceId) {
-    for (const [zoneId, zone] of this.zones) {
+    for (const [_zoneId, zone] of this.zones) {
       if (zone.armed && zone.devices.includes(deviceId)) return true;
     }
     return false;
@@ -508,7 +512,7 @@ class AdvancedSecuritySystem {
     const currentDay = now.getDay();
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-    for (const [id, schedule] of this.visitorSchedules) {
+    for (const [_id, schedule] of this.visitorSchedules) {
       if (!schedule.active) continue;
       if (now.getTime() > schedule.endDate) {
         schedule.active = false;
@@ -756,7 +760,7 @@ class AdvancedSecuritySystem {
    */
   getSensorHealthReport() {
     const report = { healthy: 0, warning: 0, critical: 0, unreachable: 0, sensors: [] };
-    for (const [id, health] of this.sensorHealth) {
+    for (const [_id, health] of this.sensorHealth) {
       report[health.status]++;
       report.sensors.push(health);
     }
@@ -847,7 +851,7 @@ class AdvancedSecuritySystem {
     await this.sendSilentAlert({ type: 'duress_code', zone: 'entry', codeName: duress.name });
 
     // Start silent recording
-    for (const [id, camera] of this.cameras) {
+    for (const [_id, camera] of this.cameras) {
       camera.recording = true;
     }
 
@@ -863,7 +867,7 @@ class AdvancedSecuritySystem {
    */
   async enableNightVision() {
     this.nightVisionEnabled = true;
-    for (const [id, camera] of this.cameras) {
+    for (const [_id, camera] of this.cameras) {
       camera.nightVision = true;
       this.log(`Night vision enabled: ${camera.name}`);
     }
@@ -877,7 +881,7 @@ class AdvancedSecuritySystem {
    */
   async disableNightVision() {
     this.nightVisionEnabled = false;
-    for (const [id, camera] of this.cameras) {
+    for (const [_id, camera] of this.cameras) {
       camera.nightVision = false;
     }
     this.addAuditEntry('night_vision_disabled', 'system', {});
@@ -1063,7 +1067,7 @@ class AdvancedSecuritySystem {
     // Link camera evidence
     if (this.cameras.size > 0) {
       await this.startRecording();
-      for (const [camId, camera] of this.cameras) {
+      for (const [camId, _camera] of this.cameras) {
         this.linkEvidence(timelineEntry.id, { type: 'recording', cameraId: camId });
       }
     }
@@ -1091,7 +1095,7 @@ class AdvancedSecuritySystem {
   }
 
   async startRecording() {
-    for (const [id, camera] of this.cameras) {
+    for (const [_id, camera] of this.cameras) {
       camera.recording = true;
       if (this.nightVisionEnabled) camera.nightVision = true;
       this.log(`Started recording: ${camera.name}${camera.nightVision ? ' (night vision)' : ''}`);
@@ -1137,7 +1141,7 @@ class AdvancedSecuritySystem {
   }
 
   async lockAllDoors() {
-    for (const [id, lock] of this.locks) {
+    for (const [_id, lock] of this.locks) {
       try {
         if (lock.device.hasCapability('locked')) {
           await lock.device.setCapabilityValue('locked', true);
@@ -1266,7 +1270,7 @@ class AdvancedSecuritySystem {
     }
     for (const timer of this.simulationTimers) clearTimeout(timer);
     this.simulationTimers = [];
-    for (const [id, escalation] of this.activeEscalations) {
+    for (const [_id, escalation] of this.activeEscalations) {
       for (const timer of escalation.timers) clearTimeout(timer);
     }
     this.activeEscalations.clear();

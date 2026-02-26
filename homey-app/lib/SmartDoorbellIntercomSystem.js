@@ -559,7 +559,7 @@ class SmartDoorbellIntercomSystem {
     this.log(`Flerfamiljshus: ${units.length} enheter registrerade`);
     return { enabled: true, unitCount: this.multiUnitConfig.units.size };
   }
-  async routeToUnit(unitId, callerInfo = {}) {
+  async routeToUnit(unitId, _callerInfo = {}) {
     try {
       if (!this.multiUnitConfig.enabled) throw new Error('Flerfamiljsläge ej aktiverat');
       const unit = this.multiUnitConfig.units.get(unitId);

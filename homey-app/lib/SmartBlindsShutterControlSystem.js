@@ -450,46 +450,50 @@ class SmartBlindsShutterControlSystem extends EventEmitter {
    * @returns {Promise<void>}
    */
   async initialize() {
-    if (this.initialized) return;
-    this.homey.log('[Blinds] Initializing Smart Blinds & Shutter Control System...');
+    try {
+      if (this.initialized) return;
+      this.homey.log('[Blinds] Initializing Smart Blinds & Shutter Control System...');
 
-    this._updateSeason();
-    this._calculateSunPosition();
-    this._evaluateAllSchedules();
+      this._updateSeason();
+      this._calculateSunPosition();
+      this._evaluateAllSchedules();
 
-    // Solar tracking — every 5 minutes
-    this.intervals.push(setInterval(this._solarTrackingCycle.bind(this), 300000));
+      // Solar tracking — every 5 minutes
+      this.intervals.push(setInterval(this._solarTrackingCycle.bind(this), 300000));
 
-    // Schedule evaluation — every minute
-    this.intervals.push(setInterval(this._evaluateAllSchedules.bind(this), 60000));
+      // Schedule evaluation — every minute
+      this.intervals.push(setInterval(this._evaluateAllSchedules.bind(this), 60000));
 
-    // Weather check — every 10 minutes
-    this.intervals.push(setInterval(this._weatherCheckCycle.bind(this), 600000));
+      // Weather check — every 10 minutes
+      this.intervals.push(setInterval(this._weatherCheckCycle.bind(this), 600000));
 
-    // Energy optimization — every 15 minutes
-    this.intervals.push(setInterval(this._energyOptimizationCycle.bind(this), 900000));
+      // Energy optimization — every 15 minutes
+      this.intervals.push(setInterval(this._energyOptimizationCycle.bind(this), 900000));
 
-    // Privacy mode evaluation — every 5 minutes
-    this.intervals.push(setInterval(this._privacyEvaluationCycle.bind(this), 300000));
+      // Privacy mode evaluation — every 5 minutes
+      this.intervals.push(setInterval(this._privacyEvaluationCycle.bind(this), 300000));
 
-    // Statistics collection — every hour
-    this.intervals.push(setInterval(this._statisticsCollectionCycle.bind(this), 3600000));
+      // Statistics collection — every hour
+      this.intervals.push(setInterval(this._statisticsCollectionCycle.bind(this), 3600000));
 
-    // Battery / motor health check — every 6 hours
-    this.intervals.push(setInterval(this._healthCheckCycle.bind(this), 21600000));
+      // Battery / motor health check — every 6 hours
+      this.intervals.push(setInterval(this._healthCheckCycle.bind(this), 21600000));
 
-    // Automation rules evaluation — every 2 minutes
-    this.intervals.push(setInterval(this._evaluateAutomationRules.bind(this), 120000));
+      // Automation rules evaluation — every 2 minutes
+      this.intervals.push(setInterval(this._evaluateAutomationRules.bind(this), 120000));
 
-    // Occupancy simulation (away mode) — every 30 minutes
-    this.intervals.push(setInterval(this._occupancySimulationCycle.bind(this), 1800000));
+      // Occupancy simulation (away mode) — every 30 minutes
+      this.intervals.push(setInterval(this._occupancySimulationCycle.bind(this), 1800000));
 
-    // Daily statistics reset — every hour (checks date change)
-    this.intervals.push(setInterval(this._dailyStatsReset.bind(this), 3600000));
+      // Daily statistics reset — every hour (checks date change)
+      this.intervals.push(setInterval(this._dailyStatsReset.bind(this), 3600000));
 
-    this.initialized = true;
-    this.homey.log('[Blinds] System initialized with ' + this.devices.size + ' devices across ' + this.zones.size + ' zones');
-    this.emit('system_initialized', { deviceCount: this.devices.size, zoneCount: this.zones.size, timestamp: new Date().toISOString() });
+      this.initialized = true;
+      this.homey.log('[Blinds] System initialized with ' + this.devices.size + ' devices across ' + this.zones.size + ' zones');
+      this.emit('system_initialized', { deviceCount: this.devices.size, zoneCount: this.zones.size, timestamp: new Date().toISOString() });
+    } catch (error) {
+      this.homey.error(`[SmartBlindsShutterControlSystem] Failed to initialize:`, error.message);
+    }
   }
 
   // ════════════════════════════════════════════════════════════════
@@ -1928,7 +1932,7 @@ class SmartBlindsShutterControlSystem extends EventEmitter {
     device.isMoving = true;
 
     // Simulate motor movement completion
-    var self = this;
+    var _self = this;
     setTimeout(function () {
       device.motorStatus = 'idle';
       device.isMoving = false;

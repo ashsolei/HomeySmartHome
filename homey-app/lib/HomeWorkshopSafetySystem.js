@@ -346,7 +346,7 @@ class HomeWorkshopSafetySystem extends EventEmitter {
   /**
    * Request tool activation with safety checks
    */
-  async requestToolActivation(toolId, userId = 'user-001') {
+  async requestToolActivation(toolId, _userId = 'user-001') {
     try {
       const tool = this.powerTools.get(toolId);
       if (!tool) {
@@ -576,7 +576,7 @@ class HomeWorkshopSafetySystem extends EventEmitter {
       };
       
       // Immediately cut power to all tools
-      for (const [id, tool] of this.powerTools) {
+      for (const [_id, tool] of this.powerTools) {
         if (tool.status === 'running') {
           tool.status = 'emergency-stopped';
           tool.powerState = 'disconnected';
@@ -638,7 +638,7 @@ class HomeWorkshopSafetySystem extends EventEmitter {
       this.emergencyStatus.powerCutOff = false;
       
       // Reset tools to idle state
-      for (const [id, tool] of this.powerTools) {
+      for (const [_id, tool] of this.powerTools) {
         if (tool.status === 'emergency-stopped') {
           tool.status = 'off';
           tool.powerState = 'disconnected';
@@ -702,7 +702,7 @@ class HomeWorkshopSafetySystem extends EventEmitter {
     }
     
     // Check emergency exits
-    for (const [id, zone] of this.safetyZones) {
+    for (const [_id, zone] of this.safetyZones) {
       if (zone.type === 'high-risk' && !zone.fireExtinguisherPresent) {
         issues.push(`No fire extinguisher in ${zone.name}`);
       }
@@ -945,7 +945,7 @@ class HomeWorkshopSafetySystem extends EventEmitter {
    * Monitor tool status
    */
   monitorToolStatus() {
-    for (const [id, tool] of this.powerTools) {
+    for (const [_id, tool] of this.powerTools) {
       if (tool.status === 'running') {
         tool.runningTime += 1; // 1 minute since last check
         tool.maintenance.hoursUsed += (1 / 60); // Convert minutes to hours

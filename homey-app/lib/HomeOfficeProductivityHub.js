@@ -340,28 +340,32 @@ class HomeOfficeProductivityHub {
   // Initialization
   // ========================================================
   async initialize() {
-    this.log('Initializing Home Office Productivity Hub...');
-    this.startTime = Date.now();
-
     try {
-      this._initializeDailyAnalytics();
-      this._detectWorkDay();
-      this._updateCircadianPhase();
-      this._updateAmbientLighting();
-      this._checkWorkHours();
-      this._startMonitoringCycle();
-      this._startErgonomicTimers();
-      this._startEnergyTracking();
-      this._initializeMeetingSync();
+      this.log('Initializing Home Office Productivity Hub...');
+      this.startTime = Date.now();
 
-      this.initialized = true;
-      this.log('Home Office Productivity Hub initialized successfully');
-      this.log(`Active workspace: ${this.workspaces.currentStation || 'none'}`);
-      this.log(`Work hours: ${this.workLifeBoundary.workStartTime} - ${this.workLifeBoundary.hardStopTime}`);
-      this.log(`Pomodoro: ${this.pomodoro.workDuration / 60000}min work / ${this.pomodoro.shortBreakDuration / 60000}min break`);
-    } catch (err) {
-      this.error(`Initialization failed: ${err.message}`);
-      throw err;
+      try {
+        this._initializeDailyAnalytics();
+        this._detectWorkDay();
+        this._updateCircadianPhase();
+        this._updateAmbientLighting();
+        this._checkWorkHours();
+        this._startMonitoringCycle();
+        this._startErgonomicTimers();
+        this._startEnergyTracking();
+        this._initializeMeetingSync();
+
+        this.initialized = true;
+        this.log('Home Office Productivity Hub initialized successfully');
+        this.log(`Active workspace: ${this.workspaces.currentStation || 'none'}`);
+        this.log(`Work hours: ${this.workLifeBoundary.workStartTime} - ${this.workLifeBoundary.hardStopTime}`);
+        this.log(`Pomodoro: ${this.pomodoro.workDuration / 60000}min work / ${this.pomodoro.shortBreakDuration / 60000}min break`);
+      } catch (err) {
+        this.error(`Initialization failed: ${err.message}`);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[HomeOfficeProductivityHub] Failed to initialize:`, error.message);
     }
   }
 
@@ -1075,12 +1079,12 @@ class HomeOfficeProductivityHub {
   }
 
   _trackEnergyConsumption() {
-    let totalWatts = 0;
-    for (const [name, device] of Object.entries(this.energy.devices)) {
+    let _totalWatts = 0;
+    for (const [_name, device] of Object.entries(this.energy.devices)) {
       if (device.active) {
         const kwh = (device.watts / 1000) / 60; // 1 minute in hours
         device.dailyKwh += kwh;
-        totalWatts += device.watts;
+        _totalWatts += device.watts;
       }
     }
     this.energy.dailyTotal = Object.values(this.energy.devices)
@@ -1135,7 +1139,7 @@ class HomeOfficeProductivityHub {
   getSuggestedBreakActivity() {
     const activities = [];
     const stretches = Object.entries(this.breakActivities.stretches);
-    const [key, stretch] = stretches[Math.floor(Math.random() * stretches.length)];
+    const [_key, stretch] = stretches[Math.floor(Math.random() * stretches.length)];
     activities.push({ type: 'stretch', ...stretch });
 
     if (this.ergonomics.waterIntakeToday < 8) {

@@ -36,21 +36,25 @@ class HomeBarManagementSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Home Bar Management System...');
-    
     try {
-      await this.loadSettings();
-      this.initializeBarInventory();
-      this.initializeCocktailDatabase();
-      this.initializeStorage();
-      
-      this.startMonitoring();
-      
-      this.homey.log('Home Bar Management System initialized successfully');
-      return true;
+      this.homey.log('Initializing Home Bar Management System...');
+
+      try {
+        await this.loadSettings();
+        this.initializeBarInventory();
+        this.initializeCocktailDatabase();
+        this.initializeStorage();
+
+        this.startMonitoring();
+
+        this.homey.log('Home Bar Management System initialized successfully');
+        return true;
+      } catch (error) {
+        this.homey.error('Failed to initialize Home Bar Management:', error);
+        throw error;
+      }
     } catch (error) {
-      this.homey.error('Failed to initialize Home Bar Management:', error);
-      throw error;
+      this.homey.error(`[HomeBarManagementSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -404,7 +408,7 @@ class HomeBarManagementSystem extends EventEmitter {
         availableOnly = true,
         strength = null,
         category = null,
-        ingredients = null
+        _ingredients = null
       } = criteria;
       
       let cocktails = Array.from(this.cocktails.values());

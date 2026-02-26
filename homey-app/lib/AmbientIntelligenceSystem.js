@@ -16,30 +16,34 @@ class AmbientIntelligenceSystem {
   }
 
   async initialize() {
-    this.log('Initializing Ambient Intelligence System...');
-    
-    // Load ambient rules
-    const savedRules = await this.homey.settings.get('ambientRules') || {};
-    Object.entries(savedRules).forEach(([id, rule]) => {
-      this.ambientRules.set(id, rule);
-    });
+    try {
+      this.log('Initializing Ambient Intelligence System...');
 
-    // Load adaptive behaviors
-    const savedBehaviors = await this.homey.settings.get('adaptiveBehaviors') || {};
-    Object.entries(savedBehaviors).forEach(([id, behavior]) => {
-      this.adaptiveBehaviors.set(id, behavior);
-    });
+      // Load ambient rules
+      const savedRules = await this.homey.settings.get('ambientRules') || {};
+      Object.entries(savedRules).forEach(([id, rule]) => {
+        this.ambientRules.set(id, rule);
+      });
 
-    // Initialize context engine
-    await this.initializeContextEngine();
+      // Load adaptive behaviors
+      const savedBehaviors = await this.homey.settings.get('adaptiveBehaviors') || {};
+      Object.entries(savedBehaviors).forEach(([id, behavior]) => {
+        this.adaptiveBehaviors.set(id, behavior);
+      });
 
-    // Setup default ambient rules
-    await this.setupDefaultAmbientRules();
+      // Initialize context engine
+      await this.initializeContextEngine();
 
-    // Start ambient monitoring
-    await this.startAmbientMonitoring();
+      // Setup default ambient rules
+      await this.setupDefaultAmbientRules();
 
-    this.log('Ambient Intelligence System initialized');
+      // Start ambient monitoring
+      await this.startAmbientMonitoring();
+
+      this.log('Ambient Intelligence System initialized');
+    } catch (error) {
+      console.error(`[AmbientIntelligenceSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -477,7 +481,7 @@ class AmbientIntelligenceSystem {
     this.log('Context transition:', transition.type, transition.from, '->', transition.to);
 
     // Trigger ambient rules based on transition
-    for (const [id, rule] of this.ambientRules) {
+    for (const [_id, rule] of this.ambientRules) {
       if (!rule.enabled) continue;
 
       if (rule.triggers.includes(transition.type)) {
@@ -537,7 +541,7 @@ class AmbientIntelligenceSystem {
    */
   async triggerAmbientAction(trigger, data) {
     // Find matching ambient rules
-    for (const [id, rule] of this.ambientRules) {
+    for (const [_id, rule] of this.ambientRules) {
       if (!rule.enabled) continue;
 
       if (rule.triggers.includes(trigger)) {
@@ -554,7 +558,7 @@ class AmbientIntelligenceSystem {
     const context = this.contextEngine.currentContext;
     if (!context) return;
 
-    for (const [id, rule] of this.ambientRules) {
+    for (const [_id, rule] of this.ambientRules) {
       if (!rule.enabled) continue;
 
       // Check if conditions are met
@@ -640,7 +644,7 @@ class AmbientIntelligenceSystem {
   /**
    * Execute ambient action
    */
-  async executeAmbientAction(action, context, rule) {
+  async executeAmbientAction(action, context, _rule) {
     switch (action.type) {
       case 'lighting_adjustment':
         await this.adjustLightingAmbiently(action.parameters, context);
@@ -721,7 +725,7 @@ class AmbientIntelligenceSystem {
             this.log(`Ambient lighting adjusted: ${light.name} -> ${Math.round(targetBrightness * 100)}%`);
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // Skip this light
       }
     }
@@ -730,7 +734,7 @@ class AmbientIntelligenceSystem {
   /**
    * Adjust climate ambiently
    */
-  async adjustClimateAmbiently(parameters, context) {
+  async adjustClimateAmbiently(parameters, _context) {
     try {
       const climateManager = this.homey.app.climateManager;
       if (!climateManager) return;

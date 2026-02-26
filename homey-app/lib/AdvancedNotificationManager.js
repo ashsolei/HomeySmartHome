@@ -65,27 +65,31 @@ class AdvancedNotificationManager {
    * @returns {Promise<void>}
    */
   async initialize() {
-    this.log('Initializing Advanced Notification Manager...');
-    
-    // Load configuration
-    this.userPreferences = await this.homey.settings.get('notificationPreferences') || this.getDefaultPreferences();
-    this.doNotDisturbSchedules = await this.homey.settings.get('dndSchedules') || [];
-    
-    const savedRules = await this.homey.settings.get('notificationRules') || {};
-    Object.entries(savedRules).forEach(([id, rule]) => {
-      this.notificationRules.set(id, rule);
-    });
+    try {
+      this.log('Initializing Advanced Notification Manager...');
 
-    // Load notification history
-    this.deliveredNotifications = await this.homey.settings.get('notificationHistory') || [];
+      // Load configuration
+      this.userPreferences = await this.homey.settings.get('notificationPreferences') || this.getDefaultPreferences();
+      this.doNotDisturbSchedules = await this.homey.settings.get('dndSchedules') || [];
 
-    // Start notification processor
-    this.startNotificationProcessor();
-    
-    // Setup default rules
-    await this.setupDefaultRules();
-    
-    this.log('Advanced Notification Manager initialized');
+      const savedRules = await this.homey.settings.get('notificationRules') || {};
+      Object.entries(savedRules).forEach(([id, rule]) => {
+        this.notificationRules.set(id, rule);
+      });
+
+      // Load notification history
+      this.deliveredNotifications = await this.homey.settings.get('notificationHistory') || [];
+
+      // Start notification processor
+      this.startNotificationProcessor();
+
+      // Setup default rules
+      await this.setupDefaultRules();
+
+      this.log('Advanced Notification Manager initialized');
+    } catch (error) {
+      console.error(`[AdvancedNotificationManager] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -242,7 +246,7 @@ class AdvancedNotificationManager {
     try {
       const presenceStatus = await this.homey.app.presenceManager?.getStatus();
       presence = presenceStatus?.status || 'unknown';
-    } catch (error) {
+    } catch (_error) {
       // Presence manager not available
     }
 
@@ -265,7 +269,7 @@ class AdvancedNotificationManager {
     }
 
     // Check rules for priority
-    for (const [id, rule] of this.notificationRules) {
+    for (const [_id, rule] of this.notificationRules) {
       if (this.matchesRule(notification, rule)) {
         return rule.priority;
       }
@@ -843,7 +847,7 @@ class AdvancedNotificationManager {
           message: notification.message
         });
       }
-    } catch (error) {
+    } catch (_error) {
       // Flow card might not exist
     }
   }

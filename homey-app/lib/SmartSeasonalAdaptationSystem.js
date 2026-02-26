@@ -294,28 +294,32 @@ class SmartSeasonalAdaptationSystem {
   // =========================================================================
 
   async initialize() {
-    this.log('Initializing SmartSeasonalAdaptationSystem...');
+    try {
+      this.log('Initializing SmartSeasonalAdaptationSystem...');
 
-    this._buildHolidayCalendar();
-    this._updateDaylight();
-    this._detectCurrentSeason();
-    this._applySeasonalProfiles();
-    this._checkMaintenanceSchedule();
-    this._calculateSeasonalScore();
-
-    // Main monitoring loop — every 10 minutes
-    this._monitoringInterval = setInterval(() => {
-      this._monitoringCycle();
-    }, this.config.monitoringIntervalMs);
-
-    // Daylight recalculation — every hour
-    this._daylightInterval = setInterval(() => {
+      this._buildHolidayCalendar();
       this._updateDaylight();
-    }, 60 * 60 * 1000);
+      this._detectCurrentSeason();
+      this._applySeasonalProfiles();
+      this._checkMaintenanceSchedule();
+      this._calculateSeasonalScore();
 
-    this.log(`Initialized — Season: ${this.currentSeason ? this.currentSeason.label : 'unknown'}, ` +
-             `Daylight: ${this.daylightHours.toFixed(1)}h, Score: ${this.seasonalScore}`);
-    return true;
+      // Main monitoring loop — every 10 minutes
+      this._monitoringInterval = setInterval(() => {
+        this._monitoringCycle();
+      }, this.config.monitoringIntervalMs);
+
+      // Daylight recalculation — every hour
+      this._daylightInterval = setInterval(() => {
+        this._updateDaylight();
+      }, 60 * 60 * 1000);
+
+      this.log(`Initialized — Season: ${this.currentSeason ? this.currentSeason.label : 'unknown'}, ` +
+               `Daylight: ${this.daylightHours.toFixed(1)}h, Score: ${this.seasonalScore}`);
+      return true;
+    } catch (error) {
+      this.homey.error(`[SmartSeasonalAdaptationSystem] Failed to initialize:`, error.message);
+    }
   }
 
   getStatistics() {
@@ -1827,7 +1831,7 @@ class SmartSeasonalAdaptationSystem {
       if (this.homey && this.homey.api && typeof this.homey.api.realtime === 'function') {
         this.homey.api.realtime(`seasonal:${eventName}`, data);
       }
-    } catch (err) {
+    } catch (_err) {
       // Silently ignore emission errors
     }
   }

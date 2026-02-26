@@ -81,54 +81,58 @@ class AdvancedAutomationEngine extends BaseSystem {
   }
 
   async initialize() {
-    await super.initialize();
-    this.log('Initializing Advanced Automation Engine...');
-    
-    // Load saved automations
-    const saved = await this.homey.settings.get('advancedAutomations') || {};
-    Object.entries(saved).forEach(([id, automation]) => {
-      this.automations.set(id, automation);
-    });
+    try {
+      await super.initialize();
+      this.log('Initializing Advanced Automation Engine...');
 
-    // Seed from automation-library.json if no automations exist
-    if (this.automations.size === 0) {
-      try {
-        const path = require('path');
-        const fs = require('fs');
-        const libraryPath = path.resolve(__dirname, '../../automations/automation-library.json');
-        if (fs.existsSync(libraryPath)) {
-          const library = JSON.parse(fs.readFileSync(libraryPath, 'utf8'));
-          for (const entry of library) {
-            this.automations.set(entry.id, {
-              ...entry,
-              enabled: true,
-              statistics: {
-                created: Date.now(),
-                lastExecuted: null,
-                executionCount: 0,
-                successCount: 0,
-                failureCount: 0,
-                averageExecutionTime: 0,
-                userOverrides: 0
-              }
-            });
+      // Load saved automations
+      const saved = await this.homey.settings.get('advancedAutomations') || {};
+      Object.entries(saved).forEach(([id, automation]) => {
+        this.automations.set(id, automation);
+      });
+
+      // Seed from automation-library.json if no automations exist
+      if (this.automations.size === 0) {
+        try {
+          const path = require('path');
+          const fs = require('fs');
+          const libraryPath = path.resolve(__dirname, '../../automations/automation-library.json');
+          if (fs.existsSync(libraryPath)) {
+            const library = JSON.parse(fs.readFileSync(libraryPath, 'utf8'));
+            for (const entry of library) {
+              this.automations.set(entry.id, {
+                ...entry,
+                enabled: true,
+                statistics: {
+                  created: Date.now(),
+                  lastExecuted: null,
+                  executionCount: 0,
+                  successCount: 0,
+                  failureCount: 0,
+                  averageExecutionTime: 0,
+                  userOverrides: 0
+                }
+              });
+            }
+            await this.saveAutomations();
+            this.log(`Seeded ${library.length} automations from library`);
           }
-          await this.saveAutomations();
-          this.log(`Seeded ${library.length} automations from library`);
+        } catch (err) {
+          this.log('Could not seed automation library:', err.message);
         }
-      } catch (err) {
-        this.log('Could not seed automation library:', err.message);
       }
+
+      // Load learning data
+      this.executionHistory = await this.homey.settings.get('automationEngine:executionHistory') || [];
+      this.patterns = new Map(await this.homey.settings.get('patterns') || []);
+
+      // Start automation engine
+      this.startEngine();
+
+      this.log('Advanced Automation Engine initialized');
+    } catch (error) {
+      console.error(`[AdvancedAutomationEngine] Failed to initialize:`, error.message);
     }
-
-    // Load learning data
-    this.executionHistory = await this.homey.settings.get('automationEngine:executionHistory') || [];
-    this.patterns = new Map(await this.homey.settings.get('patterns') || []);
-
-    // Start automation engine
-    this.startEngine();
-    
-    this.log('Advanced Automation Engine initialized');
   }
 
   /**
@@ -691,7 +695,7 @@ class AdvancedAutomationEngine extends BaseSystem {
     return await this.homey.app.presenceManager.getStatus(zone);
   }
 
-  async getWeatherValue(property) {
+  async getWeatherValue(_property) {
     // Implement weather API integration
     return 20; // Placeholder
   }
@@ -700,12 +704,12 @@ class AdvancedAutomationEngine extends BaseSystem {
     return await this.homey.app.energyManager.getCurrentConsumption(scope);
   }
 
-  async makeApiCall(url, method, data) {
+  async makeApiCall(_url, _method, _data) {
     // Implement HTTP request
     return { status: 'not_implemented' };
   }
 
-  async executeScript(script, context) {
+  async executeScript(_script, _context) {
     // Safely execute user script
     return { status: 'not_implemented' };
   }

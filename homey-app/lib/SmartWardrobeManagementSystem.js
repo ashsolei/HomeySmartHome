@@ -173,20 +173,24 @@ class SmartWardrobeManagementSystem {
    * Initialize the wardrobe management system
    */
   async initialize() {
-    this.log('Initializing SmartWardrobeManagementSystem...');
-
     try {
-      await this._loadPersistedData();
-      this._startMonitoringCycle();
-      await this._generateOutfitOfTheDay();
-      this._updateDonationSuggestions();
-      this._checkSeasonalRotation();
-      this._updateIroningQueue();
+      this.log('Initializing SmartWardrobeManagementSystem...');
 
-      this.log('SmartWardrobeManagementSystem initialized successfully');
-      this.log(`Inventory: ${this.inventory.length} items, Profiles: ${this.styleProfiles.length}, History: ${this.outfitHistory.length} outfits`);
-    } catch (err) {
-      this.error(`Initialization failed: ${err.message}`);
+      try {
+        await this._loadPersistedData();
+        this._startMonitoringCycle();
+        await this._generateOutfitOfTheDay();
+        this._updateDonationSuggestions();
+        this._checkSeasonalRotation();
+        this._updateIroningQueue();
+
+        this.log('SmartWardrobeManagementSystem initialized successfully');
+        this.log(`Inventory: ${this.inventory.length} items, Profiles: ${this.styleProfiles.length}, History: ${this.outfitHistory.length} outfits`);
+      } catch (err) {
+        this.error(`Initialization failed: ${err.message}`);
+      }
+    } catch (error) {
+      this.homey.error(`[SmartWardrobeManagementSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -394,7 +398,7 @@ class SmartWardrobeManagementSystem {
   /**
    * Build a complete outfit from scored items
    */
-  _buildOutfit(scoredItems, weatherLayer, formality) {
+  _buildOutfit(scoredItems, weatherLayer, _formality) {
     const outfit = { items: [], score: 0 };
     const needed = this._getOutfitSlots(weatherLayer);
 
@@ -2039,7 +2043,7 @@ class SmartWardrobeManagementSystem {
       if (this.homey && typeof this.homey.emit === 'function') {
         this.homey.emit('wardrobe:weatherRequest');
       }
-    } catch (err) {
+    } catch (_err) {
       // Weather refresh is non-critical, continue silently
     }
   }
@@ -2120,7 +2124,7 @@ class SmartWardrobeManagementSystem {
     if (alerts.length > 0 && this.homey && typeof this.homey.emit === 'function') {
       try {
         this.homey.emit('wardrobe:environmentAlert', alerts);
-      } catch (err) {
+      } catch (_err) {
         // Non-critical alert emission
       }
     }

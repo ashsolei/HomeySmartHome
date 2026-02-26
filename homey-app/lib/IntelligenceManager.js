@@ -20,16 +20,20 @@ class IntelligenceManager {
   }
 
   async initialize() {
-    this.log('Initializing Intelligence Manager...');
-    
-    // Load learning data
-    this.learningData = await this.homey.settings.get('learningData') || this.learningData;
-    this.patterns = new Map(await this.homey.settings.get('intelligencePatterns') || []);
-    
-    // Start intelligence engine
-    await this.startIntelligenceEngine();
-    
-    this.log('Intelligence Manager initialized');
+    try {
+      this.log('Initializing Intelligence Manager...');
+
+      // Load learning data
+      this.learningData = await this.homey.settings.get('learningData') || this.learningData;
+      this.patterns = new Map(await this.homey.settings.get('intelligencePatterns') || []);
+
+      // Start intelligence engine
+      await this.startIntelligenceEngine();
+
+      this.log('Intelligence Manager initialized');
+    } catch (error) {
+      console.error(`[IntelligenceManager] Failed to initialize:`, error.message);
+    }
   }
 
   // ============================================
@@ -428,7 +432,7 @@ class IntelligenceManager {
 
   async generateEnergySavingRecommendations() {
     const recommendations = [];
-    const energyData = await this.homey.app.energyManager.getCurrentConsumption();
+    const _energyData = await this.homey.app.energyManager.getCurrentConsumption();
     const topConsumers = await this.homey.app.energyManager.getTopConsumers(5);
 
     // High consumption devices

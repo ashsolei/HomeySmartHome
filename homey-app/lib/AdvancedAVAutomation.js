@@ -1336,7 +1336,7 @@ class AdvancedAVAutomation {
   // ─── Energy Monitoring ────────────────────────────────────────────
 
   _updateEnergyReadings() {
-    let totalWattage = 0;
+    let _totalWattage = 0;
 
     for (const [deviceId, device] of Object.entries(this.energyMonitoring.devices)) {
       const seqDevice = this.powerSequence.deviceStates[deviceId];
@@ -1357,7 +1357,7 @@ class AdvancedAVAutomation {
       device.monthlyKwh += incrementKwh;
       device.lastReading = Date.now();
 
-      totalWattage += device.wattage;
+      _totalWattage += device.wattage;
     }
 
     this.energyMonitoring.totalDailyKwh = Object.values(this.energyMonitoring.devices)
@@ -1475,7 +1475,7 @@ class AdvancedAVAutomation {
     this.log('Running equipment monitoring cycle...');
 
     // Check zone health
-    for (const [zoneId, zone] of Object.entries(this.zones)) {
+    for (const [_zoneId, zone] of Object.entries(this.zones)) {
       if (zone.power && zone.errorCount > 3) {
         this.error('Zone ' + zone.name + ' has ' + zone.errorCount + ' errors — flagging for attention');
         this.statistics.errorsDetected++;
@@ -1526,7 +1526,7 @@ class AdvancedAVAutomation {
     }
 
     // Check streaming sources
-    for (const [sourceId, source] of Object.entries(this.streamingSources)) {
+    for (const [_sourceId, source] of Object.entries(this.streamingSources)) {
       if (source.connected && source.lastSync) {
         const sinceLast = Date.now() - source.lastSync;
         if (sinceLast > 3600000) {

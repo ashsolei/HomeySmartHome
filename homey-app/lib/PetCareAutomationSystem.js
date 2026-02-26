@@ -22,21 +22,25 @@ class PetCareAutomationSystem {
   }
 
   async initialize() {
-    this.log('Initializing Pet Care Automation System...');
     try {
-      this._initializeBreedDatabase();
-      this._initializeDefaultPets();
-      this._initializeFeedingSchedules();
-      this._initializeVetRecords();
-      this._initializeEmergencyContacts();
-      this._initializeActivityAnalytics();
-      this._startMonitoring();
-      this._startMedicationReminders();
-      this.initialized = true;
-      this.log('Pet Care Automation System initialized successfully');
-    } catch (err) {
-      this.error('Failed to initialize Pet Care Automation System: ' + err.message);
-      throw err;
+      this.log('Initializing Pet Care Automation System...');
+      try {
+        this._initializeBreedDatabase();
+        this._initializeDefaultPets();
+        this._initializeFeedingSchedules();
+        this._initializeVetRecords();
+        this._initializeEmergencyContacts();
+        this._initializeActivityAnalytics();
+        this._startMonitoring();
+        this._startMedicationReminders();
+        this.initialized = true;
+        this.log('Pet Care Automation System initialized successfully');
+      } catch (err) {
+        this.error('Failed to initialize Pet Care Automation System: ' + err.message);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[PetCareAutomationSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -163,7 +167,7 @@ class PetCareAutomationSystem {
     this.log('Feeding schedules initialized: ' + this.feedingSchedules.size);
   }
 
-  calculatePortion(petId, mealType) {
+  calculatePortion(petId, _mealType) {
     const pet = this.petProfiles.get(petId);
     if (!pet) return 0;
 

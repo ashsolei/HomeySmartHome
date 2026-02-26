@@ -105,9 +105,9 @@ const DeepLearningVisionSystem = require('./lib/DeepLearningVisionSystem');
 const NaturalLanguageAutomationEngine = require('./lib/NaturalLanguageAutomationEngine');
 // Wave 11 - Infrastructure & Optimization Systems
 // Domain: infrastructure
-const { SystemOptimizer, optimizeSystem } = require('./lib/utils/SystemOptimizer');
-const { BaseSystem } = require('./lib/utils/BaseSystem');
-const { CentralizedCacheManager, TTL_LEVELS } = require('./lib/utils/CentralizedCacheManager');
+const { SystemOptimizer, optimizeSystem: _optimizeSystem } = require('./lib/utils/SystemOptimizer');
+const { BaseSystem: _BaseSystem } = require('./lib/utils/BaseSystem');
+const { CentralizedCacheManager, TTL_LEVELS: _TTL_LEVELS } = require('./lib/utils/CentralizedCacheManager');
 const { UnifiedEventScheduler } = require('./lib/utils/UnifiedEventScheduler');
 // Domain: monitoring
 const ErrorHandlingMiddleware = require('./lib/ErrorHandlingMiddleware');
@@ -1180,14 +1180,14 @@ class SmartHomeProApp extends Homey.App {
     
     // Power continuity events
     if (this.powerContinuityUPSSystem.on) {
-      this.powerContinuityUPSSystem.on('outage-detected', (data) => {
+      this.powerContinuityUPSSystem.on('outage-detected', (_data) => {
         this.error('[PowerUPS] Power outage detected!');
         this.homey.notifications.createNotification({
           excerpt: '⚡ Strömavbrott upptäckt! UPS-system aktiverat.'
         }).catch(() => {});
       });
-      
-      this.powerContinuityUPSSystem.on('power-restored', (data) => {
+
+      this.powerContinuityUPSSystem.on('power-restored', (_data) => {
         this.log('[PowerUPS] Power restored');
         this.homey.notifications.createNotification({
           excerpt: '✅ Strömmen har återställts. System återställs.'
@@ -1563,7 +1563,7 @@ class SmartHomeProApp extends Homey.App {
     const executeOrchestration = this.homey.flow.getActionCard('execute-orchestration');
     executeOrchestration.registerRunListener(async (args) => {
       try {
-        const result = await this.crossSystemAIOrchestrationHub.orchestrateAction(args.trigger, {
+        const _result = await this.crossSystemAIOrchestrationHub.orchestrateAction(args.trigger, {
           manual: true,
           timestamp: Date.now()
         });
@@ -2507,7 +2507,7 @@ class NotificationManager {
     if (priority === 'critical') {
       try {
         await this.app.homey.speechOutput.say(message);
-      } catch (error) {
+      } catch (_error) {
         this.app.log('Speech output not available');
       }
     }

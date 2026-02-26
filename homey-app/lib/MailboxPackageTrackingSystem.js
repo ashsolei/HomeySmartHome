@@ -29,15 +29,19 @@ class MailboxPackageTrackingSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Mailbox & Package Tracking System...');
-    
-    await this.loadSettings();
-    this.initializeDefaultMailboxes();
-    
-    this.startMonitoring();
-    
-    this.homey.log('Mailbox & Package Tracking System initialized successfully');
-    return true;
+    try {
+      this.homey.log('Initializing Mailbox & Package Tracking System...');
+
+      await this.loadSettings();
+      this.initializeDefaultMailboxes();
+
+      this.startMonitoring();
+
+      this.homey.log('Mailbox & Package Tracking System initialized successfully');
+      return true;
+    } catch (error) {
+      this.homey.error(`[MailboxPackageTrackingSystem] Failed to initialize:`, error.message);
+    }
   }
 
   async loadSettings() {

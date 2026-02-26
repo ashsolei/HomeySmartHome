@@ -1,7 +1,7 @@
 'use strict';
 
-const fs = require('fs').promises;
-const path = require('path');
+const _fs = require('fs').promises;
+const _path = require('path');
 const crypto = require('crypto');
 
 /**
@@ -30,31 +30,35 @@ class BackupRecoverySystem {
   }
 
   async initialize() {
-    this.log('Initializing Backup & Recovery System...');
-    
-    // Load backup configuration
-    const savedConfig = await this.homey.settings.get('backupConfig');
-    if (savedConfig) {
-      this.backupConfig = { ...this.backupConfig, ...savedConfig };
+    try {
+      this.log('Initializing Backup & Recovery System...');
+
+      // Load backup configuration
+      const savedConfig = await this.homey.settings.get('backupConfig');
+      if (savedConfig) {
+        this.backupConfig = { ...this.backupConfig, ...savedConfig };
+      }
+
+      // Load backup history
+      const savedBackups = await this.homey.settings.get('backupHistory') || {};
+      Object.entries(savedBackups).forEach(([id, backup]) => {
+        this.backups.set(id, backup);
+      });
+
+      // Start automatic backup scheduler
+      if (this.backupConfig.autoBackup) {
+        await this.startBackupScheduler();
+      }
+
+      // Create initial backup if none exists
+      if (this.backups.size === 0) {
+        await this.createBackup({ type: 'initial', description: 'Initial system backup' });
+      }
+
+      this.log('Backup & Recovery System initialized');
+    } catch (error) {
+      console.error(`[BackupRecoverySystem] Failed to initialize:`, error.message);
     }
-
-    // Load backup history
-    const savedBackups = await this.homey.settings.get('backupHistory') || {};
-    Object.entries(savedBackups).forEach(([id, backup]) => {
-      this.backups.set(id, backup);
-    });
-
-    // Start automatic backup scheduler
-    if (this.backupConfig.autoBackup) {
-      await this.startBackupScheduler();
-    }
-
-    // Create initial backup if none exists
-    if (this.backups.size === 0) {
-      await this.createBackup({ type: 'initial', description: 'Initial system backup' });
-    }
-
-    this.log('Backup & Recovery System initialized');
   }
 
   /**

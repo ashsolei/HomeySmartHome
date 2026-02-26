@@ -476,7 +476,7 @@ class AdvancedAirQualityVentilationControlSystem extends EventEmitter {
     this.monitoring.lastCheck = Date.now();
     
     // Update sensor readings (simulate small changes)
-    for (const [id, sensor] of this.airQualitySensors) {
+    for (const [_id, sensor] of this.airQualitySensors) {
       sensor.measurements.co2 += (Math.random() - 0.5) * 50;
       sensor.measurements.pm25 += (Math.random() - 0.5) * 5;
       sensor.measurements.voc += (Math.random() - 0.5) * 30;
@@ -489,7 +489,7 @@ class AdvancedAirQualityVentilationControlSystem extends EventEmitter {
     }
     
     // Calculate AQI and check thresholds
-    const aqi = this.calculateAirQualityIndex();
+    const _aqi = this.calculateAirQualityIndex();
     
     if (this.currentAirQuality.co2 > this.settings.co2Threshold) {
       this.emit('notification', {

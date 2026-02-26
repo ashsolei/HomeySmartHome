@@ -555,7 +555,7 @@ class SmartHVACZoneControlSystem extends EventEmitter {
     return Math.round(target * 10) / 10;
   }
 
-  _handleWindowOpen(zoneId, zone) {
+  _handleWindowOpen(zoneId, _zone) {
     // Reduce heating when window is open
     const trvs = this._getTRVsForZone(zoneId);
     for (const trv of trvs) {
@@ -796,7 +796,7 @@ class SmartHVACZoneControlSystem extends EventEmitter {
     const hpCostPerKWh = this.costTracking.electricityPriceSEK / heatPump.cop;
     const dhCostPerKWh = this.costTracking.districtHeatingPriceSEK;
 
-    const switchPoint = dhCostPerKWh / this.costTracking.electricityPriceSEK * heatPump.cop;
+    const _switchPoint = dhCostPerKWh / this.costTracking.electricityPriceSEK * heatPump.cop;
 
     if (hpCostPerKWh > dhCostPerKWh && heatPump.status === 'running') {
       // District heating is cheaper

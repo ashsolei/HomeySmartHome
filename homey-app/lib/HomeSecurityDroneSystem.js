@@ -24,33 +24,37 @@ class HomeSecurityDroneSystem extends EventEmitter {
   }
 
   async initialize() {
-    if (this.initialized) { this.homey.log('[SecurityDrone] Already initialized'); return; }
-    this.homey.log('[SecurityDrone] Initializing Home Security Drone Patrol System...');
-    this._initializeDroneFleet();
-    this._initializePatrolRoutes();
-    this._initializeLandingPads();
-    this._initializeNoFlyZones();
-    this._initializeFixedCameras();
-    this._initializePrivacySettings();
-    this._initializeMaintenanceRecords();
-    this.analytics.monthStartDate = new Date().toISOString();
-    const timers = [
-      [() => this._runScheduledPatrols(), 60000],
-      [() => this._updateWeatherConditions(), 120000],
-      [() => this._manageBatteryCharging(), 30000],
-      [() => this._checkCommunicationHealth(), 45000],
-      [() => this._runAnomalyDetection(), 20000],
-      [() => this._checkMaintenanceSchedule(), 3600000],
-      [() => this._aggregateAnalytics(), 300000],
-      [() => this._scheduleRandomPatrol(), 60000],
-      [() => this._cleanupOldFootage(), 3600000],
-      [() => this._auditPrivacyCompliance(), 1800000]
-    ];
-    for (const [fn, ms] of timers) this.intervals.push(setInterval(fn, ms));
-    this.initialized = true;
-    this._logEvent('system', 'info', 'Home Security Drone System initialized');
-    this.homey.log('[SecurityDrone] Initialization complete with ' + this.drones.size + ' drones, ' + this.patrolRoutes.size + ' routes');
-    this.homey.emit('security-drone-initialized', { droneCount: this.drones.size, routeCount: this.patrolRoutes.size });
+    try {
+      if (this.initialized) { this.homey.log('[SecurityDrone] Already initialized'); return; }
+      this.homey.log('[SecurityDrone] Initializing Home Security Drone Patrol System...');
+      this._initializeDroneFleet();
+      this._initializePatrolRoutes();
+      this._initializeLandingPads();
+      this._initializeNoFlyZones();
+      this._initializeFixedCameras();
+      this._initializePrivacySettings();
+      this._initializeMaintenanceRecords();
+      this.analytics.monthStartDate = new Date().toISOString();
+      const timers = [
+        [() => this._runScheduledPatrols(), 60000],
+        [() => this._updateWeatherConditions(), 120000],
+        [() => this._manageBatteryCharging(), 30000],
+        [() => this._checkCommunicationHealth(), 45000],
+        [() => this._runAnomalyDetection(), 20000],
+        [() => this._checkMaintenanceSchedule(), 3600000],
+        [() => this._aggregateAnalytics(), 300000],
+        [() => this._scheduleRandomPatrol(), 60000],
+        [() => this._cleanupOldFootage(), 3600000],
+        [() => this._auditPrivacyCompliance(), 1800000]
+      ];
+      for (const [fn, ms] of timers) this.intervals.push(setInterval(fn, ms));
+      this.initialized = true;
+      this._logEvent('system', 'info', 'Home Security Drone System initialized');
+      this.homey.log('[SecurityDrone] Initialization complete with ' + this.drones.size + ' drones, ' + this.patrolRoutes.size + ' routes');
+      this.homey.emit('security-drone-initialized', { droneCount: this.drones.size, routeCount: this.patrolRoutes.size });
+    } catch (error) {
+      this.homey.error(`[HomeSecurityDroneSystem] Failed to initialize:`, error.message);
+    }
   }
 
   _makeDrone(id, name, type, model, bat, batWh, maxFlight, pos, maxSpd, camRes, nv, thermal, mic, spk, wt, maxWind, fw, maintDays, hours, cycles, health, motorH, propDays, calDays, padId) {

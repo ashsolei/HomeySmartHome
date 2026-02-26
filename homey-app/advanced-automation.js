@@ -1,6 +1,6 @@
 'use strict';
 
-const Homey = require('homey');
+const _Homey = require('homey');
 
 /**
  * Advanced Automation System
@@ -190,7 +190,7 @@ class AdvancedAutomationManager {
     return false;
   }
 
-  async matchesPredictiveTrigger(trigger, event) {
+  async matchesPredictiveTrigger(trigger, _event) {
     // Uses AI predictions
     if (!this.app.intelligenceEngine) return false;
     
@@ -476,7 +476,7 @@ class AdvancedAutomationManager {
     }
   }
 
-  async executeAdaptiveAction(action, automation) {
+  async executeAdaptiveAction(action, _automation) {
     // Use AI to determine best action based on context
     if (!this.app.intelligenceEngine) {
       return await this.executeAction(action.fallback);

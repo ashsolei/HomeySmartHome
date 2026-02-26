@@ -346,7 +346,7 @@ class SmartRoofSolarMonitoringSystem extends EventEmitter {
       const hour = now.getHours();
       const isDaylight = hour >= 6 && hour <= 20;
 
-      for (const [id, panel] of this.panels) {
+      for (const [_id, panel] of this.panels) {
         // ── Temperature simulation --------------------------------
         const ambient = this._estimateAmbientTemp(now);
         const irradianceContrib = isDaylight

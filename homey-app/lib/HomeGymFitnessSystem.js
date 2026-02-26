@@ -31,17 +31,21 @@ class HomeGymFitnessSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Home Gym & Fitness System...');
-    
-    await this.loadSettings();
-    this.initializeDefaultEquipment();
-    this.initializeWorkoutPrograms();
-    this.initializeUserProfiles();
-    
-    this.startMonitoring();
-    
-    this.homey.log('Home Gym & Fitness System initialized successfully');
-    return true;
+    try {
+      this.homey.log('Initializing Home Gym & Fitness System...');
+
+      await this.loadSettings();
+      this.initializeDefaultEquipment();
+      this.initializeWorkoutPrograms();
+      this.initializeUserProfiles();
+
+      this.startMonitoring();
+
+      this.homey.log('Home Gym & Fitness System initialized successfully');
+      return true;
+    } catch (error) {
+      this.homey.error(`[HomeGymFitnessSystem] Failed to initialize:`, error.message);
+    }
   }
 
   async loadSettings() {
@@ -307,7 +311,7 @@ class HomeGymFitnessSystem extends EventEmitter {
   }
 
   getHeartRateZone(heartRate, zones) {
-    for (const [key, zone] of Object.entries(zones)) {
+    for (const [_key, zone] of Object.entries(zones)) {
       if (heartRate >= zone.min && heartRate <= zone.max) {
         return zone.name;
       }

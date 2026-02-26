@@ -320,7 +320,7 @@ class DeviceHealthMonitor extends BaseSystem {
       const start = Date.now();
       await device.getCapabilityValue(device.capabilities[0]);
       return Date.now() - start;
-    } catch (error) {
+    } catch (_error) {
       return -1; // Error
     }
   }
@@ -404,7 +404,7 @@ class DeviceHealthMonitor extends BaseSystem {
     }
 
     // Deduct for capability errors
-    for (const [capability, data] of Object.entries(health.capabilities)) {
+    for (const [_capability, data] of Object.entries(health.capabilities)) {
       if (data.errors > 0) {
         score -= data.errors * 2;
       }
@@ -547,7 +547,7 @@ class DeviceHealthMonitor extends BaseSystem {
    */
   async diagnosticDevice(device) {
     const deviceId = device.id;
-    const health = this.deviceHealth.get(deviceId);
+    const _health = this.deviceHealth.get(deviceId);
     
     const diagnostics = {
       deviceId,
@@ -599,7 +599,7 @@ class DeviceHealthMonitor extends BaseSystem {
           value: rssi,
           message: `Signal: ${rssi} dBm`
         });
-      } catch (error) {
+      } catch (_error) {
         // RSSI not available
       }
     }
@@ -623,7 +623,7 @@ class DeviceHealthMonitor extends BaseSystem {
             message: 'Byt batteri snart'
           });
         }
-      } catch (error) {
+      } catch (_error) {
         // Battery not available
       }
     }
@@ -735,7 +735,7 @@ class DeviceHealthMonitor extends BaseSystem {
    * @param {object[]} history - Health history snapshots for the device
    * @returns {{type: string, severity: string, message: string, detected: number, capability: string, value: *}|null} Anomaly object or null
    */
-  detectCapabilityAnomaly(capability, data, history) {
+  detectCapabilityAnomaly(capability, data, _history) {
     // For numeric capabilities, check for outliers
     if (typeof data.value === 'number') {
       // Would implement statistical outlier detection

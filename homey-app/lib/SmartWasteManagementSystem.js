@@ -20,24 +20,28 @@ class SmartWasteManagementSystem {
   }
 
   async initialize() {
-    this.log('Initializing Smart Waste Management System...');
     try {
-      this._initializeCategories();
-      this._initializeBins();
-      this._initializeCollectionCalendar();
-      this._initializeCarbonFootprint();
-      this._initializeCostEstimates();
-      this._initializeRecyclingTargets();
-      this._initializeCompostBin();
-      this._initializeGamification();
-      this._initializeTrendData();
-      await this._discoverDevices();
-      this._startMonitoring();
-      this.initialized = true;
-      this.log('Smart Waste Management System initialized successfully');
-    } catch (err) {
-      this.error('Failed to initialize Waste Management System: ' + err.message);
-      throw err;
+      this.log('Initializing Smart Waste Management System...');
+      try {
+        this._initializeCategories();
+        this._initializeBins();
+        this._initializeCollectionCalendar();
+        this._initializeCarbonFootprint();
+        this._initializeCostEstimates();
+        this._initializeRecyclingTargets();
+        this._initializeCompostBin();
+        this._initializeGamification();
+        this._initializeTrendData();
+        await this._discoverDevices();
+        this._startMonitoring();
+        this.initialized = true;
+        this.log('Smart Waste Management System initialized successfully');
+      } catch (err) {
+        this.error('Failed to initialize Waste Management System: ' + err.message);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[SmartWasteManagementSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -548,7 +552,7 @@ class SmartWasteManagementSystem {
     };
   }
 
-  _updateMemberScore(memberId, category, weightKg) {
+  _updateMemberScore(memberId, category, _weightKg) {
     const member = this.gamification.members.get(memberId);
     if (!member) return;
 

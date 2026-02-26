@@ -35,21 +35,25 @@ class HomeSpaAndSaunaSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Home Spa & Sauna System...');
-    
     try {
-      await this.loadSettings();
-      this.initializeDefaultFacilities();
-      this.initializeWellnessPrograms();
-      
-      this.startMonitoring();
-      this.startHealthCheck();
-      
-      this.homey.log('Home Spa & Sauna System initialized successfully');
-      return true;
+      this.homey.log('Initializing Home Spa & Sauna System...');
+
+      try {
+        await this.loadSettings();
+        this.initializeDefaultFacilities();
+        this.initializeWellnessPrograms();
+
+        this.startMonitoring();
+        this.startHealthCheck();
+
+        this.homey.log('Home Spa & Sauna System initialized successfully');
+        return true;
+      } catch (error) {
+        this.homey.error('Failed to initialize Spa & Sauna System:', error);
+        throw error;
+      }
     } catch (error) {
-      this.homey.error('Failed to initialize Spa & Sauna System:', error);
-      throw error;
+      this.homey.error(`[HomeSpaAndSaunaSystem] Failed to initialize:`, error.message);
     }
   }
 

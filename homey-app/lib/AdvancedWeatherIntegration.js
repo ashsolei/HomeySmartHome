@@ -78,21 +78,25 @@ class AdvancedWeatherIntegration {
    * @throws {Error} Re-throws any initialisation error after logging it
    */
   async initialize() {
-    this.log('Initializing Advanced Weather Integration...');
     try {
-      this._initializeLocations();
-      this._initializeAutomationRules();
-      this._initializePollenTracking();
-      this._initializeAQI();
-      this.currentWeather = this._generateCurrentWeather();
-      this.forecast = this._generate72HourForecast();
-      this._seedHistoricalData();
-      this._startMonitoring();
-      this.initialized = true;
-      this.log('Advanced Weather Integration initialized successfully');
-    } catch (err) {
-      this.error('Failed to initialize Weather Integration: ' + err.message);
-      throw err;
+      this.log('Initializing Advanced Weather Integration...');
+      try {
+        this._initializeLocations();
+        this._initializeAutomationRules();
+        this._initializePollenTracking();
+        this._initializeAQI();
+        this.currentWeather = this._generateCurrentWeather();
+        this.forecast = this._generate72HourForecast();
+        this._seedHistoricalData();
+        this._startMonitoring();
+        this.initialized = true;
+        this.log('Advanced Weather Integration initialized successfully');
+      } catch (err) {
+        this.error('Failed to initialize Weather Integration: ' + err.message);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[AdvancedWeatherIntegration] Failed to initialize:`, error.message);
     }
   }
 
@@ -327,7 +331,7 @@ class AdvancedWeatherIntegration {
 
   _updatePollenLevels() {
     const month = new Date().getMonth();
-    for (const [type, pollen] of Object.entries(this.pollenCounts)) {
+    for (const [_type, pollen] of Object.entries(this.pollenCounts)) {
       if (pollen.season.includes(month)) {
         const isPeak = month === pollen.peak;
         const baseLevel = isPeak ? 7 : 4;
@@ -510,7 +514,7 @@ class AdvancedWeatherIntegration {
    */
   calculateSunPosition(date) {
     const lat = 59.33;
-    const lon = 18.07;
+    const _lon = 18.07;
     const d = date instanceof Date ? date : new Date(date);
 
     const dayOfYear = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);

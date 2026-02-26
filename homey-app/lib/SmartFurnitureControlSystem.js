@@ -30,17 +30,21 @@ class SmartFurnitureControlSystem extends EventEmitter {
   }
 
   async initialize() {
-    this.homey.log('Initializing Smart Furniture Control System...');
-    
-    await this.loadSettings();
-    this.initializeDefaultFurniture();
-    this.initializePresets();
-    this.initializeScenes();
-    
-    this.startMonitoring();
-    
-    this.homey.log('Smart Furniture Control System initialized successfully');
-    return true;
+    try {
+      this.homey.log('Initializing Smart Furniture Control System...');
+
+      await this.loadSettings();
+      this.initializeDefaultFurniture();
+      this.initializePresets();
+      this.initializeScenes();
+
+      this.startMonitoring();
+
+      this.homey.log('Smart Furniture Control System initialized successfully');
+      return true;
+    } catch (error) {
+      this.homey.error(`[SmartFurnitureControlSystem] Failed to initialize:`, error.message);
+    }
   }
 
   async loadSettings() {

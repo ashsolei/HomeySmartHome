@@ -82,28 +82,32 @@ class SmartSchedulingSystem extends BaseSystem {
   }
 
   async initialize() {
-    await super.initialize();
-    this.log('Initializing Smart Scheduling System...');
-    
-    // Load tasks
-    const savedTasks = await this.homey.settings.get('scheduledTasks') || {};
-    Object.entries(savedTasks).forEach(([id, task]) => {
-      this.tasks.set(id, task);
-    });
+    try {
+      await super.initialize();
+      this.log('Initializing Smart Scheduling System...');
 
-    // Load schedules
-    const savedSchedules = await this.homey.settings.get('schedules') || {};
-    Object.entries(savedSchedules).forEach(([id, schedule]) => {
-      this.schedules.set(id, schedule);
-    });
+      // Load tasks
+      const savedTasks = await this.homey.settings.get('scheduledTasks') || {};
+      Object.entries(savedTasks).forEach(([id, task]) => {
+        this.tasks.set(id, task);
+      });
 
-    // Load execution history
-    this.executionHistory = await this.homey.settings.get('schedulingSystem:executionHistory') || [];
+      // Load schedules
+      const savedSchedules = await this.homey.settings.get('schedules') || {};
+      Object.entries(savedSchedules).forEach(([id, schedule]) => {
+        this.schedules.set(id, schedule);
+      });
 
-    // Start scheduler
-    await this.startScheduler();
-    
-    this.log('Smart Scheduling System initialized');
+      // Load execution history
+      this.executionHistory = await this.homey.settings.get('schedulingSystem:executionHistory') || [];
+
+      // Start scheduler
+      await this.startScheduler();
+
+      this.log('Smart Scheduling System initialized');
+    } catch (error) {
+      this.homey.error(`[SmartSchedulingSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -269,7 +273,7 @@ class SmartSchedulingSystem extends BaseSystem {
     const now = Date.now();
     const dueTasks = [];
 
-    for (const [id, task] of this.tasks) {
+    for (const [_id, task] of this.tasks) {
       if (!task.enabled || !task.nextExecution) continue;
 
       // Check if task is due
@@ -384,7 +388,7 @@ class SmartSchedulingSystem extends BaseSystem {
     }
   }
 
-  async checkWeather(condition) {
+  async checkWeather(_condition) {
     // Would check weather conditions
     return true;
   }

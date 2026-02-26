@@ -13,18 +13,22 @@ class AdvancedSceneTemplateSystem {
   }
 
   async initialize() {
-    this.log('Initializing Advanced Scene Template System...');
-    
-    // Load custom scenes
-    const savedScenes = await this.homey.settings.get('customScenes') || {};
-    Object.entries(savedScenes).forEach(([id, scene]) => {
-      this.customScenes.set(id, scene);
-    });
+    try {
+      this.log('Initializing Advanced Scene Template System...');
 
-    // Setup default templates
-    await this.setupDefaultTemplates();
+      // Load custom scenes
+      const savedScenes = await this.homey.settings.get('customScenes') || {};
+      Object.entries(savedScenes).forEach(([id, scene]) => {
+        this.customScenes.set(id, scene);
+      });
 
-    this.log('Advanced Scene Template System initialized');
+      // Setup default templates
+      await this.setupDefaultTemplates();
+
+      this.log('Advanced Scene Template System initialized');
+    } catch (error) {
+      console.error(`[AdvancedSceneTemplateSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**

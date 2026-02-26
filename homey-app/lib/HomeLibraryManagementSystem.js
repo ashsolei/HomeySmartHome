@@ -873,7 +873,7 @@ class HomeLibraryManagementSystem extends EventEmitter {
           this.homey.log('[Library] Badge earned: ' + badge.name + ' - ' + badge.description);
           this.homey.emit('badge-earned', { badge: key, name: badge.name, description: badge.description });
         }
-      } catch (err) {
+      } catch (_err) {
         // Skip badge check errors
       }
     }

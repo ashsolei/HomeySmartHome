@@ -100,28 +100,32 @@ class SmartLockManagementSystem {
    * @returns {Promise<void>}
    */
   async initialize() {
-    this.log('Initializing Smart Lock Management System...');
-
     try {
-      const savedSettings = await this.homey.settings.get('lockSettings') || {};
-      this.autoLockEnabled = savedSettings.autoLockEnabled !== false;
-      this.autoLockDelay = savedSettings.autoLockDelay || 300000;
-      this.lockBehindMeEnabled = savedSettings.lockBehindMeEnabled || false;
-      this.syncGroupsEnabled = savedSettings.syncGroupsEnabled || false;
-      this.lowBatteryThreshold = savedSettings.lowBatteryThreshold || 20;
+      this.log('Initializing Smart Lock Management System...');
 
-      await this.discoverLocks();
-      await this.loadAccessCodes();
-      await this.loadKeyRegistry();
-      await this.loadSyncGroups();
-      await this.loadAccessSchedules();
-      await this.loadAnalytics();
-      await this.startMonitoring();
-    } catch (err) {
-      this.error('Initialization failed:', err.message);
+      try {
+        const savedSettings = await this.homey.settings.get('lockSettings') || {};
+        this.autoLockEnabled = savedSettings.autoLockEnabled !== false;
+        this.autoLockDelay = savedSettings.autoLockDelay || 300000;
+        this.lockBehindMeEnabled = savedSettings.lockBehindMeEnabled || false;
+        this.syncGroupsEnabled = savedSettings.syncGroupsEnabled || false;
+        this.lowBatteryThreshold = savedSettings.lowBatteryThreshold || 20;
+
+        await this.discoverLocks();
+        await this.loadAccessCodes();
+        await this.loadKeyRegistry();
+        await this.loadSyncGroups();
+        await this.loadAccessSchedules();
+        await this.loadAnalytics();
+        await this.startMonitoring();
+      } catch (err) {
+        this.error('Initialization failed:', err.message);
+      }
+
+      this.log('Smart Lock Management System initialized');
+    } catch (error) {
+      console.error(`[SmartLockManagementSystem] Failed to initialize:`, error.message);
     }
-
-    this.log('Smart Lock Management System initialized');
   }
 
   /**
@@ -346,7 +350,7 @@ class SmartLockManagementSystem {
    * @param {'lock'|'unlock'|string} action - Action type
    * @returns {void}
    */
-  recordUsageEvent(lockId, action) {
+  recordUsageEvent(lockId, _action) {
     const now = new Date();
     const hour = now.getHours();
     const day = now.getDay();
@@ -534,7 +538,7 @@ class SmartLockManagementSystem {
   getKeyInventory() {
     const physical = [];
     const digital = [];
-    for (const [id, key] of this.keyRegistry) {
+    for (const [_id, key] of this.keyRegistry) {
       const entry = { ...key };
       if (key.type === 'physical') physical.push(entry);
       else digital.push(entry);
@@ -597,7 +601,7 @@ class SmartLockManagementSystem {
     this.log(`EMERGENCY UNLOCK ALL triggered by ${triggeredBy}: ${reason}`);
     const results = [];
 
-    for (const [id, lock] of this.locks) {
+    for (const [_id, lock] of this.locks) {
       try {
         if (lock.device.hasCapability('locked')) {
           await lock.device.setCapabilityValue('locked', false);
@@ -1047,7 +1051,7 @@ class SmartLockManagementSystem {
   async checkTemporaryAccessExpiry() {
     const now = Date.now();
 
-    for (const [code, data] of this.accessCodes) {
+    for (const [_code, data] of this.accessCodes) {
       if (data.type === 'temporary' && data.expiresAt && now > data.expiresAt && data.enabled) {
         data.enabled = false;
         this.log(`Temporary access code expired: ${data.name}`);

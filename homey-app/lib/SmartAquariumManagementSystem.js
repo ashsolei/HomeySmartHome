@@ -19,24 +19,28 @@ class SmartAquariumManagementSystem {
   }
 
   async initialize() {
-    this.log('Initializing Smart Aquarium Management System...');
     try {
-      this._initializeTanks();
-      this._initializeDiseaseDatabase();
-      this._initializeFishSpecies();
-      this._initializeCompatibilityMatrix();
-      this._initializeCoralFrags();
-      this._initializeFeedingSchedules();
-      this._initializeEquipmentMaintenance();
-      this._initializeBreedingPrograms();
-      this._initializeLightingProfiles();
-      await this._discoverDevices();
-      this._startMonitoring();
-      this.initialized = true;
-      this.log('Smart Aquarium Management System initialized successfully');
-    } catch (err) {
-      this.error('Failed to initialize Aquarium Management System: ' + err.message);
-      throw err;
+      this.log('Initializing Smart Aquarium Management System...');
+      try {
+        this._initializeTanks();
+        this._initializeDiseaseDatabase();
+        this._initializeFishSpecies();
+        this._initializeCompatibilityMatrix();
+        this._initializeCoralFrags();
+        this._initializeFeedingSchedules();
+        this._initializeEquipmentMaintenance();
+        this._initializeBreedingPrograms();
+        this._initializeLightingProfiles();
+        await this._discoverDevices();
+        this._startMonitoring();
+        this.initialized = true;
+        this.log('Smart Aquarium Management System initialized successfully');
+      } catch (err) {
+        this.error('Failed to initialize Aquarium Management System: ' + err.message);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[SmartAquariumManagementSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -798,7 +802,7 @@ class SmartAquariumManagementSystem {
   }
 
   _simulateParameterChanges(tank) {
-    for (const [param, data] of Object.entries(tank.parameters)) {
+    for (const [_param, data] of Object.entries(tank.parameters)) {
       const range = data.max - data.min;
       const drift = (Math.random() - 0.5) * range * 0.02;
       data.current = Math.round((data.current + drift) * 100) / 100;

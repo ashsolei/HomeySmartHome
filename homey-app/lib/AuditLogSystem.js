@@ -19,7 +19,11 @@ class AuditLogSystem {
    * @returns {Promise<void>}
    */
   async initialize() {
-    this.log('AuditLogSystem initialized');
+    try {
+      this.log('AuditLogSystem initialized');
+    } catch (error) {
+      this.homey.error(`[AuditLogSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**

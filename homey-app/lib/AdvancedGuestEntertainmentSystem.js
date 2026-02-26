@@ -215,15 +215,19 @@ class AdvancedGuestEntertainmentSystem {
   // ════════════════════════════════════════════════════════════════════════
 
   async initialize() {
-    if (this.initialized) return;
-    this.log('Initializing AdvancedGuestEntertainmentSystem …');
+    try {
+      if (this.initialized) return;
+      this.log('Initializing AdvancedGuestEntertainmentSystem …');
 
-    this._loadDefaultHouseRules();
-    this._loadDefaultEntertainment();
-    this._startMonitoringCycle();
+      this._loadDefaultHouseRules();
+      this._loadDefaultEntertainment();
+      this._startMonitoringCycle();
 
-    this.initialized = true;
-    this.log('System initialized successfully.');
+      this.initialized = true;
+      this.log('System initialized successfully.');
+    } catch (error) {
+      this.homey.error(`[AdvancedGuestEntertainmentSystem] Failed to initialize:`, error.message);
+    }
   }
 
   destroy() {
@@ -374,7 +378,7 @@ class AdvancedGuestEntertainmentSystem {
 
   revokeAllWifiForGuest(guestId) {
     let count = 0;
-    for (const [id, session] of this.wifiSessions) {
+    for (const [_id, session] of this.wifiSessions) {
       if (session.guestId === guestId && session.active) {
         session.active = false;
         count++;
@@ -390,7 +394,7 @@ class AdvancedGuestEntertainmentSystem {
 
   _checkWifiExpiry() {
     const now = Date.now();
-    for (const [id, session] of this.wifiSessions) {
+    for (const [_id, session] of this.wifiSessions) {
       if (session.active && new Date(session.expiresAt).getTime() <= now) {
         session.active = false;
         this.log(`Wi-Fi auto-expired: ${session.ssid}`);
@@ -580,7 +584,7 @@ class AdvancedGuestEntertainmentSystem {
 
   deactivateAllStreamingForGuest(guestId) {
     let count = 0;
-    for (const [id, profile] of this.streamingProfiles) {
+    for (const [_id, profile] of this.streamingProfiles) {
       if (profile.guestId === guestId && profile.active) {
         profile.active = false;
         count++;
@@ -789,7 +793,7 @@ class AdvancedGuestEntertainmentSystem {
     return true;
   }
 
-  _guestLightingPreference(guest) {
+  _guestLightingPreference(_guest) {
     const hour = new Date().getHours();
     if (hour >= 20 || hour < 7) return 'warm_dim';
     return 'bright_neutral';
@@ -1617,7 +1621,7 @@ class AdvancedGuestEntertainmentSystem {
   _checkScheduleReminders() {
     const now = new Date();
     // Check wake-up calls
-    for (const [id, call] of this.wakeUpCalls) {
+    for (const [_id, call] of this.wakeUpCalls) {
       if (call.triggered) continue;
       try {
         const callTime = new Date(call.time);
@@ -1651,7 +1655,7 @@ class AdvancedGuestEntertainmentSystem {
     const now = new Date();
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-    for (const [id, kid] of this.kidProfiles) {
+    for (const [_id, kid] of this.kidProfiles) {
       if (kid.snackSchedule.includes(currentTime)) {
         this.log(`Snack time reminder for ${kid.name}`);
       }

@@ -16,24 +16,28 @@ class AirQualityManagementSystem {
   }
 
   async initialize() {
-    this.log('Initializing Air Quality Management System...');
-    
-    // Load saved data
-    const savedRules = await this.homey.settings.get('airQualityRules') || {};
-    Object.entries(savedRules).forEach(([id, rule]) => {
-      this.automationRules.set(id, rule);
-    });
+    try {
+      this.log('Initializing Air Quality Management System...');
 
-    // Discover air quality devices
-    await this.discoverAirQualityDevices();
+      // Load saved data
+      const savedRules = await this.homey.settings.get('airQualityRules') || {};
+      Object.entries(savedRules).forEach(([id, rule]) => {
+        this.automationRules.set(id, rule);
+      });
 
-    // Setup default automation rules
-    await this.setupDefaultAutomationRules();
+      // Discover air quality devices
+      await this.discoverAirQualityDevices();
 
-    // Start monitoring
-    await this.startMonitoring();
+      // Setup default automation rules
+      await this.setupDefaultAutomationRules();
 
-    this.log('Air Quality Management System initialized');
+      // Start monitoring
+      await this.startMonitoring();
+
+      this.log('Air Quality Management System initialized');
+    } catch (error) {
+      console.error(`[AirQualityManagementSystem] Failed to initialize:`, error.message);
+    }
   }
 
   /**
@@ -217,7 +221,7 @@ class AirQualityManagementSystem {
       }
     };
 
-    for (const [id, sensor] of this.airQualitySensors) {
+    for (const [_id, sensor] of this.airQualitySensors) {
       try {
         const readings = await this.readSensor(sensor.device);
         sensor.readings = readings;
@@ -438,7 +442,7 @@ class AirQualityManagementSystem {
     const latestQuality = this.qualityHistory[this.qualityHistory.length - 1];
     if (!latestQuality) return;
 
-    for (const [id, rule] of this.automationRules) {
+    for (const [_id, rule] of this.automationRules) {
       if (!rule.enabled) continue;
 
       // Check if rule triggers are met
@@ -563,7 +567,7 @@ class AirQualityManagementSystem {
    * Control purifiers
    */
   async controlPurifiers(action) {
-    for (const [id, purifier] of this.purifiers) {
+    for (const [_id, purifier] of this.purifiers) {
       try {
         if (action.action === 'on' && purifier.device.hasCapability('onoff')) {
           await purifier.device.setCapabilityValue('onoff', true);
@@ -587,7 +591,7 @@ class AirQualityManagementSystem {
    * Control ventilation
    */
   async controlVentilation(action) {
-    for (const [id, ventilation] of this.ventilationSystems) {
+    for (const [_id, ventilation] of this.ventilationSystems) {
       try {
         if (action.action === 'on' && ventilation.device.hasCapability('onoff')) {
           await ventilation.device.setCapabilityValue('onoff', true);
@@ -632,7 +636,7 @@ class AirQualityManagementSystem {
    * Check maintenance needs
    */
   async checkMaintenanceNeeds() {
-    for (const [id, purifier] of this.purifiers) {
+    for (const [_id, purifier] of this.purifiers) {
       // Check filter status
       if (purifier.filterStatus === 'replace') {
         this.log(`Filter replacement needed for ${purifier.name}`);

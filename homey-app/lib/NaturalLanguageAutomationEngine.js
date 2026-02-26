@@ -257,31 +257,35 @@ class NaturalLanguageAutomationEngine extends EventEmitter {
   }
   
   async initialize() {
-    this.log('Initializing Natural Language Automation Engine...');
-    
     try {
-      // Load NLP models
-      await this.loadNLPModels();
-      
-      // Initialize intent classifiers
-      await this.initializeIntents();
-      
-      // Start monitoring
-      this.startMonitoring();
-      
-      this.log('Natural Language Automation Engine initialized successfully');
-      this.log(`NLP models loaded: ${Object.keys(this.nlpModels).length}`);
-      this.log(`Intents available: ${this.intents.size}`);
-      this.log(`Languages supported: ${Object.keys(this.languages).length}`);
+      this.log('Initializing Natural Language Automation Engine...');
+
+      try {
+        // Load NLP models
+        await this.loadNLPModels();
+
+        // Initialize intent classifiers
+        await this.initializeIntents();
+
+        // Start monitoring
+        this.startMonitoring();
+
+        this.log('Natural Language Automation Engine initialized successfully');
+        this.log(`NLP models loaded: ${Object.keys(this.nlpModels).length}`);
+        this.log(`Intents available: ${this.intents.size}`);
+        this.log(`Languages supported: ${Object.keys(this.languages).length}`);
+      } catch (error) {
+        this.error('Error initializing NLP engine:', error);
+      }
     } catch (error) {
-      this.error('Error initializing NLP engine:', error);
+      console.error(`[NaturalLanguageAutomationEngine] Failed to initialize:`, error.message);
     }
   }
   
   async loadNLPModels() {
     this.log('Loading NLP models...');
     
-    for (const [modelName, model] of Object.entries(this.nlpModels)) {
+    for (const [_modelName, model] of Object.entries(this.nlpModels)) {
       this.log(`  ✓ ${model.name} (${model.type}) - Accuracy: ${(model.accuracy * 100).toFixed(1)}%`);
     }
     
@@ -291,7 +295,7 @@ class NaturalLanguageAutomationEngine extends EventEmitter {
   async initializeIntents() {
     this.log('Initializing intent classifiers...');
     
-    for (const [intentId, intent] of this.intents) {
+    for (const [_intentId, intent] of this.intents) {
       this.log(`  ✓ ${intent.name} - ${intent.patterns.length} patterns`);
     }
     
@@ -401,7 +405,7 @@ class NaturalLanguageAutomationEngine extends EventEmitter {
   /**
    * Classify intent using BERT
    */
-  async classifyIntent(text, language) {
+  async classifyIntent(text, _language) {
     // Simulate BERT intent classification
     const lowerText = text.toLowerCase();
     
@@ -446,7 +450,7 @@ class NaturalLanguageAutomationEngine extends EventEmitter {
   /**
    * Extract entities using SpaCy NER
    */
-  async extractEntities(text, language, intent) {
+  async extractEntities(text, _language, _intent) {
     // Simulate entity extraction
     const entities = {};
     const lowerText = text.toLowerCase();
@@ -579,7 +583,7 @@ class NaturalLanguageAutomationEngine extends EventEmitter {
     }
   }
   
-  async executeDeviceControl(entities, rawCommand) {
+  async executeDeviceControl(entities, _rawCommand) {
     const { device, location, state, value, target } = entities;
     
     if (!device || !state) {
@@ -603,7 +607,7 @@ class NaturalLanguageAutomationEngine extends EventEmitter {
     };
   }
   
-  async executeStatusQuery(entities, rawCommand) {
+  async executeStatusQuery(entities, _rawCommand) {
     const { device, location, property } = entities;
     
     // Simulate status query
@@ -648,7 +652,7 @@ class NaturalLanguageAutomationEngine extends EventEmitter {
     };
   }
   
-  async executeAutomationModification(entities, rawCommand) {
+  async executeAutomationModification(_entities, _rawCommand) {
     // Find automation to modify
     const automations = Array.from(this.automations.values());
     
@@ -688,7 +692,7 @@ class NaturalLanguageAutomationEngine extends EventEmitter {
     };
   }
   
-  async executeInformationRequest(entities, rawCommand) {
+  async executeInformationRequest(entities, _rawCommand) {
     const responses = [
       'You have 12 lights, 3 thermostats, and 2 locks.',
       'There are 5 active automations.',

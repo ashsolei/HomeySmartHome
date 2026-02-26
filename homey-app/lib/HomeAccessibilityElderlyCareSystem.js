@@ -355,40 +355,44 @@ class HomeAccessibilityElderlyCareSystem {
   // Initialization
   // ────────────────────────────────────────────
   async initialize() {
-    if (this.initialized) {
-      this.log('System already initialized');
-      return;
-    }
-
-    this.log('Initializing HomeAccessibilityElderlyCareSystem...');
-    this.startTime = Date.now();
-
     try {
-      await this._loadResidentProfiles();
-      await this._initializeFallDetection();
-      await this._initializeInactivityMonitoring();
-      await this._initializeMedicationManager();
-      await this._initializeWanderPrevention();
-      await this._initializeEmergencySOS();
-      await this._initializeCognitiveSupport();
-      await this._initializeAdaptiveLighting();
-      await this._initializeVoiceControl();
-      await this._initializeVitalSigns();
-      await this._initializeSocialIsolation();
-      await this._initializeCaregiverDashboard();
-      await this._initializeMealManagement();
-      await this._initializeExercisePrompts();
-      await this._initializeEnvironmentalSafety();
-      await this._initializeSleepMonitoring();
-      await this._initializeVisitorManagement();
+      if (this.initialized) {
+        this.log('System already initialized');
+        return;
+      }
 
-      this._startMonitoringCycle();
+      this.log('Initializing HomeAccessibilityElderlyCareSystem...');
+      this.startTime = Date.now();
 
-      this.initialized = true;
-      this.log('HomeAccessibilityElderlyCareSystem fully initialized');
-    } catch (err) {
-      this.error(`Initialization failed: ${err.message}`);
-      throw err;
+      try {
+        await this._loadResidentProfiles();
+        await this._initializeFallDetection();
+        await this._initializeInactivityMonitoring();
+        await this._initializeMedicationManager();
+        await this._initializeWanderPrevention();
+        await this._initializeEmergencySOS();
+        await this._initializeCognitiveSupport();
+        await this._initializeAdaptiveLighting();
+        await this._initializeVoiceControl();
+        await this._initializeVitalSigns();
+        await this._initializeSocialIsolation();
+        await this._initializeCaregiverDashboard();
+        await this._initializeMealManagement();
+        await this._initializeExercisePrompts();
+        await this._initializeEnvironmentalSafety();
+        await this._initializeSleepMonitoring();
+        await this._initializeVisitorManagement();
+
+        this._startMonitoringCycle();
+
+        this.initialized = true;
+        this.log('HomeAccessibilityElderlyCareSystem fully initialized');
+      } catch (err) {
+        this.error(`Initialization failed: ${err.message}`);
+        throw err;
+      }
+    } catch (error) {
+      this.homey.error(`[HomeAccessibilityElderlyCareSystem] Failed to initialize:`, error.message);
     }
   }
 
@@ -714,7 +718,7 @@ class HomeAccessibilityElderlyCareSystem {
     }
   }
 
-  getActivityScore(residentId) {
+  getActivityScore(_residentId) {
     const scores = Object.values(this.inactivityMonitoring.activityScores);
     if (scores.length === 0) return 0;
     const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
@@ -853,7 +857,7 @@ class HomeAccessibilityElderlyCareSystem {
     this.log(`Activating pill dispenser for ${medication.name} (resident ${residentId})`);
   }
 
-  async _announceMedication(residentId, medication, slot) {
+  async _announceMedication(residentId, medication, _slot) {
     const resident = this.residents.get(residentId);
     const name = resident ? resident.name : residentId;
     this.log(`Announcing medication: "${name}, it is time to take your ${medication.name} (${medication.dosage})"`);
@@ -1081,7 +1085,7 @@ class HomeAccessibilityElderlyCareSystem {
     return matches / longer.length;
   }
 
-  async _sendMedicalInfoPacket(emergency) {
+  async _sendMedicalInfoPacket(_emergency) {
     const packet = { ...this.emergencySOS.medicalInfoPacket };
 
     // Aggregate all active medications across residents
@@ -1804,7 +1808,7 @@ class HomeAccessibilityElderlyCareSystem {
     }
   }
 
-  recordSleepEvent(type, details) {
+  recordSleepEvent(type, _details) {
     const bedSensor = this.sleepMonitoring.bedSensor;
     const now = Date.now();
 
@@ -1968,11 +1972,11 @@ class HomeAccessibilityElderlyCareSystem {
     this.log(`Local alarm activated in ${room}`);
   }
 
-  async _sendFamilyNotification(type, data) {
+  async _sendFamilyNotification(type, _data) {
     this.log(`Family notification sent: ${type}`);
   }
 
-  async _contactEmergencyServices(event) {
+  async _contactEmergencyServices(_event) {
     this.log('Emergency services contacted (112)');
   }
 
