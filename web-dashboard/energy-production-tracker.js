@@ -334,7 +334,7 @@ class EnergyProductionTracker {
     }
   }
 
-  getRecommendation(balance, hour) {
+  getRecommendation(balance, _hour) {
     if (balance > 2) {
       return {
         type: 'surplus',
@@ -405,7 +405,7 @@ class EnergyProductionTracker {
     }
 
     // Grid pricing
-    const grid = this.productionSources.get('grid');
+    const _grid = this.productionSources.get('grid');
     const currentHour = new Date().getHours();
     
     // Peak hours (typically more expensive)

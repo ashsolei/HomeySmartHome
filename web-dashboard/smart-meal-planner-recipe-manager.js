@@ -218,7 +218,7 @@ class SmartMealPlannerRecipeManager {
   async searchRecipes(query) {
     const results = [];
 
-    for (const [recipeId, recipe] of this.recipes) {
+    for (const [_recipeId, recipe] of this.recipes) {
       let score = 0;
 
       // Match name
@@ -440,7 +440,7 @@ class SmartMealPlannerRecipeManager {
     const expiringItems = [];
     const threeDays = 3 * 24 * 60 * 60 * 1000;
 
-    for (const [name, item] of this.inventory) {
+    for (const [_name, item] of this.inventory) {
       if (item.expiryDate - Date.now() <= threeDays) {
         expiringItems.push({
           name: item.name,

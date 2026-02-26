@@ -277,7 +277,7 @@ class SmartLightingChoreographer {
     }
   }
 
-  async activateScene(sceneId, transitionTime = 2000) {
+  async activateScene(sceneId, _transitionTime = 2000) {
     const scene = this.lightingScenes.get(sceneId);
     
     if (!scene) {

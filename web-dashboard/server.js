@@ -21,7 +21,7 @@ const HOMEY_TOKEN = process.env.HOMEY_TOKEN || '';
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost,http://localhost:80').split(',').map(s => s.trim());
 
 // ── Process error handlers ──
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason, _promise) => {
   console.error('[FATAL] Unhandled Promise Rejection:', reason);
 });
 
@@ -241,7 +241,7 @@ app.get('/api/dashboard', async (req, res) => {
       zones,
       timestamp: new Date().toISOString()
     });
-  } catch (error) {
+  } catch (_error) {
     res.json(getDemoData());
   }
 });
@@ -253,7 +253,7 @@ app.get('/api/devices', async (req, res) => {
       return res.json(getDemoData().devices);
     }
     res.json(devices);
-  } catch (error) {
+  } catch (_error) {
     res.json(getDemoData().devices);
   }
 });
@@ -265,7 +265,7 @@ app.get('/api/zones', async (req, res) => {
       return res.json(getDemoData().zones);
     }
     res.json(zones);
-  } catch (error) {
+  } catch (_error) {
     res.json(getDemoData().zones);
   }
 });
@@ -438,7 +438,7 @@ async function getDashboardData() {
     }
 
     return { devices, zones };
-  } catch (error) {
+  } catch (_error) {
     return getDemoData();
   }
 }

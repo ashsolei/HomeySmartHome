@@ -526,7 +526,7 @@ class AdvancedSleepOptimizer {
       const now = new Date();
       const currentTime = now.getHours() * 60 + now.getMinutes();
 
-      for (const [userId, profile] of this.sleepProfiles) {
+      for (const [_userId, profile] of this.sleepProfiles) {
         const targetBedtime = this.parseTimeToDecimal(profile.targetBedtime);
         const targetMinutes = Math.floor(targetBedtime * 60);
 

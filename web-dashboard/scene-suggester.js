@@ -262,7 +262,7 @@ class SceneSuggester {
     return suggestions;
   }
 
-  async suggestEnergyOptimizationScenes(patterns) {
+  async suggestEnergyOptimizationScenes(_patterns) {
     const suggestions = [];
 
     // Low energy price scene
@@ -314,7 +314,7 @@ class SceneSuggester {
     return suggestions;
   }
 
-  async suggestComfortScenes(patterns) {
+  async suggestComfortScenes(_patterns) {
     const suggestions = [];
 
     // Wake up gently scene
@@ -369,7 +369,7 @@ class SceneSuggester {
     return suggestions;
   }
 
-  async suggestActivityScenes(patterns) {
+  async suggestActivityScenes(_patterns) {
     const suggestions = [];
 
     // Workout scene
@@ -422,7 +422,7 @@ class SceneSuggester {
     return suggestions;
   }
 
-  async suggestSequenceScenes(patterns) {
+  async suggestSequenceScenes(_patterns) {
     const suggestions = [];
 
     // Bedtime sequence

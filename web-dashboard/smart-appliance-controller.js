@@ -362,7 +362,7 @@ class SmartApplianceController {
     }
 
     const currentPrice = prices[0].price;
-    const avgPrice = prices.reduce((sum, p) => sum + p.price, 0) / prices.length;
+    const _avgPrice = prices.reduce((sum, p) => sum + p.price, 0) / prices.length;
 
     // Find cheapest period that can accommodate the appliance duration
     const duration = appliance.duration || 60; // minutes
@@ -434,7 +434,7 @@ class SmartApplianceController {
     let currentLoad = 0;
     const runningAppliances = [];
 
-    for (const [id, appliance] of this.appliances) {
+    for (const [_id, appliance] of this.appliances) {
       if (appliance.status === 'running') {
         currentLoad += appliance.power;
         runningAppliances.push(appliance.name);
@@ -597,7 +597,7 @@ class SmartApplianceController {
   }
 
   async monitorAlwaysOn() {
-    for (const [id, appliance] of this.appliances) {
+    for (const [_id, appliance] of this.appliances) {
       if (appliance.alwaysOn && appliance.status === 'running') {
         // Track continuous energy usage
         const interval = 5 / 60; // 5 minutes in hours
@@ -614,7 +614,7 @@ class SmartApplianceController {
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
 
-    for (const [id, schedule] of this.schedules) {
+    for (const [_id, schedule] of this.schedules) {
       if (!schedule.enabled) continue;
 
       if (schedule.type === 'time') {
@@ -703,7 +703,7 @@ class SmartApplianceController {
     let currentLoad = 0;
     const active = [];
 
-    for (const [id, appliance] of this.appliances) {
+    for (const [_id, appliance] of this.appliances) {
       if (appliance.status === 'running') {
         currentLoad += appliance.power;
         active.push({
@@ -815,7 +815,7 @@ class SmartApplianceController {
   getMaintenanceStatus() {
     const issues = [];
 
-    for (const [id, appliance] of this.appliances) {
+    for (const [_id, appliance] of this.appliances) {
       // Check if maintenance is due
       if (appliance.type === 'dishwasher' && appliance.cyclesCompleted >= 50) {
         issues.push({

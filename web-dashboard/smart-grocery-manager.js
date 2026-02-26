@@ -770,7 +770,7 @@ class SmartGroceryManager {
     // Suggest recipes based on available ingredients
     const suggestions = [];
 
-    for (const [recipeId, recipe] of this.recipes) {
+    for (const [_recipeId, recipe] of this.recipes) {
       let availableIngredients = 0;
       const missingIngredients = [];
 

@@ -691,6 +691,21 @@ class PredictiveMaintenanceScheduler {
     await this.homey.settings.set('maintenanceTasks', data);
   }
 
+  destroy() {
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+    if (this.predictionInterval) {
+      clearInterval(this.predictionInterval);
+      this.predictionInterval = null;
+    }
+    if (this.maintenanceInterval) {
+      clearInterval(this.maintenanceInterval);
+      this.maintenanceInterval = null;
+    }
+  }
+
   log(...args) {
     console.log('[PredictiveMaintenanceScheduler]', ...args);
   }

@@ -133,7 +133,7 @@ class SleepOptimizer {
     const now = new Date();
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
-    for (const [userId, profile] of this.profiles) {
+    for (const [_userId, profile] of this.profiles) {
       // Check if it's 30 minutes before bedtime
       const bedtimeParts = profile.preferences.bedtime.split(':');
       const bedtimeDate = new Date();

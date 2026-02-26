@@ -222,11 +222,11 @@ class WaterConsumptionMonitor {
     return 0;
   }
 
-  calculateMainFlow(hour) {
+  calculateMainFlow(_hour) {
     // Sum all room and appliance flows
     let total = 0;
     
-    for (const [meterId, meter] of this.meters) {
+    for (const [_meterId, meter] of this.meters) {
       if (meter.type === 'room' || meter.type === 'appliance') {
         total += meter.currentFlow;
       }
@@ -267,7 +267,7 @@ class WaterConsumptionMonitor {
     return 0;
   }
 
-  simulateKitchenFlow(hour, minute) {
+  simulateKitchenFlow(hour, _minute) {
     // Breakfast (07:00-08:00)
     if (hour === 7) {
       if (Math.random() < 0.03) {
@@ -292,7 +292,7 @@ class WaterConsumptionMonitor {
     return 0;
   }
 
-  simulateWashingMachineFlow(hour, minute) {
+  simulateWashingMachineFlow(hour, _minute) {
     // Laundry typically done during day (09:00-17:00)
     if (hour >= 9 && hour <= 17) {
       // Check if in middle of wash cycle
@@ -304,7 +304,7 @@ class WaterConsumptionMonitor {
     return 0;
   }
 
-  simulateDishwasherFlow(hour, minute) {
+  simulateDishwasherFlow(hour, _minute) {
     // Dishwasher runs after dinner (20:00-21:00)
     if (hour === 20) {
       if (Math.random() < 0.02) {

@@ -590,7 +590,7 @@ class AdvancedHomeTheaterController {
   }
 
   async checkDeviceStatus() {
-    for (const [id, device] of this.devices) {
+    for (const [_id, device] of this.devices) {
       if (device.power === 'on') {
         console.log(`   ${device.name}: Online`);
       }

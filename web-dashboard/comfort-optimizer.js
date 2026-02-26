@@ -225,7 +225,7 @@ class ComfortOptimizer {
   // ============================================
 
   calculateComfortScores() {
-    for (const [zoneId, zone] of this.zones) {
+    for (const [_zoneId, zone] of this.zones) {
       const readings = zone.currentReadings;
       const profile = this.getActiveProfile();
       
@@ -649,7 +649,7 @@ class ComfortOptimizer {
     }
 
     // Deactivate all profiles
-    for (const [id, p] of this.comfortProfiles) {
+    for (const [_id, p] of this.comfortProfiles) {
       p.active = false;
     }
 
@@ -725,7 +725,7 @@ class ComfortOptimizer {
 
   getZoneRecommendations(zone) {
     const recommendations = [];
-    const profile = this.getActiveProfile();
+    const _profile = this.getActiveProfile();
 
     for (const issue of zone.issues) {
       if (issue.type === 'temperature') {
@@ -796,7 +796,7 @@ class ComfortOptimizer {
   getActiveIssues() {
     const issues = [];
     
-    for (const [zoneId, zone] of this.zones) {
+    for (const [_zoneId, zone] of this.zones) {
       zone.issues.forEach(issue => {
         issues.push({
           zone: zone.name,

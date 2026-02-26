@@ -383,7 +383,7 @@ class IntegrationHub {
   }
 
   async connectHue(integration) {
-    const { bridgeIp, username } = integration.config;
+    const { bridgeIp, username: _username } = integration.config;
     
     if (!bridgeIp) {
       throw new Error('Hue bridge IP required');
@@ -554,7 +554,7 @@ class IntegrationHub {
       throw new Error('IFTTT API key not configured');
     }
 
-    const url = webhookUrl
+    const _url = webhookUrl
       .replace('{event}', event)
       .replace('{key}', apiKey);
 
@@ -577,7 +577,7 @@ class IntegrationHub {
   }
 
   async updateHomeAssistant(integration, device, capability, value) {
-    const { url, token } = integration.config;
+    const { url: _url, token: _token } = integration.config;
     
     console.log('Updating Home Assistant:', {
       device: device.name,
@@ -596,14 +596,14 @@ class IntegrationHub {
     // });
   }
 
-  async sendTelegram(message, options = {}) {
+  async sendTelegram(message, _options = {}) {
     const integration = this.integrations.get('telegram');
     
     if (!integration || integration.status !== 'connected') {
       return { success: false, error: 'Telegram not connected' };
     }
 
-    const { botToken, chatIds } = integration.config;
+    const { botToken: _botToken, chatIds: _chatIds } = integration.config;
 
     console.log('Sending Telegram message:', message);
 
@@ -630,14 +630,14 @@ class IntegrationHub {
     return { success: true };
   }
 
-  async sendSlack(message, channel) {
+  async sendSlack(message, _channel) {
     const integration = this.integrations.get('slack');
     
     if (!integration || integration.status !== 'connected') {
       return { success: false, error: 'Slack not connected' };
     }
 
-    const { webhookUrl } = integration.config;
+    const { webhookUrl: _webhookUrl } = integration.config;
 
     console.log('Sending Slack message:', message);
 

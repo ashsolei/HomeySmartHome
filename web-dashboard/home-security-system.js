@@ -455,7 +455,7 @@ class HomeSecuritySystem {
 
   async applyMode(mode, userId) {
     // Disarm all zones first
-    for (const [zoneId, zone] of this.zones) {
+    for (const [_zoneId, zone] of this.zones) {
       zone.armed = false;
     }
 
@@ -701,7 +701,7 @@ class HomeSecuritySystem {
   }
 
   async authenticateUser(pin) {
-    for (const [userId, user] of this.users) {
+    for (const [_userId, user] of this.users) {
       if (user.pin === pin) {
         // Check if guest access expired
         if (user.type === 'guest' && user.validUntil < Date.now()) {

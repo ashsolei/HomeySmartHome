@@ -292,7 +292,7 @@ class GeofencingManager {
   }
 
   async checkZoneTransitions() {
-    for (const [deviceId, device] of this.devices) {
+    for (const [_deviceId, device] of this.devices) {
       if (!device.trackingEnabled || !device.currentLocation) continue;
 
       // Check which zone device is in
@@ -380,7 +380,7 @@ class GeofencingManager {
   }
 
   async executeTriggers(device, fromZone, toZone) {
-    for (const [triggerId, trigger] of this.triggers) {
+    for (const [_triggerId, trigger] of this.triggers) {
       if (!trigger.enabled) continue;
 
       // Check if trigger matches
@@ -461,7 +461,7 @@ class GeofencingManager {
     }
   }
 
-  async executeAction(action, device) {
+  async executeAction(action, _device) {
     switch (action.type) {
       case 'device_on':
         console.log(`    Turn on: ${action.deviceId}`);

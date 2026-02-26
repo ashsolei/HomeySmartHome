@@ -485,7 +485,7 @@ class PersonalAssistantTaskManager {
   // SMART SUGGESTIONS
   // ============================================
 
-  async suggestTasks(personId, context) {
+  async suggestTasks(personId, _context) {
     const suggestions = [];
     const now = Date.now();
     const hour = new Date(now).getHours();

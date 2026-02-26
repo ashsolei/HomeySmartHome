@@ -632,7 +632,7 @@ class MoodLightingSystem {
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     const currentDay = now.getDay();
 
-    for (const [scheduleId, schedule] of this.schedules) {
+    for (const [_scheduleId, schedule] of this.schedules) {
       if (!schedule.enabled) continue;
       if (!schedule.days.includes(currentDay)) continue;
       if (schedule.time !== currentTime) continue;

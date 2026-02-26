@@ -1,7 +1,8 @@
 # BACKLOG - HomeySmartHome
 
-> Audit Round 8 — 2026-02-24
+> Audit Round 9 — 2026-02-26
 > Rounds 1-8: All actionable items DONE and merged (PRs #2-#8)
+> Round 9: Automated discovery cycle — lint cleanup, module registration, memory leak fixes
 > Status: [ ] = TODO, [x] = DONE
 
 ---
@@ -49,6 +50,25 @@
 - [x] FEAT-14: Performance Metrics Dashboard
 - [x] FEAT-15: Docker Compose Profiles
 - [x] TST-04: End-to-end test framework (Playwright config + health/api/dashboard specs)
+
+---
+
+## Round 9 — Automated Discovery (2026-02-26)
+
+### In Progress (this PR)
+
+- [x] **COD-20**: Register 3 unregistered modules (SmartHomeAdaptiveLearningSystem, SmartHomeAutomatedTestingSystem, SmartHomePredictiveCleaningSystem) in app.js + server.js
+- [x] **COD-21**: Add destroy() methods to 6 critical interval-leaking modules (SmartWaterManagementSystem, EnergyStorageManagementSystem, PredictiveMaintenanceScheduler, AmbientIntelligenceSystem, AirQualityManagementSystem, performance-monitor)
+- [x] **COD-22**: Fix 148+ ESLint no-unused-vars warnings in web-dashboard (prefix unused params with `_`)
+
+### Discovered — Pending Future Rounds
+
+- [ ] **COD-23**: Add destroy() methods to remaining 61 interval-leaking modules (13 backend + 54 dashboard) — P1
+- [ ] **COD-24**: Add try-catch error handling to 20+ module initialize() methods — P2
+- [ ] **COD-25**: Fix 298 ESLint no-unused-vars warnings in homey-app backend — P2
+- [ ] **COD-26**: Integration test-suite.js requires running server (34 tests fail without server) — refactor to use supertest — P2
+- [ ] **COD-27**: 8 modules violate SmartXxxSystem/AdvancedXxxSystem naming convention — P3
+- [ ] **COD-28**: 114 files use console.log instead of pino structured logging — P3
 
 ---
 

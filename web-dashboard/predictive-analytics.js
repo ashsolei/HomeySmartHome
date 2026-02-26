@@ -568,7 +568,7 @@ class PredictiveAnalytics {
     };
   }
 
-  detectSeasonality(energyData) {
+  detectSeasonality(_energyData) {
     // Simplified seasonality detection
     return {
       detected: true,

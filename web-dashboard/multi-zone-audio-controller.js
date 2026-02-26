@@ -547,7 +547,7 @@ class MultiZoneAudioController {
   }
 
   async getRecommendedPlaylist(context) {
-    const { time, mood, activity } = context;
+    const { time, mood, _activity } = context;
 
     const hour = new Date(time).getHours();
 

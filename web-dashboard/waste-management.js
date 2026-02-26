@@ -196,7 +196,7 @@ class WasteManagementTracker {
   }
 
   async updateBinLevels() {
-    for (const [binId, bin] of this.bins) {
+    for (const [_binId, bin] of this.bins) {
       if (!bin.sensor) continue;
 
       // Simulate level increase

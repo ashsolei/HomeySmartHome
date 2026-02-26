@@ -539,7 +539,7 @@ class VehicleFleetManager {
     };
   }
 
-  getRecommendedVehicle(tripDistance, tripType = 'normal') {
+  getRecommendedVehicle(tripDistance, _tripType = 'normal') {
     const vehicles = Array.from(this.vehicles.values())
       .filter(v => v.status === 'parked' || v.status === 'available');
 

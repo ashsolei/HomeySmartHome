@@ -126,7 +126,7 @@ class FamilyCalendarCoordinator {
     // Check if this affects any events
     const now = Date.now();
     
-    for (const [eventId, event] of this.events) {
+    for (const [_eventId, event] of this.events) {
       if (event.startTime > now && event.startTime < now + 30 * 60 * 1000) {
         // Event starting within 30 minutes
         if (event.attendees.includes(member.id)) {
@@ -398,7 +398,7 @@ class FamilyCalendarCoordinator {
       return { success: false, error: 'Conflict not found' };
     }
 
-    const conflict = this.conflicts[conflictIndex];
+    const _conflict = this.conflicts[conflictIndex];
     
     switch (resolution.action) {
       case 'reschedule':

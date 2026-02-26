@@ -216,7 +216,7 @@ class FinancialPlanningOptimizer {
 
     // Find matching budget
     let budget = null;
-    for (const [id, b] of this.budgets) {
+    for (const [_id, b] of this.budgets) {
       if (b.category === transaction.category) {
         budget = b;
         break;
@@ -240,7 +240,7 @@ class FinancialPlanningOptimizer {
   async resetMonthlyBudgets() {
     console.log('🔄 Resetting monthly budgets...');
 
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       budget.spent = 0;
       budget.remaining = budget.monthlyLimit || 0;
       budget.lastReset = Date.now();
@@ -529,14 +529,14 @@ class FinancialPlanningOptimizer {
 
     // Calculate average monthly expenses
     let monthlyExpenses = 0;
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       if (budget.monthlyLimit) {
         monthlyExpenses += budget.monthlyLimit;
       }
     }
 
     // Add recurring bills
-    for (const [id, bill] of this.bills) {
+    for (const [_id, bill] of this.bills) {
       monthlyExpenses += bill.amount;
     }
 
@@ -578,7 +578,7 @@ class FinancialPlanningOptimizer {
     const optimizations = [];
 
     // Check for overspending
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       const percentUsed = budget.monthlyLimit > 0 ? (budget.spent / budget.monthlyLimit) * 100 : 0;
       
       if (percentUsed > 90) {
@@ -615,7 +615,7 @@ class FinancialPlanningOptimizer {
     }
 
     // Check for expensive bills
-    for (const [id, bill] of this.bills) {
+    for (const [_id, bill] of this.bills) {
       if (bill.category === 'utilities') {
         // Check if can be optimized
         if (bill.amount > 500) {
@@ -706,7 +706,7 @@ class FinancialPlanningOptimizer {
 
     // Budget status
     console.log('\n  Budget Status:');
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       if (budget.monthlyLimit) {
         const percentUsed = (budget.spent / budget.monthlyLimit) * 100;
         console.log(`    ${budget.name}: ${percentUsed.toFixed(0)}% (${budget.spent}/${budget.monthlyLimit} SEK)`);
@@ -715,7 +715,7 @@ class FinancialPlanningOptimizer {
 
     // Financial goals
     console.log('\n  Goal Progress:');
-    for (const [id, goal] of this.financialGoals) {
+    for (const [_id, goal] of this.financialGoals) {
       if (goal.status !== 'achieved') {
         console.log(`    ${goal.name}: ${goal.progress.toFixed(1)}% (${goal.current}/${goal.target} SEK)`);
       }
@@ -730,7 +730,7 @@ class FinancialPlanningOptimizer {
     let totalBalance = 0;
     const accounts = [];
 
-    for (const [id, account] of this.accounts) {
+    for (const [_id, account] of this.accounts) {
       totalBalance += account.balance;
       accounts.push({
         name: account.name,
@@ -742,7 +742,7 @@ class FinancialPlanningOptimizer {
     const monthlyIncome = 87000;
     let monthlyExpenses = 0;
 
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       if (budget.monthlyLimit) {
         monthlyExpenses += budget.spent;
       }
@@ -780,7 +780,7 @@ class FinancialPlanningOptimizer {
     let totalBudget = 0;
     let totalSpent = 0;
 
-    for (const [id, budget] of this.budgets) {
+    for (const [_id, budget] of this.budgets) {
       if (budget.monthlyLimit) {
         totalBudget += budget.monthlyLimit;
         totalSpent += budget.spent;
@@ -808,7 +808,7 @@ class FinancialPlanningOptimizer {
   getGoalsReport() {
     const goals = [];
 
-    for (const [id, goal] of this.financialGoals) {
+    for (const [_id, goal] of this.financialGoals) {
       const daysRemaining = Math.ceil((goal.deadline - Date.now()) / (24 * 60 * 60 * 1000));
       
       goals.push({
@@ -857,7 +857,7 @@ class FinancialPlanningOptimizer {
     const trend = [];
     let netWorth = 0;
 
-    for (const [id, account] of this.accounts) {
+    for (const [_id, account] of this.accounts) {
       netWorth += account.balance;
     }
 

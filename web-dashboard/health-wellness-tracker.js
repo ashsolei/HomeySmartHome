@@ -144,7 +144,7 @@ class HealthWellnessTracker {
   async simulateDailyActivity() {
     const hour = new Date().getHours();
 
-    for (const [userId, user] of this.users) {
+    for (const [_userId, user] of this.users) {
       // Steps per hour based on activity level and time of day
       let stepsPerHour = 0;
 
@@ -307,7 +307,7 @@ class HealthWellnessTracker {
     // Simulate last night's sleep
     const lastNight = Date.now() - 8 * 60 * 60 * 1000;
     const bedtime = lastNight - 8 * 60 * 60 * 1000; // 8 hours ago
-    const wakeTime = lastNight;
+    const _wakeTime = lastNight;
 
     const duration = 7 + Math.random() * 1.5; // 7-8.5 hours
     const actualWakeTime = bedtime + duration * 60 * 60 * 1000;
@@ -373,7 +373,7 @@ class HealthWellnessTracker {
   }
 
   async updateGoalProgress() {
-    for (const [goalId, goal] of this.goals) {
+    for (const [_goalId, goal] of this.goals) {
       if (goal.status !== 'active') continue;
 
       const user = this.users.get(goal.userId);
@@ -584,7 +584,7 @@ class HealthWellnessTracker {
 
   async resetDailyMetrics() {
     // Reset daily counters at midnight
-    for (const [userId, user] of this.users) {
+    for (const [_userId, user] of this.users) {
       user.currentMetrics.steps = 0;
       user.currentMetrics.activeMinutes = 0;
     }
@@ -601,11 +601,11 @@ class HealthWellnessTracker {
     
     if (!user) return null;
 
-    const recentActivities = this.activities
+    const _recentActivities = this.activities
       .filter(a => a.userId === userId)
       .slice(-7);
 
-    const recentSleep = this.sleepSessions
+    const _recentSleep = this.sleepSessions
       .filter(s => s.userId === userId)
       .slice(-7);
 

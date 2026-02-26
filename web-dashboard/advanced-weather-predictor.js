@@ -266,7 +266,7 @@ class AdvancedWeatherPredictor {
     const current = this.currentWeather;
     const tomorrow = this.forecast[1];
 
-    for (const [ruleId, rule] of this.automationRules) {
+    for (const [_ruleId, rule] of this.automationRules) {
       if (!rule.enabled) continue;
 
       let shouldTrigger = false;

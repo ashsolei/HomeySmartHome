@@ -309,7 +309,7 @@ class EnergyStorageOptimizer {
   }
 
   async updateBatteryStatus() {
-    for (const [batteryId, battery] of this.batteries) {
+    for (const [_batteryId, battery] of this.batteries) {
       // Simulate battery behavior
       if (battery.status === 'charging') {
         const chargeAmount = (battery.currentPower * (5/60)); // 5 minutes in hours
@@ -351,7 +351,7 @@ class EnergyStorageOptimizer {
 
   async runOptimization() {
     const currentPrice = this.getCurrentPrice();
-    const avgPrice = this.getAveragePrice();
+    const _avgPrice = this.getAveragePrice();
     const hour = new Date().getHours();
     
     // Get current energy situation

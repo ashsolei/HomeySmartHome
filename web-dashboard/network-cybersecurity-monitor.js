@@ -126,7 +126,7 @@ class NetworkCybersecurityMonitor {
     let found = 0;
     let new_devices = 0;
 
-    for (const [id, device] of this.devices) {
+    for (const [_id, device] of this.devices) {
       device.status = 'online';
       device.lastSeen = Date.now();
       found++;
@@ -345,7 +345,7 @@ class NetworkCybersecurityMonitor {
 
   detectMalwareCommunication() {
     // Check if any device is communicating with known malicious IPs
-    for (const [id, device] of this.devices) {
+    for (const [_id, device] of this.devices) {
       if (device.trustLevel === 'untrusted' && Math.random() < 0.03) {
         return [{
           type: 'malware_communication',

@@ -113,7 +113,7 @@ class SecurityMonitor {
   }
 
   async checkUnauthorizedAccess() {
-    const events = [];
+    const _events = [];
     const now = Date.now();
     const accessProfile = this.baselineProfiles.get('access');
 
@@ -144,9 +144,9 @@ class SecurityMonitor {
   }
 
   async checkUnusualDeviceActivity() {
-    const deviceProfile = this.baselineProfiles.get('device_usage');
+    const _deviceProfile = this.baselineProfiles.get('device_usage');
     const now = Date.now();
-    const hour = new Date().getHours();
+    const _hour = new Date().getHours();
 
     // Simulate unusual device activation
     const unusualActivity = Math.random() > 0.97; // 3% chance
@@ -171,7 +171,7 @@ class SecurityMonitor {
   }
 
   async checkUnusualPresence() {
-    const presenceProfile = this.baselineProfiles.get('presence');
+    const _presenceProfile = this.baselineProfiles.get('presence');
     const now = Date.now();
     const hour = new Date().getHours();
 
@@ -232,7 +232,7 @@ class SecurityMonitor {
   }
 
   async checkNetworkAnomalies() {
-    const networkProfile = this.baselineProfiles.get('network');
+    const _networkProfile = this.baselineProfiles.get('network');
     const now = Date.now();
 
     // Simulate network anomaly detection
@@ -322,7 +322,7 @@ class SecurityMonitor {
     // Multiple anomalies in short time
     this.alertRules.set('multiple_anomalies', {
       name: 'Flera avvikelser',
-      condition: (event) => {
+      condition: (_event) => {
         const recentAnomalies = this.anomalies.filter(a => 
           Date.now() - a.timestamp < 15 * 60 * 1000
         );

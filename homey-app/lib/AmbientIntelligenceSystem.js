@@ -905,6 +905,21 @@ class AmbientIntelligenceSystem {
     await this.homey.settings.set('adaptiveBehaviors', data);
   }
 
+  destroy() {
+    if (this.contextMonitoringInterval) {
+      clearInterval(this.contextMonitoringInterval);
+      this.contextMonitoringInterval = null;
+    }
+    if (this.environmentalMonitoringInterval) {
+      clearInterval(this.environmentalMonitoringInterval);
+      this.environmentalMonitoringInterval = null;
+    }
+    if (this.learningInterval) {
+      clearInterval(this.learningInterval);
+      this.learningInterval = null;
+    }
+  }
+
   log(...args) {
     console.log('[AmbientIntelligenceSystem]', ...args);
   }

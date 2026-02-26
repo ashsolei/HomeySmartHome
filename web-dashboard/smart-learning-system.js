@@ -345,7 +345,7 @@ class SmartLearningSystem {
     // Simulate condition evaluation
     let allConditionsMet = true;
 
-    for (const condition of rule.conditions) {
+    for (const _condition of rule.conditions) {
       // In real implementation, check actual system state
       const conditionMet = Math.random() > 0.2; // 80% chance
       
@@ -743,7 +743,7 @@ class SmartLearningSystem {
     await this.analyzeUserBehavior('presence');
 
     // Evaluate rule performance
-    for (const [ruleId, rule] of this.rules) {
+    for (const [_ruleId, rule] of this.rules) {
       if (rule.timesTriggered > 0) {
         const successRate = (rule.timesSuccessful / rule.timesTriggered * 100).toFixed(0);
         console.log(`  Rule: ${rule.name} - ${successRate}% success rate`);

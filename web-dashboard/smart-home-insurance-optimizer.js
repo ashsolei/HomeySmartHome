@@ -105,7 +105,7 @@ class SmartHomeInsuranceOptimizer {
   async calculateTotalPremiums() {
     let total = 0;
     
-    for (const [policyId, policy] of this.insurancePolicies) {
+    for (const [_policyId, policy] of this.insurancePolicies) {
       total += policy.premium;
     }
 
@@ -204,7 +204,7 @@ class SmartHomeInsuranceOptimizer {
     let totalScore = 0;
     let highRisks = [];
 
-    for (const [factorId, factor] of this.riskFactors) {
+    for (const [_factorId, factor] of this.riskFactors) {
       totalScore += factor.score;
 
       if (factor.score >= 60) {
@@ -309,7 +309,7 @@ class SmartHomeInsuranceOptimizer {
     let totalDiscount = 0;
     const activeDiscounts = [];
 
-    for (const [measureId, measure] of this.safetyMeasures) {
+    for (const [_measureId, measure] of this.safetyMeasures) {
       if (measure.status === 'installed' || measure.status === 'active' || measure.status === 'current') {
         totalDiscount += measure.insuranceDiscount;
         activeDiscounts.push({
@@ -459,7 +459,7 @@ class SmartHomeInsuranceOptimizer {
     const recommendations = [];
 
     // Check renewal dates
-    for (const [policyId, policy] of this.insurancePolicies) {
+    for (const [_policyId, policy] of this.insurancePolicies) {
       const daysUntilRenewal = Math.ceil((policy.renewalDate - Date.now()) / (24 * 60 * 60 * 1000));
       
       if (daysUntilRenewal <= 60 && daysUntilRenewal > 0) {
@@ -474,7 +474,7 @@ class SmartHomeInsuranceOptimizer {
     }
 
     // Check safety measure testing
-    for (const [measureId, measure] of this.safetyMeasures) {
+    for (const [_measureId, measure] of this.safetyMeasures) {
       if (measure.lastTested) {
         const daysSinceTest = Math.ceil((Date.now() - measure.lastTested) / (24 * 60 * 60 * 1000));
         
@@ -507,7 +507,7 @@ class SmartHomeInsuranceOptimizer {
 
     // Check for available discounts
     const discounts = await this.calculatePotentialDiscounts();
-    const currentTotal = await this.calculateTotalPremiums();
+    const _currentTotal = await this.calculateTotalPremiums();
     const potentialSavings = parseFloat(discounts.annualSavings);
 
     if (potentialSavings > 500) {
@@ -560,7 +560,7 @@ class SmartHomeInsuranceOptimizer {
 
     const now = Date.now();
 
-    for (const [policyId, policy] of this.insurancePolicies) {
+    for (const [_policyId, policy] of this.insurancePolicies) {
       const daysUntilRenewal = Math.ceil((policy.renewalDate - now) / (24 * 60 * 60 * 1000));
 
       if (daysUntilRenewal === 60) {
@@ -576,7 +576,7 @@ class SmartHomeInsuranceOptimizer {
   async updateRiskAssessment() {
     console.log('🔍 Updating risk assessment...');
 
-    for (const [factorId, factor] of this.riskFactors) {
+    for (const [_factorId, factor] of this.riskFactors) {
       // Recalculate score based on current factors
       let newScore = 50; // Base score
 
@@ -606,7 +606,7 @@ class SmartHomeInsuranceOptimizer {
 
   getInsuranceOverview() {
     const premiums = this.calculateTotalPremiums();
-    const discounts = this.calculatePotentialDiscounts();
+    const _discounts = this.calculatePotentialDiscounts();
     const overallRisk = this.calculateOverallRisk();
 
     return {

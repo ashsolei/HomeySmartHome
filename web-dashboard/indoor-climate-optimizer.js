@@ -209,7 +209,7 @@ class IndoorClimateOptimizer {
   }
 
   async updateSensorReadings() {
-    for (const [roomId, room] of this.rooms) {
+    for (const [_roomId, room] of this.rooms) {
       // Get HVAC zone influence
       const zone = this.hvacZones.get(room.hvacZone);
       
@@ -290,7 +290,7 @@ class IndoorClimateOptimizer {
   async optimizeClimate() {
     console.log('🌡️ Optimizing climate...');
 
-    for (const [zoneId, zone] of this.hvacZones) {
+    for (const [_zoneId, zone] of this.hvacZones) {
       if (!zone.enabled) continue;
 
       // Get all rooms in zone
@@ -652,7 +652,7 @@ class IndoorClimateOptimizer {
     
     if (!prefs) return;
 
-    for (const [roomId, room] of this.rooms) {
+    for (const [_roomId, room] of this.rooms) {
       const warnings = [];
 
       if (room.currentCO2 > prefs.maxCO2) {

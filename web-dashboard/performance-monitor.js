@@ -129,7 +129,7 @@ class PerformanceMonitor {
    * Start collecting system metrics
    */
   startMetricsCollection() {
-    setInterval(() => {
+    this.metricsInterval = setInterval(() => {
       this.collectSystemMetrics();
     }, this.options.metricsInterval);
 
@@ -292,6 +292,13 @@ class PerformanceMonitor {
       byMethod: new Map()
     };
     this.metrics.performance.responseTimes = [];
+  }
+
+  destroy() {
+    if (this.metricsInterval) {
+      clearInterval(this.metricsInterval);
+      this.metricsInterval = null;
+    }
   }
 }
 

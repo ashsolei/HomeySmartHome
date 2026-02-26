@@ -480,7 +480,7 @@ class EVChargingVehicleIntegration {
 
   async updateVehicleLocations() {
     // Simulated location updates (would use real GPS/API)
-    for (const [id, vehicle] of this.vehicles) {
+    for (const [_id, vehicle] of this.vehicles) {
       // Random location updates for demonstration
       if (Math.random() > 0.8) {
         const locations = ['home', 'work', 'shopping', 'away'];

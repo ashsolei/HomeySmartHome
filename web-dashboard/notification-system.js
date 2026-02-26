@@ -198,7 +198,7 @@ class NotificationSystem {
     }
 
     // Check all enabled rules
-    for (const [key, rule] of this.rules) {
+    for (const [_key, rule] of this.rules) {
       if (rule.enabled && !rule.check(notification)) {
         console.log(`Notification blocked by rule: ${rule.name}`);
         return false;

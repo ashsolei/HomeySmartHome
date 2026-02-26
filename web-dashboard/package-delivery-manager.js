@@ -288,7 +288,7 @@ class PackageDeliveryManager {
   // DELIVERY PERSON RECOGNITION
   // ============================================
 
-  async recognizeDeliveryPerson(imageData) {
+  async recognizeDeliveryPerson(_imageData) {
     // Simulated facial/uniform recognition
     const knownCarriers = ['PostNord', 'DHL', 'UPS', 'Bring', 'Budbee'];
     const recognizedCarrier = knownCarriers[Math.floor(Math.random() * knownCarriers.length)];

@@ -334,7 +334,7 @@ class PresenceTracker {
     const now = Date.now();
     const hour = new Date().getHours();
 
-    for (const [roomId, room] of this.rooms) {
+    for (const [_roomId, room] of this.rooms) {
       // Unusual nighttime activity
       if (hour >= 2 && hour <= 5 && room.occupied) {
         anomalies.push({
@@ -615,7 +615,7 @@ class PresenceTracker {
     });
 
     return Array.from(roomCounts.entries())
-      .filter(([room, count]) => count >= eventSets.length * 0.6) // Present in 60%+ of days
+      .filter(([_room, count]) => count >= eventSets.length * 0.6) // Present in 60%+ of days
       .map(([room]) => this.rooms.get(room)?.name || room);
   }
 

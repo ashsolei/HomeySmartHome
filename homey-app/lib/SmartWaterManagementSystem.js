@@ -702,6 +702,25 @@ class SmartWaterManagementSystem {
     };
   }
 
+  destroy() {
+    if (this.consumptionInterval) {
+      clearInterval(this.consumptionInterval);
+      this.consumptionInterval = null;
+    }
+    if (this.leakDetectionInterval) {
+      clearInterval(this.leakDetectionInterval);
+      this.leakDetectionInterval = null;
+    }
+    if (this.irrigationInterval) {
+      clearInterval(this.irrigationInterval);
+      this.irrigationInterval = null;
+    }
+    if (this.dailyReportInterval) {
+      clearInterval(this.dailyReportInterval);
+      this.dailyReportInterval = null;
+    }
+  }
+
   log(...args) {
     console.log('[SmartWaterManagementSystem]', ...args);
   }

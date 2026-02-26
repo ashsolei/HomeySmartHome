@@ -170,7 +170,7 @@ class SmartDoorbellFacialRecognition {
     }
   }
 
-  async handleUnknownPerson(imageData) {
+  async handleUnknownPerson(_imageData) {
     console.log('   Processing unknown person');
 
     // Record video

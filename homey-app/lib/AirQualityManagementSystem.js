@@ -677,6 +677,21 @@ class AirQualityManagementSystem {
     await this.homey.settings.set('airQualityRules', data);
   }
 
+  destroy() {
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+    if (this.automationInterval) {
+      clearInterval(this.automationInterval);
+      this.automationInterval = null;
+    }
+    if (this.maintenanceInterval) {
+      clearInterval(this.maintenanceInterval);
+      this.maintenanceInterval = null;
+    }
+  }
+
   log(...args) {
     console.log('[AirQualityManagementSystem]', ...args);
   }

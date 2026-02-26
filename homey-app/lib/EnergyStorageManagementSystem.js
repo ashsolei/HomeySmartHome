@@ -695,6 +695,25 @@ class EnergyStorageManagementSystem {
     await this.homey.settings.set('chargingSchedule', this.chargingSchedule);
   }
 
+  destroy() {
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+    if (this.optimizationInterval) {
+      clearInterval(this.optimizationInterval);
+      this.optimizationInterval = null;
+    }
+    if (this.strategyInterval) {
+      clearInterval(this.strategyInterval);
+      this.strategyInterval = null;
+    }
+    if (this.forecastInterval) {
+      clearInterval(this.forecastInterval);
+      this.forecastInterval = null;
+    }
+  }
+
   log(...args) {
     console.log('[EnergyStorageManagementSystem]', ...args);
   }

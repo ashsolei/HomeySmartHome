@@ -531,7 +531,7 @@ class MaintenanceScheduler {
     const now = Date.now();
     const oneDayMs = 24 * 60 * 60 * 1000;
 
-    for (const [taskId, task] of this.tasks) {
+    for (const [_taskId, task] of this.tasks) {
       if (task.status !== 'pending') continue;
 
       const timeUntilDue = task.dueDate - now;

@@ -448,27 +448,27 @@ class BackupSystem {
     }
   }
 
-  async restoreIntelligence(data) {
+  async restoreIntelligence(_data) {
     // Restore patterns, predictions, and learning data
     console.log('Restoring intelligence data...');
   }
 
-  async restoreAutomations(data) {
+  async restoreAutomations(_data) {
     // Restore automation configurations
     console.log('Restoring automations...');
   }
 
-  async restoreAnalytics(data) {
+  async restoreAnalytics(_data) {
     // Restore analytics data
     console.log('Restoring analytics...');
   }
 
-  async restoreConfiguration(data) {
+  async restoreConfiguration(_data) {
     // Restore app configuration
     console.log('Restoring configuration...');
   }
 
-  async restorePreferences(data) {
+  async restorePreferences(_data) {
     // Restore user preferences
     console.log('Restoring preferences...');
   }
@@ -606,7 +606,7 @@ class BackupSystem {
     const data = {};
     
     for (let i = 1; i < lines.length; i++) {
-      const [component, key, value] = lines[i].split(',');
+      const [component, _key, value] = lines[i].split(',');
       if (component && value) {
         data[component] = JSON.parse(value);
       }
@@ -626,7 +626,7 @@ class BackupSystem {
     return data && typeof data === 'object';
   }
 
-  async restoreFromData(data, options) {
+  async restoreFromData(data, _options) {
     // Similar to restoreBackup but from imported data
     const results = {
       restored: [],

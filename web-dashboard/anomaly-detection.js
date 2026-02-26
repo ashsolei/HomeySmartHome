@@ -248,7 +248,7 @@ class AnomalyDetectionAI {
     return baseline.average + random;
   }
 
-  getTemperatureRecommendations(temp, baseline, room) {
+  getTemperatureRecommendations(temp, baseline, _room) {
     const recommendations = [];
     
     if (temp > baseline.average + 2) {

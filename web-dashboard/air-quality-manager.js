@@ -368,7 +368,7 @@ class AirQualityManager {
     return base + (Math.random() - 0.5) * 50;
   }
 
-  simulateTemperature(roomId, hour) {
+  simulateTemperature(roomId, _hour) {
     const base = 21;
     
     // Slight variation by room
@@ -582,7 +582,7 @@ class AirQualityManager {
     return messages[issue.type] || `Luftkvalitetsproblem i ${roomName}`;
   }
 
-  getRecommendations(issue, roomId) {
+  getRecommendations(issue, _roomId) {
     const recommendations = [];
     
     switch (issue.type) {

@@ -261,7 +261,7 @@ class SmartMirrorDashboard {
     }
 
     // Disable all widgets
-    for (const [id, widget] of this.widgets) {
+    for (const [_id, widget] of this.widgets) {
       widget.enabled = false;
     }
 
@@ -284,7 +284,7 @@ class SmartMirrorDashboard {
   // USER RECOGNITION
   // ============================================
 
-  async detectUser(faceData) {
+  async detectUser(_faceData) {
     // Simplified face recognition (would use real facial recognition)
     const users = ['anna', 'erik', 'emma', 'oscar'];
     const detectedUser = users[Math.floor(Math.random() * users.length)];
@@ -415,7 +415,7 @@ class SmartMirrorDashboard {
     return { success: false, error: 'No widget at position' };
   }
 
-  isInBounds(x, y, position) {
+  isInBounds(_x, _y, _position) {
     // Simplified bounds checking
     return true;  // Would calculate actual bounds
   }
@@ -504,7 +504,7 @@ class SmartMirrorDashboard {
   async updateActiveWidgets() {
     const now = Date.now();
 
-    for (const [id, widget] of this.widgets) {
+    for (const [_id, widget] of this.widgets) {
       if (widget.enabled) {
         const lastUpdate = widget.lastUpdate || 0;
         

@@ -78,7 +78,7 @@ class TestRunner {
           try {
             const json = data ? JSON.parse(data) : {};
             resolve({ status: res.statusCode, data: json, headers: res.headers });
-          } catch (err) {
+          } catch (_err) {
             resolve({ status: res.statusCode, data, headers: res.headers });
           }
         });

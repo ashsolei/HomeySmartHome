@@ -174,6 +174,9 @@ const SmartHomeVentilationHeatRecoverySystem = require('./lib/SmartHomeVentilati
 const SmartRoofSolarMonitoringSystem = require('./lib/SmartRoofSolarMonitoringSystem');
 // Wave 17 - Audit
 const AuditLogSystem = require('./lib/AuditLogSystem');
+// Wave 18 - Adaptive Learning & Automated Testing
+const SmartHomeAdaptiveLearningSystem = require('./lib/SmartHomeAdaptiveLearningSystem');
+const SmartHomeAutomatedTestingSystem = require('./lib/SmartHomeAutomatedTestingSystem');
 
 class SmartHomeProApp extends Homey.App {
   
@@ -369,6 +372,9 @@ class SmartHomeProApp extends Homey.App {
     this.smartRoofSolarMonitoringSystem = new SmartRoofSolarMonitoringSystem(this.homey);
     // Wave 17
     this.auditLogSystem = new AuditLogSystem(this.homey);
+    // Wave 18
+    this.smartHomeAdaptiveLearningSystem = new SmartHomeAdaptiveLearningSystem(this.homey);
+    this.smartHomeAutomatedTestingSystem = new SmartHomeAutomatedTestingSystem(this.homey);
 
     await Promise.all([
       this.deviceManager.initialize(),
@@ -492,6 +498,9 @@ class SmartHomeProApp extends Homey.App {
       this.smartRoofSolarMonitoringSystem.initialize(),
       // Wave 17
       this.auditLogSystem.initialize(),
+      // Wave 18
+      this.smartHomeAdaptiveLearningSystem.initialize(),
+      this.smartHomeAutomatedTestingSystem.initialize(),
       this.smartHomePredictiveCleaningSystem.initialize()
     ]);
     

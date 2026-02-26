@@ -580,7 +580,7 @@ class FitnessHomeGymTracker {
 
     // Check equipment maintenance
     setInterval(() => {
-      for (const [id, equipment] of this.equipment) {
+      for (const [_id, equipment] of this.equipment) {
         if (equipment.totalHours > 200 && !equipment.maintenanceDue) {
           equipment.maintenanceDue = true;
           console.log(`🔧 Maintenance due: ${equipment.name}`);
