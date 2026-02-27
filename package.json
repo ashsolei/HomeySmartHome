@@ -2,7 +2,7 @@
   "name": "smarthomepro",
   "version": "3.3.0",
   "private": true,
-  "description": "Smart Home Pro — Full-stack smart home platform with 111+ backend systems, 59 dashboard modules, AI-driven automation",
+  "description": "Smart Home Pro — Full-stack smart home platform with 118 backend systems, 66 dashboard modules, AI-driven automation",
   "scripts": {
     "deploy": "./deploy.sh start",
     "deploy:stop": "./deploy.sh stop",
