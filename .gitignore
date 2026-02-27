@@ -34,6 +34,10 @@ build_test.sh
 run_build.sh
 run_tests.sh
 
+# Test artifacts
+test-results/
+playwright-report/
+
 # Symlinked from AgentHub (source of truth)
 .github/copilot/agents/
 .github/skills/
