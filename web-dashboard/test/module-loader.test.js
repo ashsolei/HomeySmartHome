@@ -1,6 +1,6 @@
 'use strict';
 
-const { describe, it, beforeEach } = require('node:test');
+const { describe, it, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert');
 const ModuleLoader = require('../module-loader');
 
@@ -9,6 +9,10 @@ describe('ModuleLoader', () => {
 
   beforeEach(() => {
     loader = new ModuleLoader();
+  });
+
+  afterEach(() => {
+    loader.destroyAll();
   });
 
   describe('constructor', () => {
