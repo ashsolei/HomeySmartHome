@@ -16,7 +16,8 @@ const EXCLUDED = new Set([
   'predictive-analytics',
   'security-middleware',
   'performance-monitor',
-  'module-loader'
+  'module-loader',
+  'eslint.config'
 ]);
 
 // Modules with no-arg constructors
