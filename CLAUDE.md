@@ -1,12 +1,12 @@
 # CLAUDE.md — SmartHome Pro v3.3.0
 
-Node.js >=22 monorepo. 93+ backend modules, 65+ dashboard modules, AI-driven automation.
+Node.js >=22 monorepo. 118 backend modules, 66 dashboard modules, AI-driven automation.
 
 ## Repository Layout
 
 | Path | Description | Port |
 |---|---|---|
-| `homey-app/` | Backend Express + Homey SDK app, 93 modules in `lib/` | 3000 |
+| `homey-app/` | Backend Express + Homey SDK app, 118 modules in `lib/` | 3000 |
 | `web-dashboard/` | Express + Socket.IO dashboard, static assets in `public/` | 3001 |
 | `nginx/` | Reverse proxy — rate limiting, security headers, WS upgrade | — |
 | `k8s/` | All manifests in `deployment.yaml` (namespace: `smarthome-pro`) | — |
@@ -51,7 +51,7 @@ Register new modules in `app.js`, `server.js`, and `api.js`.
 ## Health & Observability
 
 - `GET /health` — liveness probe (both services)
-- `GET /ready` — readiness probe (backend only)
+- `GET /ready` — readiness probe (both services)
 - `GET /metrics` — Prometheus text format (both services)
 - `GET /api/v1/stats` — system statistics JSON
 

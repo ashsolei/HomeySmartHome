@@ -248,15 +248,26 @@ jobs:
         run: docker compose up -d --build --wait --wait-timeout 120
 
       - name: Health check - backend
-        run: |
-          sleep 10
-          curl -f http://localhost:3000/health || (docker compose logs && exit 1)
+        run: curl -f http://localhost:3000/health || (docker compose logs && exit 1)
 
       - name: Health check - dashboard
         run: curl -f http://localhost:3001/health || (docker compose logs && exit 1)
 
       - name: Health check - nginx
         run: curl -f http://localhost/nginx-health || (docker compose logs && exit 1)
+
+      - name: Setup Node.js for integration tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Integration tests - backend
+        working-directory: homey-app
+        run: npm ci && npm run test:integration
+
+      - name: Integration tests - dashboard
+        working-directory: web-dashboard
+        run: npm ci && npm run test:integration
 
       - name: Cleanup
         if: always()
