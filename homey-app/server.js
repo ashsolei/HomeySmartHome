@@ -1142,13 +1142,40 @@ async function startServer() {
     });
   });
 
+  // ── Listen ──
+  const PORT = process.env.PORT || 3000;
+  const httpServer = server.listen(PORT, () => {
+    const bootSeconds = ((Date.now() - startTime) / 1000).toFixed(1);
+    logger.info('╔══════════════════════════════════════════════╗');
+    logger.info(`Smart Home Pro v${pkg.version} listening on port ${PORT}`);
+    logger.info({ port: PORT, version: pkg.version, bootSeconds, systemCount, routeCount }, 'Server started');
+    logger.info(`Health:   http://localhost:${PORT}/health`);
+    logger.info(`Ready:    http://localhost:${PORT}/ready`);
+    logger.info(`Stats:    http://localhost:${PORT}/api/v1/stats`);
+    logger.info(`Info:     http://localhost:${PORT}/api/v1/info`);
+    logger.info(`Systems:  http://localhost:${PORT}/health/systems`);
+    logger.info('╚══════════════════════════════════════════════╝');
+  });
+
   // ── Graceful shutdown ──
   const gracefulShutdown = async (signal) => {
     logger.info({ signal }, 'Signal received — shutting down gracefully');
 
+    // Force exit if cleanup hangs
+    const forceExitTimer = setTimeout(() => {
+      logger.warn('Forced exit — cleanup took too long');
+      process.exit(1);
+    }, 10000);
+    forceExitTimer.unref();
+
+    // Stop accepting new connections first
+    httpServer.close(() => {
+      logger.info('HTTP server closed');
+    });
+
     // Collect all destroyable systems from the app object
     const destroyables = Object.entries(smartApp)
-      .filter(([_, sys]) => sys && typeof sys === 'object' && typeof sys.destroy === 'function')
+      .filter(([_key, sys]) => sys && typeof sys === 'object' && typeof sys.destroy === 'function')
       .map(([name, sys]) => ({ name, sys }));
 
     logger.info({ count: destroyables.length }, 'Destroying systems');
@@ -1178,21 +1205,6 @@ async function startServer() {
 
   process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
   process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-  // ── Listen ──
-  const PORT = process.env.PORT || 3000;
-  server.listen(PORT, () => {
-    const bootSeconds = ((Date.now() - startTime) / 1000).toFixed(1);
-    logger.info('╔══════════════════════════════════════════════╗');
-    logger.info(`Smart Home Pro v${pkg.version} listening on port ${PORT}`);
-    logger.info({ port: PORT, version: pkg.version, bootSeconds, systemCount, routeCount }, 'Server started');
-    logger.info(`Health:   http://localhost:${PORT}/health`);
-    logger.info(`Ready:    http://localhost:${PORT}/ready`);
-    logger.info(`Stats:    http://localhost:${PORT}/api/v1/stats`);
-    logger.info(`Info:     http://localhost:${PORT}/api/v1/info`);
-    logger.info(`Systems:  http://localhost:${PORT}/health/systems`);
-    logger.info('╚══════════════════════════════════════════════╝');
-  });
 }
 
 // ── Entry point ──
