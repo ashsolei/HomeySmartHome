@@ -42,3 +42,4 @@ playwright-report/
 .github/copilot/agents/
 .github/skills/
 .claude/agents/
+.audit-backend.txt

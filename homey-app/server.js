@@ -1104,6 +1104,7 @@ async function startServer() {
         if (err.statusCode >= 400 && err.statusCode < 500) {
           return res.status(err.statusCode).json({
             error: err.message,
+            ...(err.details ? { details: err.details } : {}),
             timestamp: new Date().toISOString(),
           });
         }

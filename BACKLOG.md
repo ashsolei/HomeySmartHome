@@ -86,6 +86,13 @@
 
 - [x] **SEC-01**: Add input validation to 18 security-critical API endpoints — created validation library (schemas.js, validator.js, sanitize.js) with type/format/range/enum/pattern checks; wired global prototype-pollution middleware; 84 new assertions covering all validators and schemas
 
+### Round 15 — Error Details & Test Expansion (2026-02-28)
+
+- [x] **DX-01**: Add `err.details` to 400 error responses in server.js — validation errors now include structured detail array alongside error message
+- [x] **TST-06a**: ErrorHandlingMiddleware test suite — 40 assertions covering classifyError severity tiers, recordError dedup/history cap/storm detection, retry/fallback/circuit-breaker/gracefulDegrade, wrapAsync/wrapSync re-throw, createHandler, getErrorReport/getErrorsBySystem/getErrorTrends/clearErrors/getSummary, destroyInstance cleanup
+- [x] **TST-06b**: BackupRecoverySystem test suite — 30 assertions covering createBackup/getBackup/deleteBackup, backup integrity verification, export/import round-trip, getLatestBackup recency, detectChanges, statistics, collectSystemData, compression/encryption toggles, destroy cleanup
+- [x] **TST-06c**: AdvancedSecuritySystem test suite — 43 assertions covering calculateDistance, zone arm/disarm, timeline events + evidence linking, visitor scheduling + revocation, audit trail filtering, duress codes, silent alarm, escalation config/cancel, night vision, setSecurityMode, geofence location tracking, getStatistics, getSensorHealthReport, destroy cleanup
+
 ---
 
 ## DEFERRED (Environment-Dependent / Low Priority / High Risk)
