@@ -602,6 +602,11 @@ async function startServer() {
   }));
   server.use(compression());
   server.use(express.json({ limit: '1mb' }));
+
+  // ── Input Sanitization — strip prototype pollution keys from all JSON bodies ──
+  const { sanitizeMiddleware } = require('./lib/validation/sanitize');
+  server.use(sanitizeMiddleware);
+
   const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost,http://localhost:80,http://smarthome-dashboard:3001').split(',').map(s => s.trim());
   server.use(cors({
     origin: (origin, cb) => {

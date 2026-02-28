@@ -78,6 +78,14 @@
 - [x] **INF-60**: Add `--test-force-exit --test-timeout=30000` to dashboard npm test script — 58/59 modules leak 1+ timers after destroy() (systemic); force-exit ensures CI exits cleanly
 - [ ] **COD-29**: Fix timer leaks in 58 dashboard modules — destroy() doesn't clear all setTimeout/setInterval refs; P3 (mitigated by --test-force-exit)
 
+### Round 13 — Backend Test Expansion (2026-02-28)
+
+- [x] **TST-05**: Add backend unit tests for SmartSchedulingSystem, EnergyForecastingEngine, DeviceHealthMonitor — 3 new test files, 106 assertions, all passing
+
+### Round 14 — API Input Validation (2026-02-28)
+
+- [x] **SEC-01**: Add input validation to 18 security-critical API endpoints — created validation library (schemas.js, validator.js, sanitize.js) with type/format/range/enum/pattern checks; wired global prototype-pollution middleware; 84 new assertions covering all validators and schemas
+
 ---
 
 ## DEFERRED (Environment-Dependent / Low Priority / High Risk)

@@ -488,6 +488,10 @@ function sanitizeSettings(input, allowedKeys) {
   return safe;
 }
 
+// ── Input validation ──
+const { validateOrThrow } = require('./lib/validation/validator');
+const SCHEMAS = require('./lib/validation/schemas');
+
 module.exports = {
   async getDashboardData({ homey }) {
     return await homey.app.getDashboardData();
@@ -512,6 +516,7 @@ module.exports = {
   },
 
   async setDeviceState({ homey, params, body }) {
+    validateOrThrow(body, SCHEMAS.setDeviceState);
     const { deviceId } = params;
     const { capability, value } = body;
     
@@ -530,6 +535,7 @@ module.exports = {
   },
 
   async setSecurityMode({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.setSecurityMode);
     const { mode } = body;
     await homey.app.securityManager.setMode(mode);
     return { success: true, mode };
@@ -540,6 +546,7 @@ module.exports = {
   },
 
   async setZoneTemperature({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.setZoneTemperature);
     const { zoneId, temperature } = body;
     await homey.app.climateManager.setZoneTemperature(zoneId, temperature);
     return { success: true, zoneId, temperature };
@@ -550,6 +557,7 @@ module.exports = {
   },
 
   async createScene({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createScene);
     const { id, name, actions } = body;
     homey.app.scenes[id] = { id, name, actions };
     await homey.settings.set('scenes', homey.app.scenes);
@@ -564,6 +572,7 @@ module.exports = {
   },
 
   async createRoutine({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createRoutine);
     const { id, name, trigger, conditions, actions } = body;
     homey.app.routines[id] = { id, name, trigger, conditions, actions };
     await homey.settings.set('routines', homey.app.routines);
@@ -841,6 +850,7 @@ module.exports = {
   // ============================================
 
   async sendNotification({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.sendNotification);
     const result = await homey.app.advancedNotificationManager.send(body);
     return result;
   },
@@ -996,11 +1006,13 @@ module.exports = {
   },
 
   async createUser({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createUser);
     const user = await homey.app.multiUserPreferenceSystem.createUser(body);
     return { success: true, user };
   },
 
   async setActiveUser({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.setActiveUser);
     const user = await homey.app.multiUserPreferenceSystem.setActiveUser(body.userId);
     return { success: true, user };
   },
@@ -1304,6 +1316,7 @@ module.exports = {
   },
 
   async controlPurifier({ homey, params: _params, body }) {
+    validateOrThrow(body, SCHEMAS.controlPurifier);
     await homey.app.airQualityManagementSystem.controlPurifiers(body.mode);
     return { success: true };
   },
@@ -1331,6 +1344,7 @@ module.exports = {
   },
 
   async setAdvancedSecurityMode({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.setSecurityMode);
     await homey.app.advancedSecuritySystem.setSecurityMode(body.mode);
     return { success: true, mode: body.mode };
   },
@@ -1425,6 +1439,7 @@ module.exports = {
   // ============================================
 
   async processVoiceInput({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.processVoiceInput);
     const result = await homey.app.aiVoiceAssistantIntegration.processVoiceInput(body.input, body.userId);
     return result;
   },
@@ -1453,11 +1468,13 @@ module.exports = {
   },
 
   async unlockDoor({ homey, params, body }) {
+    validateOrThrow(body, SCHEMAS.unlockDoor);
     const result = await homey.app.smartLockManagementSystem.unlockDoor(params.lockId, body.accessCode, body.userId);
     return result;
   },
 
   async addAccessCode({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.addAccessCode);
     const code = await homey.app.smartLockManagementSystem.addAccessCode(body.code, body.options);
     return { success: true, code };
   },
@@ -1468,6 +1485,7 @@ module.exports = {
   },
 
   async grantTemporaryAccess({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.grantTemporaryAccess);
     const access = await homey.app.smartLockManagementSystem.grantTemporaryAccess(body.userId, body.durationHours, body.allowedLocks);
     return { success: true, access };
   },
@@ -1594,6 +1612,7 @@ module.exports = {
   },
 
   async controlGarageDoor({ homey, params, body }) {
+    validateOrThrow(body, SCHEMAS.controlGarageDoor);
     if (body.action === 'open') {
       await homey.app.vehicleIntegrationSystem.openGarageDoor(params.doorId);
     } else {
@@ -2822,6 +2841,7 @@ module.exports = {
   },
 
   async triggerEmergency({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.triggerEmergency);
     return await homey.app.homeEmergencyResponseSystem.triggerEmergency(
       body.type,
       body.location,
@@ -3514,6 +3534,7 @@ module.exports = {
 
   // --- API Authentication Gateway ---
   async createAuthToken({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createAuthToken);
     const { userId, role, ttl } = body;
     const result = homey.app.apiAuthenticationGateway.createToken(userId, role || 'USER', ttl);
     return { success: true, token: result };
@@ -3744,6 +3765,7 @@ module.exports = {
   },
 
   async createGuestProfile({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createGuestProfile);
     if (homey.app.visitorGuestManagementSystem.createGuestProfile) {
       return await homey.app.visitorGuestManagementSystem.createGuestProfile(body);
     }
@@ -3765,6 +3787,7 @@ module.exports = {
   },
 
   async generateGuestAccessCode({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.generateGuestAccessCode);
     if (homey.app.visitorGuestManagementSystem.generateTemporaryAccessCode) {
       return await homey.app.visitorGuestManagementSystem.generateTemporaryAccessCode(body);
     }
