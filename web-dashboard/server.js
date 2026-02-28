@@ -112,14 +112,26 @@ app.get('/ready', (req, res) => {
   }
 });
 
+// ── Internal-only guard for operational endpoints ──
+// Allows RFC-1918 / loopback IPs and Docker bridge networks.
+// Nginx restricts at proxy layer; this adds defense-in-depth.
+const INTERNAL_NETS = /^(::ffff:)?(127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)|^::1$/;
+const METRICS_TOKEN = process.env.METRICS_TOKEN || '';
+function internalOnly(req, res, next) {
+  const ip = req.ip || req.connection?.remoteAddress || '';
+  if (INTERNAL_NETS.test(ip)) return next();
+  if (METRICS_TOKEN && req.headers.authorization === `Bearer ${METRICS_TOKEN}`) return next();
+  return res.status(403).json({ error: 'Forbidden — internal access only' });
+}
+
 // Metrics endpoint for Prometheus
-app.get('/metrics', (req, res) => {
+app.get('/metrics', internalOnly, (req, res) => {
   res.setHeader('Content-Type', 'text/plain');
   res.send(performanceMonitor.getPrometheusMetrics());
 });
 
 // Performance stats endpoint
-app.get('/api/stats', (req, res) => {
+app.get('/api/stats', internalOnly, (req, res) => {
   res.json({
     performance: performanceMonitor.getMetrics(),
     security: securityMiddleware.getStats()
@@ -541,7 +553,7 @@ async function bootModules() {
     analytics,
     securityMiddleware,
     performanceMonitor,
-    config: { PORT, HOMEY_URL, HOMEY_TOKEN, ALLOWED_ORIGINS }
+    config: { PORT, HOMEY_URL, ALLOWED_ORIGINS }
   };
 
   const result = await moduleLoader.loadAll(appContext, {

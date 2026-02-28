@@ -2,8 +2,8 @@
 
 const { describe, it, run } = require('./helpers/runner');
 const {
-  assert, assertEqual, assertNotEqual, assertDeepEqual,
-  assertType, assertThrows, assertRejects
+  assert, assertEqual,
+  assertType, assertRejects
 } = require('./helpers/assert');
 const { createMockHomey } = require('./helpers/mockHomey');
 
@@ -20,7 +20,7 @@ function createSystem() {
   return sys;
 }
 
-function createSystemWithDevices() {
+function _createSystemWithDevices() {
   const homey = createMockHomey();
   const devices = [
     {

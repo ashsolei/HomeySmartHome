@@ -2,8 +2,8 @@
 
 const { describe, it, run } = require('./helpers/runner');
 const {
-  assert, assertEqual, assertNotEqual, assertDeepEqual,
-  assertType, assertThrows, assertRejects
+  assert, assertEqual, assertNotEqual,
+  assertType, assertRejects
 } = require('./helpers/assert');
 const { createMockHomey } = require('./helpers/mockHomey');
 
