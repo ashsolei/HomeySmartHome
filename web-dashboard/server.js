@@ -508,19 +508,22 @@ io.on('connection', (socket) => {
   });
 });
 
-// Periodic updates
-const periodicUpdateInterval = setInterval(async () => {
-  try {
-    const data = getDemoData();
-    // Simulate real-time changes
-    data.energy.current = 800 + Math.floor(Math.random() * 100);
-    // Emit on both the canonical `energy:update` and the legacy name
-    io.emit('energy:update', data.energy);
-    io.emit('energy-update', data.energy);
-  } catch (error) {
-    console.error('Update error:', error);
-  }
-}, 5000);
+// Periodic updates — only start when running as a server (not when imported for testing)
+let periodicUpdateInterval = null;
+if (require.main === module) {
+  periodicUpdateInterval = setInterval(async () => {
+    try {
+      const data = getDemoData();
+      // Simulate real-time changes
+      data.energy.current = 800 + Math.floor(Math.random() * 100);
+      // Emit on both the canonical `energy:update` and the legacy name
+      io.emit('energy:update', data.energy);
+      io.emit('energy-update', data.energy);
+    } catch (error) {
+      console.error('Update error:', error);
+    }
+  }, 5000);
+}
 
 // ============================================
 // MODULE LOADER — Boot all 59+ feature modules
@@ -561,7 +564,7 @@ async function bootModules() {
 const gracefulShutdown = (signal) => {
   console.log(`\n${signal} received — shutting down gracefully…`);
 
-  clearInterval(periodicUpdateInterval);
+  if (periodicUpdateInterval) clearInterval(periodicUpdateInterval);
 
   // Destroy all loaded dashboard modules (clear intervals/timeouts)
   moduleLoader.destroyAll();
@@ -590,8 +593,24 @@ const gracefulShutdown = (signal) => {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
+/**
+ * Cleanup function for test teardown — stops intervals and destroys services.
+ * Only needed when tests import server.js directly (e.g. supertest).
+ */
+function _cleanup() {
+  if (periodicUpdateInterval) {
+    clearInterval(periodicUpdateInterval);
+    periodicUpdateInterval = null;
+  }
+  moduleLoader.destroyAll();
+  if (typeof performanceMonitor.destroy === 'function') performanceMonitor.destroy();
+  if (typeof securityMiddleware.destroy === 'function') securityMiddleware.destroy();
+  io.close();
+  httpServer.close();
+}
+
 // Export app for testing (supertest)
-module.exports = { app };
+module.exports = { app, _cleanup };
 
 // Start server only when run directly (not when imported for testing)
 if (require.main === module) {

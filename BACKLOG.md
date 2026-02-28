@@ -72,6 +72,12 @@
 - [x] **COD-23**: Add destroy() methods to 58 dashboard modules with interval/timeout leaks — stores refs in `this._intervals`/`this._timeouts`, clears in `destroy()`
 - [x] **COD-26**: Refactor test-suite.js to use supertest — no running server required; 11/11 tests pass; added `module.exports = { app }` to server.js with `require.main` guard
 
+### Round 12 — Test Infrastructure (2026-02-28)
+
+- [x] **BUG-01**: Fix dashboard test suite hanging — guard `periodicUpdateInterval` behind `require.main === module` in server.js; export `_cleanup()` function; add `after(() => _cleanup())` to http-routes.test.js; add `afterEach(() => loader.destroyAll())` to module-loader.test.js
+- [x] **INF-60**: Add `--test-force-exit --test-timeout=30000` to dashboard npm test script — 58/59 modules leak 1+ timers after destroy() (systemic); force-exit ensures CI exits cleanly
+- [ ] **COD-29**: Fix timer leaks in 58 dashboard modules — destroy() doesn't clear all setTimeout/setInterval refs; P3 (mitigated by --test-force-exit)
+
 ---
 
 ## DEFERRED (Environment-Dependent / Low Priority / High Risk)

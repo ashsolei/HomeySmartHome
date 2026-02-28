@@ -1,9 +1,11 @@
 'use strict';
 
-const { describe, it } = require('node:test');
+const { describe, it, after } = require('node:test');
 const assert = require('node:assert');
 const request = require('supertest');
-const { app } = require('../server');
+const { app, _cleanup } = require('../server');
+
+after(() => _cleanup());
 
 describe('HTTP Route Input Validation', () => {
   describe('POST /api/device/:deviceId/capability/:capability', () => {
