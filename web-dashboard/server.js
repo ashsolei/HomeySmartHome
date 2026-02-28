@@ -7,6 +7,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 
 // Import advanced modules
 const PredictiveAnalytics = require('./predictive-analytics');
@@ -43,10 +44,11 @@ const io = new Server(httpServer, {
   }
 });
 
-// Socket.IO authentication
+// Socket.IO authentication — enforce in all environments except test
 io.use((socket, next) => {
+  if (process.env.NODE_ENV === 'test') return next();
   const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization;
-  if (process.env.NODE_ENV === 'production' && !token) {
+  if (!token) {
     return next(new Error('Authentication required'));
   }
   next();
@@ -88,6 +90,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// ── CSRF protection (skipped in test env) ──
+if (process.env.NODE_ENV !== 'test') {
+  const csrf = securityMiddleware.csrfProtection();
+  app.use(csrf.generateToken);
+  app.use(csrf.validateToken);
+}
+
 // Health check endpoint (for Docker healthcheck and load balancers)
 app.get('/health', (req, res) => {
   const moduleSummary = moduleLoader.getSummary();
@@ -124,6 +133,23 @@ function internalOnly(req, res, next) {
   return res.status(403).json({ error: 'Forbidden — internal access only' });
 }
 
+// ── JWT authentication for dashboard API routes ──
+const JWT_SECRET = process.env.JWT_SECRET || 'default-secret';
+
+function requireAuth(req, res, next) {
+  if (process.env.NODE_ENV === 'test') return next();
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  try {
+    req.user = jwt.verify(header.slice(7), JWT_SECRET);
+    next();
+  } catch (_err) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+}
+
 // Metrics endpoint for Prometheus
 app.get('/metrics', internalOnly, (req, res) => {
   res.setHeader('Content-Type', 'text/plain');
@@ -140,14 +166,19 @@ app.get('/api/stats', internalOnly, (req, res) => {
 
 // Homey API Client
 class HomeyClient {
-  constructor(baseUrl, token) {
+  constructor(baseUrl, token, { timeout = 10000 } = {}) {
     this.baseUrl = baseUrl;
     this.token = token;
+    this.timeout = timeout;
   }
 
   async request(endpoint, method = 'GET', body = null) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeout);
+
     const options = {
       method,
+      signal: controller.signal,
       headers: {
         'Authorization': `Bearer ${this.token}`,
         'Content-Type': 'application/json'
@@ -160,8 +191,10 @@ class HomeyClient {
 
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, options);
+      clearTimeout(timer);
       return await response.json();
     } catch (error) {
+      clearTimeout(timer);
       console.error(`Homey API error: ${error.message}`);
       return { error: error.message };
     }
@@ -235,8 +268,8 @@ const getDemoData = () => ({
   }
 });
 
-// API Routes
-app.get('/api/dashboard', async (req, res) => {
+// API Routes — protected by JWT auth
+app.get('/api/dashboard', requireAuth, async (req, res) => {
   try {
     const [devices, zones] = await Promise.all([
       homeyClient.getDevices(),
@@ -258,7 +291,7 @@ app.get('/api/dashboard', async (req, res) => {
   }
 });
 
-app.get('/api/devices', async (req, res) => {
+app.get('/api/devices', requireAuth, async (req, res) => {
   try {
     const devices = await homeyClient.getDevices();
     if (devices.error) {
@@ -270,7 +303,7 @@ app.get('/api/devices', async (req, res) => {
   }
 });
 
-app.get('/api/zones', async (req, res) => {
+app.get('/api/zones', requireAuth, async (req, res) => {
   try {
     const zones = await homeyClient.getZones();
     if (zones.error) {
@@ -282,7 +315,7 @@ app.get('/api/zones', async (req, res) => {
   }
 });
 
-app.post('/api/device/:deviceId/capability/:capability', async (req, res) => {
+app.post('/api/device/:deviceId/capability/:capability', requireAuth, async (req, res) => {
   const { deviceId, capability } = req.params;
   const { value } = req.body;
 
@@ -298,11 +331,12 @@ app.post('/api/device/:deviceId/capability/:capability', async (req, res) => {
     io.emit('device-updated', { deviceId, capability, value });
     res.json({ success: true, result });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.post('/api/scene/:sceneId', async (req, res) => {
+app.post('/api/scene/:sceneId', requireAuth, async (req, res) => {
   const { sceneId } = req.params;
 
   if (!sceneId || typeof sceneId !== 'string' || sceneId.length > 128) {
@@ -313,16 +347,17 @@ app.post('/api/scene/:sceneId', async (req, res) => {
     io.emit('scene-activated', { sceneId });
     res.json({ success: true, sceneId });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.get('/api/energy', async (req, res) => {
+app.get('/api/energy', requireAuth, async (req, res) => {
   res.json(getDemoData().energy);
 });
 
 // Energy analytics snapshot — returns current demo values with SEK cost estimate
-app.get('/api/energy/analytics', (req, res) => {
+app.get('/api/energy/analytics', requireAuth, (req, res) => {
   const energy = getDemoData().energy;
   const pricePerKwh = 1.5; // SEK/kWh
   const estimatedDailyCostSEK = parseFloat(
@@ -340,11 +375,11 @@ app.get('/api/energy/analytics', (req, res) => {
   });
 });
 
-app.get('/api/security', async (req, res) => {
+app.get('/api/security', requireAuth, async (req, res) => {
   res.json(getDemoData().security);
 });
 
-app.post('/api/security/mode', (req, res) => {
+app.post('/api/security/mode', requireAuth, (req, res) => {
   const { mode } = req.body;
   const validModes = ['home', 'away', 'night', 'vacation', 'disarmed'];
 
@@ -356,7 +391,8 @@ app.post('/api/security/mode', (req, res) => {
     io.emit('security-mode-changed', { mode });
     res.json({ success: true, mode });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -364,47 +400,51 @@ app.post('/api/security/mode', (req, res) => {
 // ADVANCED ANALYTICS ENDPOINTS
 // ============================================
 
-app.get('/api/analytics/energy', async (req, res) => {
+app.get('/api/analytics/energy', requireAuth, async (req, res) => {
   try {
     const data = await getDashboardData();
     const energyAnalysis = await analytics.analyzeEnergyConsumption(data);
     res.json(energyAnalysis);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.get('/api/analytics/climate', async (req, res) => {
+app.get('/api/analytics/climate', requireAuth, async (req, res) => {
   try {
     const data = await getDashboardData();
     const climateAnalysis = await analytics.analyzeClimate(data);
     res.json(climateAnalysis);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.get('/api/analytics/devices', async (req, res) => {
+app.get('/api/analytics/devices', requireAuth, async (req, res) => {
   try {
     const data = await getDashboardData();
     const deviceAnalysis = await analytics.analyzeDeviceUsage(data);
     res.json(deviceAnalysis);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.get('/api/analytics/insights', async (req, res) => {
+app.get('/api/analytics/insights', requireAuth, async (req, res) => {
   try {
     const data = await getDashboardData();
     const insights = await analytics.generateInsights(data);
     res.json(insights);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.get('/api/analytics/predictions', async (req, res) => {
+app.get('/api/analytics/predictions', requireAuth, async (req, res) => {
   try {
     const data = await getDashboardData();
     const predictions = {
@@ -414,11 +454,12 @@ app.get('/api/analytics/predictions', async (req, res) => {
     };
     res.json(predictions);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.get('/api/analytics/recommendations', async (req, res) => {
+app.get('/api/analytics/recommendations', requireAuth, async (req, res) => {
   try {
     const data = await getDashboardData();
     const energyAnalysis = await analytics.analyzeEnergyConsumption(data);
@@ -432,12 +473,13 @@ app.get('/api/analytics/recommendations', async (req, res) => {
     
     res.json(recommendations);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // Advanced dashboard data with analytics
-app.get('/api/dashboard/advanced', async (req, res) => {
+app.get('/api/dashboard/advanced', requireAuth, async (req, res) => {
   try {
     const data = await getDashboardData();
     
@@ -459,7 +501,8 @@ app.get('/api/dashboard/advanced', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

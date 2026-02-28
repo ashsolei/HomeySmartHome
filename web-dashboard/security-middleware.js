@@ -122,7 +122,7 @@ class SecurityMiddleware {
       res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
       
       // Content Security Policy
-      res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'");
+      res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' https://cdn.socket.io https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com");
       
       // Strict Transport Security (HTTPS only)
       if (req.secure) {
