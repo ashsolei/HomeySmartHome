@@ -11,12 +11,14 @@
 ## COMPLETED (Rounds 1-8)
 
 ### Security
+
 - [x] eval() removal, prototype pollution, XSS, CSRF, IP spoofing
 - [x] CSRF crash fix, registerInterval fix, settings key collision
 - [x] Supply chain: pinned CI actions, .dockerignore hardening
 - [x] FEAT-07: Multi-user roles (admin/user/guest) with JWT claims + RBAC
 
 ### Code Quality
+
 - [x] Structured logging (pino), all console.log replaced
 - [x] OpenAPI/Swagger docs at /api/docs
 - [x] BaseSystem consolidation + top-5 module migration (COD-05)
@@ -107,7 +109,7 @@
 
 - [x] **COD-29**: Fix timer leaks in 8 dashboard modules — tracked bare setInterval/setTimeout in _intervals/_timeouts; cleared activeTimers Map in advanced-scheduler destroy(); cleared musicPulseInterval in mood-lighting destroy()
 
-### Round 20 — Security / Monitoring / Infra / Features (2026-03-01)
+### Round 20 — Security / Monitoring / Infra / Features / Quality (2026-03-01)
 
 - [x] **TST-08**: 100% backend module test coverage — 119 test files covering all 115 lib modules (batches A–D via PRs #35–37, #40)
 - [x] **SEC-04**: Enforce Socket.IO auth outside test env — `io.use()` now requires token unless `NODE_ENV === 'test'`
@@ -126,17 +128,19 @@
 - [x] **FEAT-17**: PushNotificationSystem — Web Push (VAPID) with subscribe/unsubscribe/sendNotification; integrates with security+emergency events; API at `/api/v1/push/subscribe`
 - [x] **FEAT-20**: GeofencingAutomationEngine — arrive/depart trigger pipeline with built-in presets (arrive home → disarm+lights+HVAC, leave → arm+eco); configurable rules; API at `/api/v1/geofencing/rules`
 - [x] **FEAT-21**: EnergySpotPriceSystem — Nord Pool spot-price integration with simulated curve fallback; `getCheapestHours()`, `scheduleChargingWindow()`; integrates with EVCharging; API at `/api/v1/energy/spot-price`
+- [x] **COD-30**: AbortController timeout (10 s) on all HomeyClient fetch calls — prevents hung backend from blocking dashboard event loop
+- [x] **COD-33**: Input validation on 10 top POST/PUT API endpoints — createAutomation, createWebhook, createApiConnector, recordUserAction, etc. via existing schema engine
+- [x] **PERF-01**: Lazy percentile calculation in performance-monitor — p95/p99 now computed on read, not sorted on every request write
+- [x] **DX-05**: Husky pre-commit hook with lint-staged — `.husky/pre-commit` + lint-staged config in root `package.json`
 
 ---
 
 ## ACTIVE BACKLOG
 
-### Code Quality — P2/P3
+### Code Quality — P3
 
-- [ ] **COD-30**: Dashboard HomeyClient has no timeout — `fetch()` calls have no `AbortController` timeout; a hung backend blocks the dashboard event loop; P2
 - [ ] **COD-31**: Unbounded array growth — several dashboard modules have arrays with no cap (predictive-analytics-engine, health-wellness-tracker, etc.); P3
 - [ ] **COD-32**: Dashboard modules use `console.log` — 66 modules still use console.log/console.error instead of pino; P3
-- [ ] **COD-33**: 40+ POST/PUT API handlers in api.js lack input validation — createAutomation, createWebhook, createApiConnector, recordUserAction, etc.; P2
 
 ### Monitoring — P3
 
@@ -148,12 +152,10 @@
 - [ ] **PERF-02**: Dashboard `getDemoData()` creates new object on every request — should be a cached singleton refreshed periodically; P3
 - [ ] **PERF-03**: No ETags / Cache-Control on read-heavy endpoints — `/api/dashboard`, `/api/analytics/*`, `/api/energy`; P3
 
-### Developer Experience — P2/P3
+### Developer Experience — P3
 
 - [ ] **DX-02**: No TypeScript/JSDoc type definitions — no `*.d.ts` or `@typedef` for module interfaces; P3
 - [ ] **DX-03**: No development seed/fixture data — no `npm run seed` command; P3
-- [ ] **DX-04**: Backend test-suite.js requires running server — should use supertest like dashboard; P2
-- [ ] **DX-05**: Missing pre-commit hook — `.husky/pre-commit` created locally but not committed; lint-staged config needed in package.json; P2
 
 ### Features — World-class platform
 
@@ -174,3 +176,4 @@
 - [ ] **COD-10**: Organize lib/ into subdirectories by domain — high risk (121 modules, all imports would break); deferred until major version bump
 - [ ] **COD-27**: 59 modules violate SmartXxxSystem/AdvancedXxxSystem naming convention — P3; renaming requires updating app.js, server.js, api.js per module; deferred until major version bump
 - [ ] **COD-28**: 114 files use console.log instead of pino structured logging — P3; massive scope, deferred
+- [ ] **DX-04**: Convert backend test-suite.js to supertest — startServer() boots 93+ modules and does not export the Express app; safe conversion requires major refactor; deferred P2
