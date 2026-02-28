@@ -560,25 +560,25 @@ class SustainabilityCarbonTracker {
 
   startMonitoring() {
     // Daily carbon calculation
-    setInterval(async () => {
+    this._intervals.push(setInterval(async () => {
       this.carbonFootprint.daily = await this.calculateDailyAverage();
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Weekly analysis
-    setInterval(async () => {
+    this._intervals.push(setInterval(async () => {
       const day = new Date().getDay();
       if (day === 1) { // Monday
         await this.generateWeeklyReport();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Monthly goals update
-    setInterval(async () => {
+    this._intervals.push(setInterval(async () => {
       const date = new Date().getDate();
       if (date === 1) {
         await this.updateMonthlyGoals();
       }
-    }, 24 * 60 * 60 * 1000);
+    }, 24 * 60 * 60 * 1000));
 
     // Initial calculation
     this.calculateFootprint('daily');

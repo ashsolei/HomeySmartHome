@@ -818,6 +818,10 @@ class MoodLightingSystem {
   }
 
   destroy() {
+    if (this.musicPulseInterval) {
+      clearInterval(this.musicPulseInterval);
+      this.musicPulseInterval = null;
+    }
     if (this._intervals) {
       this._intervals.forEach(id => clearInterval(id));
       this._intervals = [];

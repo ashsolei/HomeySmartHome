@@ -377,6 +377,8 @@ class SmartDoorbellFacialRecognition {
         clearInterval(checkInterval);
       }
     }, 5 * 60 * 1000);
+
+    this._intervals.push(checkInterval);
   }
 
   // ============================================

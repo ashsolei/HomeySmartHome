@@ -712,6 +712,13 @@ class AdvancedScheduler {
   }
 
   destroy() {
+    // Clear scheduled execution timers
+    if (this.activeTimers) {
+      for (const timer of this.activeTimers.values()) {
+        clearTimeout(timer);
+      }
+      this.activeTimers.clear();
+    }
     if (this._intervals) {
       this._intervals.forEach(id => clearInterval(id));
       this._intervals = [];

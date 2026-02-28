@@ -603,10 +603,10 @@ class IndoorClimateOptimizer {
     const startTime = minutesFromNow - timeNeeded;
 
     if (startTime > 0) {
-      setTimeout(async () => {
+      this._timeouts.push(setTimeout(async () => {
         console.log(`🌡️ Starting pre-conditioning for ${room.name}`);
         await this.setRoomTarget(roomId, room.targetTemp);
-      }, startTime * 60 * 1000);
+      }, startTime * 60 * 1000));
     } else {
       // Start now
       await this.setRoomTarget(roomId, room.targetTemp);
