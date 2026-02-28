@@ -638,6 +638,31 @@ async function startServer() {
   });
   server.use('/api/v1/stats', strictLimiter);
 
+  // Rate-limit /metrics so Prometheus-style scraping is fine but abuse is blocked.
+  const metricsLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: 'Rate limit exceeded',
+  });
+  server.use('/metrics', metricsLimiter);
+
+  // ── Internal-only guard for operational endpoints ──
+  // Allows private RFC-1918 / loopback IPs and Docker bridge networks.
+  // Nginx already enforces this at the proxy layer; this adds defense-in-depth.
+  const INTERNAL_NETS = /^(::ffff:)?(127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)|^::1$/;
+  const METRICS_TOKEN = process.env.METRICS_TOKEN || '';
+  function internalOnly(req, res, next) {
+    const ip = req.ip || req.connection?.remoteAddress || '';
+    if (INTERNAL_NETS.test(ip)) return next();
+    // Allow bearer token override for external monitoring tools
+    if (METRICS_TOKEN && req.headers.authorization === `Bearer ${METRICS_TOKEN}`) return next();
+    return res.status(403).json({ error: 'Forbidden — internal access only' });
+  }
+  server.use('/metrics', internalOnly);
+  server.use('/api/v1/stats', internalOnly);
+
   // ── CSRF Protection (double-submit HMAC pattern, no external dependencies) ──
   //
   // How it works:

@@ -93,6 +93,15 @@
 - [x] **TST-06b**: BackupRecoverySystem test suite — 30 assertions covering createBackup/getBackup/deleteBackup, backup integrity verification, export/import round-trip, getLatestBackup recency, detectChanges, statistics, collectSystemData, compression/encryption toggles, destroy cleanup
 - [x] **TST-06c**: AdvancedSecuritySystem test suite — 43 assertions covering calculateDistance, zone arm/disarm, timeline events + evidence linking, visitor scheduling + revocation, audit trail filtering, duress codes, silent alarm, escalation config/cancel, night vision, setSecurityMode, geofence location tracking, getStatistics, getSensorHealthReport, destroy cleanup
 
+### Round 16 — Security Hardening & Test Expansion (2025-07-13)
+
+- [x] **SEC-02**: Restrict `/metrics` and `/api/v1/stats` (backend) + `/metrics` and `/api/stats` (dashboard) — added `metricsLimiter` (30 req/min) and `internalOnly` middleware (private IP check + optional METRICS_TOKEN bearer auth)
+- [x] **SEC-03**: Remove HOMEY_TOKEN from dashboard `appContext.config` broadcast — prevents token leaking to all Socket.IO clients
+- [x] **CI-01**: Tighten npm audit from `--audit-level=high` to `--audit-level=moderate` in CI/CD pipeline
+- [x] **TST-07a**: SmartLockManagementSystem test suite — 77 assertions covering lock CRUD, auto-lock timer, access code management, lock/unlock operations, battery monitoring, guest code lifecycle, lockout policy, failed access logging, access log retrieval
+- [x] **TST-07b**: HomeEmergencyResponseSystem test suite — 128 assertions covering constructor (17), initialize (4), sensor events (5), correlation engine (5), emergency trigger (8), resolveEmergency (9), wellbeing checks (3), panic button (3), lockdown (6), drills (6), evacuation routes (5), safe room (4), power backup (9), damage assessment (3), contacts (5), equipment (5), lighting (2+3), sensors (3), active emergencies (2), incident history (3), drill schedule (1), weather (1), statistics (7), alert formatting (3), recovery (2), generator (2), destroy (2)
+- [x] **LINT-01**: Clean all ESLint warnings across 6 test files — removed unused imports and variables; 0 errors, 0 warnings with `--max-warnings 0`
+
 ---
 
 ## DEFERRED (Environment-Dependent / Low Priority / High Risk)

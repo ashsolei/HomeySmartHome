@@ -7,7 +7,7 @@
  */
 
 const { describe, it, run } = require('./helpers/runner');
-const { assert, assertEqual, assertDeepEqual, assertThrows } = require('./helpers/assert');
+const { assert, assertEqual } = require('./helpers/assert');
 
 const { validate, validateOrThrow } = require('../lib/validation/validator');
 const { deepSanitize, sanitizeMiddleware } = require('../lib/validation/sanitize');
