@@ -2,7 +2,7 @@
   "name": "smarthomepro",
   "version": "3.3.0",
   "private": true,
-  "description": "Smart Home Pro — Full-stack smart home platform with 118 backend systems, 66 dashboard modules, AI-driven automation",
+  "description": "Smart Home Pro \u2014 Full-stack smart home platform with 118 backend systems, 66 dashboard modules, AI-driven automation",
   "scripts": {
     "deploy": "./deploy.sh start",
     "deploy:stop": "./deploy.sh stop",
@@ -24,7 +24,8 @@
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
     "docker:ps": "docker compose ps",
-    "create-module": "node tools/create-module.js"
+    "create-module": "node tools/create-module.js",
+    "prepare": "husky"
   },
   "engines": {
     "node": ">=22.0.0",
@@ -36,6 +37,16 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@playwright/test": "^1.58.2"
+    "@playwright/test": "^1.58.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3"
+  },
+  "lint-staged": {
+    "homey-app/**/*.js": [
+      "eslint --fix"
+    ],
+    "web-dashboard/**/*.js": [
+      "eslint --fix"
+    ]
   }
 }

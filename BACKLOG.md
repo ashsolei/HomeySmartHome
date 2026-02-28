@@ -1,9 +1,9 @@
 # BACKLOG - HomeySmartHome
 
-> Audit Round 19 — 2026-02-28
+> Last updated: Round 20 — 2026-03-01
 > Rounds 1-8: All actionable items DONE and merged (PRs #2-#8)
-> Rounds 9-18: Automated discovery cycles — lint, module hardening, destroy(), supertest, validation, test expansion
-> Round 19: Comprehensive audit — COD-29 fix, security/performance/infra/feature backlog refresh
+> Rounds 9-19: Automated discovery cycles — lint, module hardening, destroy(), supertest, validation, test expansion, comprehensive audit
+> Round 20: Security hardening, monitoring fixes, K8s hardening, 3 new world-class features, 119 test files (100% module coverage)
 > Status: [ ] = TODO, [x] = DONE
 
 ---
@@ -107,65 +107,63 @@
 
 - [x] **COD-29**: Fix timer leaks in 8 dashboard modules — tracked bare setInterval/setTimeout in _intervals/_timeouts; cleared activeTimers Map in advanced-scheduler destroy(); cleared musicPulseInterval in mood-lighting destroy()
 
+### Round 20 — Security / Monitoring / Infra / Features (2026-03-01)
+
+- [x] **TST-08**: 100% backend module test coverage — 119 test files covering all 115 lib modules (batches A–D via PRs #35–37, #40)
+- [x] **SEC-04**: Enforce Socket.IO auth outside test env — `io.use()` now requires token unless `NODE_ENV === 'test'`
+- [x] **SEC-05**: JWT auth middleware on all dashboard API routes — `requireAuth` middleware added; `/health`, `/ready`, `/metrics`, `/api/docs` exempt
+- [x] **SEC-06**: CSRF protection wired — double-submit cookie validation on POST/PUT/DELETE dashboard routes
+- [x] **SEC-07**: Scrub error.message from 500 responses — replaced with generic `'Internal server error'` in both services; full error logged server-side
+- [x] **SEC-08**: Redis-backed rate limiter — uses `rate-limit-redis` when `REDIS_URL` is set; falls back to in-memory with warning
+- [x] **SEC-09**: Remove `unsafe-inline` from CSP script-src — nonce-based approach for any remaining inline scripts
+- [x] **INF-61**: PodDisruptionBudget — already present in k8s/deployment.yaml (verified); updated to cover both backend and dashboard explicitly
+- [x] **INF-62**: Fix ingress rewrite-target — updated to `/$1` with `use-regex: "true"` preserving nested API route paths
+- [x] **INF-63**: ResourceQuota — already present (verified); confirmed limits on CPU/memory/pods for smarthome-pro namespace
+- [x] **INF-64**: Dashboard PVC ReadWriteMany — changed from RWO to RWX with CSI driver note
+- [x] **MON-01**: Fix Prometheus alert rules — updated to use actual metric names (`smarthome_requests_errors`, `smarthome_response_time_avg`)
+- [x] **MON-02**: Grafana dashboard for web-dashboard service — added `monitoring/grafana/dashboards/web-dashboard.json`
+- [x] **MON-03**: SLO/SLI definitions — added `monitoring/slo.yml` with 99.5% availability, p95<500ms, <1% error budget + burn-rate alert rules
+- [x] **FEAT-17**: PushNotificationSystem — Web Push (VAPID) with subscribe/unsubscribe/sendNotification; integrates with security+emergency events; API at `/api/v1/push/subscribe`
+- [x] **FEAT-20**: GeofencingAutomationEngine — arrive/depart trigger pipeline with built-in presets (arrive home → disarm+lights+HVAC, leave → arm+eco); configurable rules; API at `/api/v1/geofencing/rules`
+- [x] **FEAT-21**: EnergySpotPriceSystem — Nord Pool spot-price integration with simulated curve fallback; `getCheapestHours()`, `scheduleChargingWindow()`; integrates with EVCharging; API at `/api/v1/energy/spot-price`
+
 ---
 
 ## ACTIVE BACKLOG
 
-### Security — P1
+### Code Quality — P2/P3
 
-- [ ] **SEC-04**: Socket.IO auth bypass in non-production — `io.use()` middleware in dashboard server.js only requires token when `NODE_ENV === 'production'`; any non-production deployment (staging, dev) has no Socket.IO auth; P1
-- [ ] **SEC-05**: Dashboard API routes lack authentication — `/api/dashboard`, `/api/devices`, `/api/zones`, `/api/energy`, `/api/security`, `/api/analytics/*` all respond without JWT/session check; only Socket.IO has a (weak) auth gate; P1
-- [ ] **SEC-06**: CSRF protection not wired on dashboard — `SecurityMiddleware.csrfProtection()` exists but `csrfProtection().validateToken` is never used as middleware in server.js; POST endpoints accept requests without CSRF tokens; P1
-- [ ] **SEC-07**: `error.message` leaks to client in 500 responses — multiple endpoints return `res.status(500).json({ error: error.message })`, which can expose internal stack traces, file paths, or SQL errors; P2
-- [ ] **SEC-08**: Rate limiter uses in-memory Map — no shared state across replicas in K8s (2+ pods); attackers can bypass by hitting different pods; needs Redis-backed store for production; P2
-- [ ] **SEC-09**: Content-Security-Policy allows 'unsafe-inline' for scripts — CSP in security-middleware.js includes `'unsafe-inline'` for scripts which weakens XSS protection; should use nonces or hashes; P2
+- [ ] **COD-30**: Dashboard HomeyClient has no timeout — `fetch()` calls have no `AbortController` timeout; a hung backend blocks the dashboard event loop; P2
+- [ ] **COD-31**: Unbounded array growth — several dashboard modules have arrays with no cap (predictive-analytics-engine, health-wellness-tracker, etc.); P3
+- [ ] **COD-32**: Dashboard modules use `console.log` — 66 modules still use console.log/console.error instead of pino; P3
+- [ ] **COD-33**: 40+ POST/PUT API handlers in api.js lack input validation — createAutomation, createWebhook, createApiConnector, recordUserAction, etc.; P2
 
-### Code Quality — P2
+### Monitoring — P3
 
-- [ ] **COD-30**: Dashboard HomeyClient has no timeout — `fetch()` calls in server.js HomeyClient have no `AbortController` timeout; a slow/hung backend blocks the dashboard event loop indefinitely; P2
-- [ ] **COD-31**: Unbounded array growth in anomaly-detection — `this.anomalies` array is trimmed at 1000 entries but several dashboard modules (predictive-analytics-engine, health-wellness-tracker, etc.) have similar unbounded arrays with no cap; P3
-- [ ] **COD-32**: Dashboard modules use `console.log` instead of structured logger — 66 modules still use console.log/console.error; should share the same pino logger instance; P3 (related to COD-28)
-- [ ] **COD-33**: 40+ API handlers in api.js lack input validation — only 19 endpoints use `validateOrThrow`; remaining POST/PUT handlers (createAutomation, createWebhook, createApiConnector, recordUserAction, etc.) accept arbitrary body without validation; P2
+- [ ] **MON-04**: Missing system-level metrics — no node_exporter or cAdvisor; disk/network/CPU host metrics not collected; P3
 
-### Infrastructure — P2
+### Performance — P2/P3
 
-- [ ] **INF-61**: No PodDisruptionBudget for dashboard deployment — backend has implicit protection via HPA minReplicas=2 but no explicit PDB; dashboard also lacks PDB; rolling updates could cause brief downtime; P2
-- [ ] **INF-62**: Ingress rewrite-target strips path context — `nginx.ingress.kubernetes.io/rewrite-target: /` will rewrite all paths to `/`, breaking nested API routes; needs path-based routing without blanket rewrite; P2
-- [ ] **INF-63**: No resource quotas on namespace — `smarthome-pro` namespace has no ResourceQuota limiting total CPU/memory; a runaway pod can starve others; P3
-- [ ] **INF-64**: Dashboard deployment shares PVC with ReadWriteOnce — `dashboard-data` PVC is RWO but dashboard has 2+ replicas; only one pod can mount RWO at a time on most storage backends; needs RWX or per-pod storage; P2
+- [ ] **PERF-01**: `updatePerformanceStats()` sorts all response times on every request — O(n log n) on every write; should compute percentiles lazily on read; P2
+- [ ] **PERF-02**: Dashboard `getDemoData()` creates new object on every request — should be a cached singleton refreshed periodically; P3
+- [ ] **PERF-03**: No ETags / Cache-Control on read-heavy endpoints — `/api/dashboard`, `/api/analytics/*`, `/api/energy`; P3
 
-### Monitoring — P2
+### Developer Experience — P2/P3
 
-- [ ] **MON-01**: Prometheus alert rules reference metrics the app does not expose — alerts reference `http_requests_total{status=~"5.."}` and `http_request_duration_seconds_bucket` but the app exposes `smarthome_requests_errors` and `smarthome_response_time_avg`; alerts will never fire; P1
-- [ ] **MON-02**: No Grafana dashboard for dashboard service — only `smarthome-dashboard.json` exists, likely for backend only; dashboard service metrics are scraped but not visualized; P2
-- [ ] **MON-03**: No SLO/SLI definitions — no error budget, latency SLOs, or availability targets defined; essential for production reliability engineering; P2
-- [ ] **MON-04**: Missing disk and network I/O metrics — Prometheus only scrapes custom app metrics; no node_exporter or cAdvisor for system-level metrics; P3
-
-### Performance — P2
-
-- [ ] **PERF-01**: `updatePerformanceStats()` sorts all response times on every request — `[...this.metrics.performance.responseTimes].sort()` runs O(n log n) on up to 1000 items per request; should use a streaming percentile algorithm (t-digest or reservoir sampling); P2
-- [ ] **PERF-02**: Dashboard getDemoData() creates a new object on every call — called on every `/api/dashboard`, `/api/devices`, `/api/zones` request; should be a cached singleton refreshed periodically; P3
-- [ ] **PERF-03**: No response caching on read-heavy endpoints — `/api/dashboard`, `/api/analytics/*`, `/api/energy` return dynamic data but could benefit from short-TTL ETags or Cache-Control headers for near-real-time use; P3
-
-### Developer Experience — P2
-
-- [ ] **DX-02**: No TypeScript type definitions — no `*.d.ts` files or JSDoc `@typedef` for module interfaces; autocomplete and refactoring safety is limited; P3
-- [ ] **DX-03**: No development seed/fixture data — tests create their own fixtures but there is no `npm run seed` command to populate a dev instance with realistic data; P3
-- [ ] **DX-04**: Backend test-suite.js requires running server — integration tests use raw HTTP and need `npm run start:dev` running; should be converted to supertest like the dashboard; P2
-- [ ] **DX-05**: Missing pre-commit hook — no husky/lint-staged config; developers can commit unlinted code; P2
+- [ ] **DX-02**: No TypeScript/JSDoc type definitions — no `*.d.ts` or `@typedef` for module interfaces; P3
+- [ ] **DX-03**: No development seed/fixture data — no `npm run seed` command; P3
+- [ ] **DX-04**: Backend test-suite.js requires running server — should use supertest like dashboard; P2
+- [ ] **DX-05**: Missing pre-commit hook — `.husky/pre-commit` created locally but not committed; lint-staged config needed in package.json; P2
 
 ### Features — World-class platform
 
-- [ ] **FEAT-16**: GraphQL API layer — add Apollo Server or Mercurius alongside REST; enables mobile apps and third-party integrations to query exactly the data they need; reduces over-fetching for 120+ endpoint surface; P2
-- [ ] **FEAT-17**: Real-time push notifications — WebSocket events exist but no push notification channel (FCM, APNs, Web Push); critical for security alerts, emergency responses, energy anomalies when user is away; P1
-- [ ] **FEAT-18**: User activity timeline — unified event feed showing device changes, automations triggered, security events, energy anomalies; currently scattered across module-specific arrays; P2
-- [ ] **FEAT-19**: Cross-device scene builder UI — backend has scene learning + templates but dashboard lacks a visual scene editor with drag-and-drop device/condition/action builder; P2
-- [ ] **FEAT-20**: Geofencing trigger automation — GeofencingEngine exists but no automated trigger pipeline (arrive home → disarm + lights on + HVAC boost); needs event-driven rule engine integration; P2
-- [ ] **FEAT-21**: Energy spot-price integration — Swedish energy market (Nord Pool) spot prices would enable automated cost optimization (charge EV at cheapest hours, pre-heat before price spikes); P2
-- [ ] **FEAT-22**: AI recommendation engine — modules generate isolated recommendations; need a unified ML-based recommendation service that cross-references energy, climate, presence, and device usage patterns; P3
-- [ ] **FEAT-23**: Mobile-first API design — add pagination, sparse fieldsets, and HATEOAS links to REST responses; current API returns full objects always; P3
-- [ ] **FEAT-24**: Multi-home support — current architecture assumes single home; need tenant isolation for users managing vacation homes or family member homes; P3
-- [ ] **FEAT-25**: Device firmware OTA management — no firmware update tracking or push capability for Zigbee/Z-Wave/WiFi devices; P3
+- [ ] **FEAT-16**: GraphQL API layer — Apollo Server or Mercurius alongside REST; enables precise queries over 120+ endpoint surface; P2
+- [ ] **FEAT-18**: User activity timeline — unified event feed (device changes, automations, security events, energy anomalies); currently scattered; P2
+- [ ] **FEAT-19**: Cross-device scene builder UI — visual drag-and-drop editor in dashboard; backend scene-learning already exists; P2
+- [ ] **FEAT-22**: AI recommendation engine — unified ML service cross-referencing energy, climate, presence, device patterns; P3
+- [ ] **FEAT-23**: Mobile-first API — pagination, sparse fieldsets, HATEOAS links on REST responses; P3
+- [ ] **FEAT-24**: Multi-home support — tenant isolation for vacation homes / family members; P3
+- [ ] **FEAT-25**: Device firmware OTA — update tracking and push for Zigbee/Z-Wave/WiFi devices; P3
 
 ---
 
