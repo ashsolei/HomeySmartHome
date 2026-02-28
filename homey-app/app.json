@@ -3897,6 +3897,62 @@
     "getWebhookEvents": {
       "method": "GET",
       "path": "/webhook/events"
+    },
+    "subscribePush": {
+      "method": "POST",
+      "path": "/push/subscribe"
+    },
+    "unsubscribePush": {
+      "method": "DELETE",
+      "path": "/push/unsubscribe"
+    },
+    "getPushSubscriptions": {
+      "method": "GET",
+      "path": "/push/subscriptions"
+    },
+    "getPushStatistics": {
+      "method": "GET",
+      "path": "/push/statistics"
+    },
+    "getGeofencingRules": {
+      "method": "GET",
+      "path": "/geofencing/rules"
+    },
+    "createGeofencingRule": {
+      "method": "POST",
+      "path": "/geofencing/rules"
+    },
+    "deleteGeofencingRule": {
+      "method": "DELETE",
+      "path": "/geofencing/rules/:ruleId"
+    },
+    "getGeofencingHistory": {
+      "method": "GET",
+      "path": "/geofencing/history"
+    },
+    "getGeofencingAutomationStatistics": {
+      "method": "GET",
+      "path": "/geofencing/automation/statistics"
+    },
+    "getSpotPrice": {
+      "method": "GET",
+      "path": "/energy/spot-price"
+    },
+    "getSpotPriceAll": {
+      "method": "GET",
+      "path": "/energy/spot-price/all"
+    },
+    "getSpotPriceSchedule": {
+      "method": "GET",
+      "path": "/energy/spot-price/schedule"
+    },
+    "getSpotPriceCheapest": {
+      "method": "GET",
+      "path": "/energy/spot-price/cheapest"
+    },
+    "getSpotPriceStatistics": {
+      "method": "GET",
+      "path": "/energy/spot-price/statistics"
     }
   }
 }

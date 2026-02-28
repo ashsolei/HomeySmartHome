@@ -597,6 +597,7 @@ module.exports = {
   // ============================================
 
   async createAdvancedAutomation({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createAdvancedAutomation);
     const automation = await homey.app.automationEngine.createAutomation(body);
     return { success: true, automation };
   },
@@ -617,6 +618,7 @@ module.exports = {
   },
 
   async toggleAdvancedAutomation({ homey, params, body }) {
+    validateOrThrow(body, SCHEMAS.toggleAutomation);
     const { automationId } = params;
     const automation = homey.app.automationEngine.automations.get(automationId);
     if (automation) {
@@ -655,6 +657,7 @@ module.exports = {
   },
 
   async createDashboard({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createDashboard);
     const dashboard = await homey.app.intelligentDashboard.createDashboard(body);
     return { success: true, dashboard };
   },
@@ -697,6 +700,7 @@ module.exports = {
   },
 
   async recordUserAction({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.recordUserAction);
     await homey.app.intelligenceManager.recordUserAction(body.action);
     return { success: true };
   },
@@ -867,6 +871,7 @@ module.exports = {
   },
 
   async createNotificationRule({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createNotificationRule);
     const rule = await homey.app.advancedNotificationManager.createRule(body);
     return { success: true, rule };
   },
@@ -948,6 +953,7 @@ module.exports = {
   },
 
   async createScheduledTask({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createScheduledTask);
     const task = await homey.app.smartSchedulingSystem.createTask(body);
     return { success: true, task };
   },
@@ -972,6 +978,7 @@ module.exports = {
   },
 
   async createWebhook({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createWebhook);
     const webhook = await homey.app.integrationHub.createWebhook(body);
     return { success: true, webhook };
   },
@@ -982,11 +989,13 @@ module.exports = {
   },
 
   async createApiConnector({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createApiConnector);
     const connector = await homey.app.integrationHub.createApiConnector(body);
     return { success: true, connector };
   },
 
   async createAutomation({ homey, body }) {
+    validateOrThrow(body, SCHEMAS.createIntegrationAutomation);
     const automation = await homey.app.integrationHub.createAutomation(body);
     return { success: true, automation };
   },
@@ -1037,6 +1046,12 @@ module.exports = {
   // ============================================
 
   async createBackup({ homey, body }) {
+    if (body.type !== undefined) {
+      validateOrThrow({ type: body.type }, {
+        type: 'object',
+        properties: { type: { type: 'string', enum: ['full', 'partial', 'config'], message: 'Backup type must be: full, partial, or config' } }
+      });
+    }
     const backup = await homey.app.backupRecoverySystem.createBackup(body.type || 'full');
     return { success: true, backup };
   },
@@ -4639,5 +4654,75 @@ module.exports = {
         body: { event: '<event_name>', data: { /* event-specific fields */ } }
       }
     };
+  },
+
+  // ============================================
+  // PUSH NOTIFICATION API (FEAT-17)
+  // ============================================
+
+  async subscribePush({ homey, body }) {
+    return homey.app.pushNotificationSystem.subscribe(body.subscription, body.userId);
+  },
+
+  async unsubscribePush({ homey, body }) {
+    return homey.app.pushNotificationSystem.unsubscribe(body.endpoint);
+  },
+
+  async getPushSubscriptions({ homey }) {
+    return homey.app.pushNotificationSystem.getSubscriptions();
+  },
+
+  async getPushStatistics({ homey }) {
+    return homey.app.pushNotificationSystem.getStatistics();
+  },
+
+  // ============================================
+  // GEOFENCING AUTOMATION API (FEAT-20)
+  // ============================================
+
+  async getGeofencingRules({ homey }) {
+    return homey.app.geofencingAutomationEngine.listRules();
+  },
+
+  async createGeofencingRule({ homey, body }) {
+    return homey.app.geofencingAutomationEngine.addRule(body);
+  },
+
+  async deleteGeofencingRule({ homey, params }) {
+    return homey.app.geofencingAutomationEngine.removeRule(params.ruleId);
+  },
+
+  async getGeofencingHistory({ homey }) {
+    return homey.app.geofencingAutomationEngine.getExecutionHistory();
+  },
+
+  async getGeofencingAutomationStatistics({ homey }) {
+    return homey.app.geofencingAutomationEngine.getStatistics();
+  },
+
+  // ============================================
+  // ENERGY SPOT PRICE API (FEAT-21)
+  // ============================================
+
+  async getSpotPrice({ homey }) {
+    return homey.app.energySpotPriceSystem.getCurrentPrice();
+  },
+
+  async getSpotPriceAll({ homey }) {
+    return homey.app.energySpotPriceSystem.getAllPrices();
+  },
+
+  async getSpotPriceSchedule({ homey, query }) {
+    const duration = parseInt(query?.duration || '4', 10);
+    return homey.app.energySpotPriceSystem.scheduleChargingWindow(duration);
+  },
+
+  async getSpotPriceCheapest({ homey, query }) {
+    const count = parseInt(query?.count || '5', 10);
+    return homey.app.energySpotPriceSystem.getCheapestHours(count);
+  },
+
+  async getSpotPriceStatistics({ homey }) {
+    return homey.app.energySpotPriceSystem.getStatistics();
   }
 };
