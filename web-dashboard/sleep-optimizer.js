@@ -387,10 +387,10 @@ class SleepOptimizer {
     // Execute routine steps
     for (const step of routine.steps) {
       const delay = (step.time + routine.duration) * 60 * 1000; // Convert to ms
-      
-      setTimeout(async () => {
+
+      this._timeouts.push(setTimeout(async () => {
         await this.executeWakeupStep(step);
-      }, delay);
+      }, delay));
     }
   }
 

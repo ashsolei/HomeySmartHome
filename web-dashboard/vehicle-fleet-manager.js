@@ -290,7 +290,7 @@ class VehicleFleetManager {
 
   async simulateCharging(session) {
     const vehicle = this.vehicles.get(session.vehicleId);
-    
+
     const interval = setInterval(() => {
       if (session.status !== 'charging') {
         clearInterval(interval);
@@ -299,7 +299,7 @@ class VehicleFleetManager {
 
       // Calculate charge added per minute
       const chargePerMinute = (session.power / 60) / vehicle.batteryCapacity * 100;
-      
+
       vehicle.currentSoC = Math.min(session.targetSoC, vehicle.currentSoC + chargePerMinute);
 
       // Check if target reached
@@ -308,6 +308,8 @@ class VehicleFleetManager {
         clearInterval(interval);
       }
     }, 60000); // Update every minute
+
+    this._intervals.push(interval);
   }
 
   async stopCharging(sessionId) {

@@ -759,10 +759,10 @@ class HomeSecuritySystem {
       const randomSensor = motionSensors[Math.floor(Math.random() * motionSensors.length)];
       
       await this.updateSensorState(randomSensor.id, 'detected');
-      
-      setTimeout(async () => {
+
+      this._timeouts.push(setTimeout(async () => {
         await this.updateSensorState(randomSensor.id, 'clear');
-      }, 30000);
+      }, 30000));
     }
   }
 
@@ -808,12 +808,14 @@ class HomeSecuritySystem {
 
       // Random light actions, etc
       const hour = new Date().getHours();
-      
+
       if (hour >= 18 && hour <= 23) {
         // Evening activities
         console.log('  💡 Simulating evening presence');
       }
     }, 30 * 60 * 1000); // Every 30 minutes
+
+    this._intervals.push(interval);
   }
 
   // ============================================
