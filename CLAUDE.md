@@ -65,6 +65,7 @@ Register new modules in `app.js`, `server.js`, and `api.js`.
 | `TZ` | `Europe/Stockholm` | Stockholm locale |
 | `LOG_LEVEL` | `info` | |
 | `ENABLE_RATE_LIMITING` | `true` | 100 req/min default |
+| `REDIS_URL` | — | Redis connection URL for rate limiter store (e.g. `redis://redis:6379`); falls back to in-memory if unset |
 
 ## Conventions
 

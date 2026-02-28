@@ -18,6 +18,9 @@ data:
   ENABLE_RATE_LIMITING: "true"
   MAX_REQUESTS_PER_MINUTE: "100"
   ENABLE_METRICS: "true"
+  # Set REDIS_URL to enable Redis-backed rate limiting across replicas.
+  # Example: "redis://redis:6379"  (omit or leave empty to use in-memory store)
+  # REDIS_URL: ""
 ---
 # SealedSecret — managed by bitnami/sealed-secrets controller.
 # To update secrets, run:
@@ -345,9 +348,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: dashboard-data
   namespace: smarthome-pro
+  # NOTE: ReadWriteMany requires a CSI driver that supports RWX
+  # (e.g. AWS EFS, NFS, CephFS). Verify your storage class supports this mode.
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 1Gi
@@ -358,7 +363,8 @@ metadata:
   name: smarthome-ingress
   namespace: smarthome-pro
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
@@ -370,15 +376,15 @@ spec:
   - host: smarthome.yourdomain.com
     http:
       paths:
-      - path: /api
-        pathType: Prefix
+      - path: /(api/.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: smarthomepro
             port:
               number: 3000
-      - path: /
-        pathType: Prefix
+      - path: /(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: dashboard

@@ -27,7 +27,9 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
     "homey": "file:./lib/standalone/homey-shim-pkg",
+    "ioredis": "^5.10.0",
     "pino": "^10.3.1",
+    "rate-limit-redis": "^4.3.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
