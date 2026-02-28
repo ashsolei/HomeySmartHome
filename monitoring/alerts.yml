@@ -29,19 +29,78 @@ groups:
           description: "{{ $labels.instance }} has been down for more than 1 minute"
 
       - alert: HighErrorRate
-        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        expr: smarthome_requests_errors / smarthome_requests_total > 0.1
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "High error rate detected"
-          description: "More than 10% of requests are failing"
+          summary: "High error rate detected on {{ $labels.job }}"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold 10%)"
 
       - alert: HighResponseLatency
-        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        expr: smarthome_response_time_p95 > 2000
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "High response latency"
-          description: "95th percentile latency exceeds 2 seconds"
+          summary: "High p95 response latency on {{ $labels.job }}"
+          description: "95th percentile latency is {{ $value }}ms (threshold 2000ms)"
+
+  # ── SLO Burn-Rate Alerts ──────────────────────────────────────
+  # See monitoring/slo.yml for SLO definitions.
+  - name: smarthome_slo_alerts
+    rules:
+      # Error-rate SLO: target < 1% errors (budget = 1%).
+      # 5x burn rate = 5% error rate -> budget gone in ~6 days.
+      - alert: SLOErrorBudgetWarning
+        expr: smarthome_requests_errors / smarthome_requests_total > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          slo: error_rate
+        annotations:
+          summary: "Error budget burning fast on {{ $labels.job }}"
+          description: "Error rate is {{ $value | humanizePercentage }} (>5x the 1% budget) for 5 minutes"
+
+      # 10x burn rate = 10% error rate -> budget gone in ~3 days.
+      - alert: SLOErrorBudgetCritical
+        expr: smarthome_requests_errors / smarthome_requests_total > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          slo: error_rate
+        annotations:
+          summary: "Error budget critically burning on {{ $labels.job }}"
+          description: "Error rate is {{ $value | humanizePercentage }} (>10x the 1% budget) for 5 minutes"
+
+      # Latency SLO: p95 < 500 ms.
+      - alert: SLOLatencyWarning
+        expr: smarthome_response_time_p95 > 500
+        for: 5m
+        labels:
+          severity: warning
+          slo: api_latency_p95
+        annotations:
+          summary: "Latency SLO breached on {{ $labels.job }}"
+          description: "p95 response time is {{ $value }}ms (SLO threshold 500ms)"
+
+      - alert: SLOLatencyCritical
+        expr: smarthome_response_time_p95 > 1000
+        for: 5m
+        labels:
+          severity: critical
+          slo: api_latency_p95
+        annotations:
+          summary: "Latency SLO critically breached on {{ $labels.job }}"
+          description: "p95 response time is {{ $value }}ms (>2x SLO threshold of 500ms)"
+
+      # Availability SLO: 99.5% uptime.
+      - alert: SLOAvailabilityBreach
+        expr: up{job=~"smarthomepro|dashboard"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          slo: availability
+        annotations:
+          summary: "Availability SLO at risk — {{ $labels.job }} is down"
+          description: "{{ $labels.instance }} has been down for over 2 minutes, consuming availability budget"

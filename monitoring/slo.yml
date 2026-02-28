@@ -1,0 +1,52 @@
+# Service Level Objectives (SLOs) for SmartHome Pro
+#
+# These SLOs apply to both the backend (homey-app, port 3000) and
+# the web dashboard (web-dashboard, port 3001).
+#
+# Metric sources: /metrics endpoint on each service.
+# Alert rules are defined in alerts.yml alongside this file.
+
+slos:
+  # ── Availability ────────────────────────────────────────────────
+  - name: availability
+    description: >
+      Both services must be reachable and responding to health checks.
+    target: 99.5%          # 3.65 hours of downtime per month allowed
+    sli: up{job=~"smarthomepro|dashboard"} == 1
+    window: 30d
+
+  # ── Latency ─────────────────────────────────────────────────────
+  - name: api_latency_p95
+    description: >
+      95th-percentile response time for API endpoints must stay
+      below 500 ms.  Measured by the dashboard PerformanceMonitor.
+    target: 99%            # p95 may exceed 500 ms for at most 1% of time
+    sli: smarthome_response_time_p95 < 500
+    window: 30d
+    metric_unit: milliseconds
+
+  # ── Error Rate ──────────────────────────────────────────────────
+  - name: error_rate
+    description: >
+      Fewer than 1% of HTTP requests should result in 5xx / error
+      responses (smarthome_requests_errors / smarthome_requests_total).
+    target: 99%            # error ratio must be < 1% for 99% of the window
+    sli: smarthome_requests_errors / smarthome_requests_total < 0.01
+    window: 30d
+
+# ── Burn-Rate Alerting Strategy ───────────────────────────────────
+#
+# A "burn rate" is how fast we consume our error budget.
+#   burn_rate = actual_error_rate / (1 - SLO_target)
+#
+# For the error-rate SLO (target 99%, budget = 1%):
+#   - 5x burn rate  = 5% error rate   -> budget exhausted in 6 days
+#   - 10x burn rate = 10% error rate  -> budget exhausted in 3 days
+#
+# Alert thresholds (defined in alerts.yml):
+#   - Warning:  error rate > 5x budget (> 5%) for 5 minutes
+#   - Critical: error rate > 10x budget (> 10%) for 5 minutes
+#
+# For the latency SLO:
+#   - Warning:  p95 > 500 ms for 5 minutes
+#   - Critical: p95 > 1000 ms for 5 minutes
