@@ -437,6 +437,150 @@ const SCHEMAS = {
       },
     },
   },
+
+  // ── COD-33: Additional endpoint schemas ──
+
+  createAdvancedAutomation: {
+    type: 'object',
+    required: ['name'],
+    properties: {
+      name: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 100,
+        message: 'Automation name is required (1-100 characters)',
+      },
+      type: {
+        type: 'string',
+        enum: ['time', 'device', 'condition', 'composite'],
+        message: 'Type must be one of: time, device, condition, composite',
+      },
+      conditions: {
+        type: 'array',
+        message: 'Conditions must be an array',
+      },
+      actions: {
+        type: 'array',
+        message: 'Actions must be an array',
+      },
+    },
+  },
+
+  createWebhook: {
+    type: 'object',
+    required: ['url', 'event'],
+    properties: {
+      url: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 2048,
+        pattern: /^https?:\/\/.+/,
+        message: 'URL must be a valid http(s) URL',
+      },
+      event: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 128,
+        message: 'Event name is required (1-128 characters)',
+      },
+    },
+  },
+
+  createApiConnector: {
+    type: 'object',
+    required: ['name', 'endpoint'],
+    properties: {
+      name: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 128,
+        message: 'Connector name is required (1-128 characters)',
+      },
+      endpoint: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 2048,
+        pattern: /^https?:\/\/.+/,
+        message: 'Endpoint must be a valid http(s) URL',
+      },
+    },
+  },
+
+  createIntegrationAutomation: {
+    type: 'object',
+    required: ['name'],
+    properties: {
+      name: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 100,
+        message: 'Automation name is required (1-100 characters)',
+      },
+    },
+  },
+
+  recordUserAction: {
+    type: 'object',
+    required: ['action'],
+    properties: {
+      action: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 256,
+        message: 'Action is required (1-256 characters)',
+      },
+    },
+  },
+
+  createDashboard: {
+    type: 'object',
+    required: ['name'],
+    properties: {
+      name: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 128,
+        message: 'Dashboard name is required (1-128 characters)',
+      },
+    },
+  },
+
+  createNotificationRule: {
+    type: 'object',
+    required: ['name'],
+    properties: {
+      name: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 128,
+        message: 'Rule name is required (1-128 characters)',
+      },
+    },
+  },
+
+  createScheduledTask: {
+    type: 'object',
+    required: ['name'],
+    properties: {
+      name: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 128,
+        message: 'Task name is required (1-128 characters)',
+      },
+    },
+  },
+
+  toggleAutomation: {
+    type: 'object',
+    required: ['enabled'],
+    properties: {
+      enabled: {
+        type: 'boolean',
+        message: 'enabled must be a boolean',
+      },
+    },
+  },
 };
 
 module.exports = SCHEMAS;

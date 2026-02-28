@@ -94,26 +94,32 @@ class PerformanceMonitor {
 
     // Track response times
     this.metrics.performance.responseTimes.push(duration);
-    
+
     // Keep only last 1000 response times
     if (this.metrics.performance.responseTimes.length > 1000) {
       this.metrics.performance.responseTimes.shift();
     }
 
-    // Update performance stats
-    this.updatePerformanceStats();
+    // Update running average incrementally (O(1) per request)
+    const n = this.metrics.performance.responseTimes.length;
+    this.metrics.performance.avgResponseTime =
+      this.metrics.performance.avgResponseTime * ((n - 1) / n) + duration / n;
+
+    // Mark percentiles as stale so they are recomputed on next read
+    this._percentilesDirty = true;
   }
 
   /**
-   * Update performance statistics
+   * Recompute p95/p99 from the current response times buffer.
+   * Called lazily on metric reads, not on every request write.
    */
   updatePerformanceStats() {
     const times = [...this.metrics.performance.responseTimes].sort((a, b) => a - b);
-    
+
     if (times.length === 0) return;
 
-    // Average
-    this.metrics.performance.avgResponseTime = 
+    // Average (authoritative recalculation)
+    this.metrics.performance.avgResponseTime =
       times.reduce((sum, t) => sum + t, 0) / times.length;
 
     // P95
@@ -123,6 +129,8 @@ class PerformanceMonitor {
     // P99
     const p99Index = Math.floor(times.length * 0.99);
     this.metrics.performance.p99ResponseTime = times[p99Index] || 0;
+
+    this._percentilesDirty = false;
   }
 
   /**
@@ -206,6 +214,9 @@ class PerformanceMonitor {
    * Get all metrics
    */
   getMetrics() {
+    if (this._percentilesDirty) {
+      this.updatePerformanceStats();
+    }
     return {
       timestamp: new Date().toISOString(),
       requests: {

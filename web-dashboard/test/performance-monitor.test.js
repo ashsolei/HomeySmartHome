@@ -77,7 +77,9 @@ describe('PerformanceMonitor', () => {
       for (let i = 1; i <= 100; i++) {
         monitor.recordRequest('GET /x', 'GET', 200, i);
       }
-      const perf = monitor.metrics.performance;
+      // Percentiles are computed lazily; trigger via getMetrics()
+      const metrics = monitor.getMetrics();
+      const perf = metrics.performance;
       assert.ok(perf.avgResponseTime > 49 && perf.avgResponseTime < 52);
       assert.ok(perf.p95ResponseTime >= 95);
       assert.ok(perf.p99ResponseTime >= 99);
