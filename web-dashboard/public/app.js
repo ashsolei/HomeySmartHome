@@ -245,6 +245,9 @@ class SmartHomeDashboard {
 
     // Event Listeners
     setupEventListeners() {
+        // Dark mode toggle (moved from inline onclick for CSP compliance)
+        document.getElementById('dark-mode-toggle')?.addEventListener('click', toggleDarkMode);
+
         // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
