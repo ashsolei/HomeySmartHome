@@ -22,6 +22,8 @@ const helmet = require('helmet');
 const compression = require('compression');
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
+const { RedisStore } = require('rate-limit-redis');
+const Redis = require('ioredis');
 const HomeyShim = require('./lib/standalone/HomeyShim');
 const {
   DeviceManager, SceneManager, AutomationManager, EnergyManager,
@@ -617,15 +619,29 @@ async function startServer() {
     credentials: true
   }));
 
-  // Rate limiting
+  // Rate limiting — use Redis store when REDIS_URL is set for multi-instance consistency
+  let redisClient;
+  if (process.env.REDIS_URL) {
+    redisClient = new Redis(process.env.REDIS_URL);
+    redisClient.on('error', (err) => logger.warn({ err }, 'Redis rate-limit client error'));
+    logger.info('Rate limiter using Redis store');
+  } else {
+    logger.warn('REDIS_URL not set — rate limiter using in-memory store (not suitable for multi-instance deployments)');
+  }
+
+  function makeRateLimitStore(prefix) {
+    if (!redisClient) return undefined;
+    return new RedisStore({ sendCommand: (...args) => redisClient.call(...args), prefix });
+  }
+
   const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500
-    ,
+    max: 500,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests', retryAfter: '15 minutes' },
     keyGenerator: (req) => req.ip,
+    ...(redisClient && { store: makeRateLimitStore('rl:api:') }),
   });
   server.use('/api/', apiLimiter);
 
@@ -635,6 +651,7 @@ async function startServer() {
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Rate limit exceeded' },
+    ...(redisClient && { store: makeRateLimitStore('rl:strict:') }),
   });
   server.use('/api/v1/stats', strictLimiter);
 
@@ -645,6 +662,7 @@ async function startServer() {
     standardHeaders: true,
     legacyHeaders: false,
     message: 'Rate limit exceeded',
+    ...(redisClient && { store: makeRateLimitStore('rl:metrics:') }),
   });
   server.use('/metrics', metricsLimiter);
 
@@ -1203,6 +1221,11 @@ async function startServer() {
     httpServer.close(() => {
       logger.info('HTTP server closed');
     });
+
+    // Disconnect Redis rate-limit client if connected
+    if (redisClient) {
+      try { await redisClient.quit(); } catch { /* ignore */ }
+    }
 
     // Collect all destroyable systems from the app object
     const destroyables = Object.entries(smartApp)

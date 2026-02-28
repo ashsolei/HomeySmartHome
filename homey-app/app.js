@@ -177,6 +177,10 @@ const AuditLogSystem = require('./lib/AuditLogSystem');
 // Wave 18 - Adaptive Learning & Automated Testing
 const SmartHomeAdaptiveLearningSystem = require('./lib/SmartHomeAdaptiveLearningSystem');
 const SmartHomeAutomatedTestingSystem = require('./lib/SmartHomeAutomatedTestingSystem');
+// Wave 19 - Push Notifications, Geofencing Automation, Energy Spot Price
+const PushNotificationSystem = require('./lib/PushNotificationSystem');
+const GeofencingAutomationEngine = require('./lib/GeofencingAutomationEngine');
+const EnergySpotPriceSystem = require('./lib/EnergySpotPriceSystem');
 
 class SmartHomeProApp extends Homey.App {
   
@@ -375,6 +379,10 @@ class SmartHomeProApp extends Homey.App {
     // Wave 18
     this.smartHomeAdaptiveLearningSystem = new SmartHomeAdaptiveLearningSystem(this.homey);
     this.smartHomeAutomatedTestingSystem = new SmartHomeAutomatedTestingSystem(this.homey);
+    // Wave 19 - Push Notifications, Geofencing Automation, Energy Spot Price
+    this.pushNotificationSystem = new PushNotificationSystem(this.homey);
+    this.geofencingAutomationEngine = new GeofencingAutomationEngine(this.homey);
+    this.energySpotPriceSystem = new EnergySpotPriceSystem(this.homey);
 
     await Promise.all([
       this.deviceManager.initialize(),
@@ -501,9 +509,13 @@ class SmartHomeProApp extends Homey.App {
       // Wave 18
       this.smartHomeAdaptiveLearningSystem.initialize(),
       this.smartHomeAutomatedTestingSystem.initialize(),
-      this.smartHomePredictiveCleaningSystem.initialize()
+      this.smartHomePredictiveCleaningSystem.initialize(),
+      // Wave 19
+      this.pushNotificationSystem.initialize(),
+      this.geofencingAutomationEngine.initialize(),
+      this.energySpotPriceSystem.initialize()
     ]);
-    
+
     // Wave 11 post-initialization setup
     await this.initializeWave11Infrastructure();
     
