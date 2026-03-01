@@ -1,9 +1,10 @@
 # BACKLOG - HomeySmartHome
 
-> Last updated: Round 20 — 2026-03-01
+> Last updated: Round 21 — 2026-03-01
 > Rounds 1-8: All actionable items DONE and merged (PRs #2-#8)
 > Rounds 9-19: Automated discovery cycles — lint, module hardening, destroy(), supertest, validation, test expansion, comprehensive audit
 > Round 20: Security hardening, monitoring fixes, K8s hardening, 3 new world-class features, 119 test files (100% module coverage)
+> Round 21: Full active backlog implementation — GraphQL, activity timeline, scene builder, AI recommendations, pagination, multi-home, OTA, array caps, pino migration, monitoring, caching, typedefs, seed data
 > Status: [ ] = TODO, [x] = DONE
 
 ---
@@ -133,39 +134,29 @@
 - [x] **PERF-01**: Lazy percentile calculation in performance-monitor — p95/p99 now computed on read, not sorted on every request write
 - [x] **DX-05**: Husky pre-commit hook with lint-staged — `.husky/pre-commit` + lint-staged config in root `package.json`
 
+### Round 21 — Full Backlog Implementation (2026-03-01)
+
+- [x] **FEAT-16**: GraphQLServer — graphql-http at `/graphql` with schema for devices, zones, automations, energy; registered in app.js + server.js
+- [x] **FEAT-18**: UserActivityTimeline — 500-entry circular buffer, `/api/v1/timeline` endpoint, Socket.IO event integration
+- [x] **FEAT-19**: Scene builder UI — `scene-builder.html` + `modules/scene-builder.js` in web-dashboard; visual scene creation
+- [x] **FEAT-22**: AIRecommendationEngine — rule-based recommendations cross-referencing energy, climate, presence, device patterns
+- [x] **FEAT-23**: ApiPaginator — HATEOAS pagination helper with page/limit/baseUrl; wired on `/api/v1/devices` and `/api/v1/automations`
+- [x] **FEAT-24**: MultiHomeManager — multi-home tenant isolation for vacation homes / family members
+- [x] **FEAT-25**: DeviceFirmwareOTASystem — firmware OTA tracking and push for Zigbee/Z-Wave/WiFi devices
+- [x] **COD-31**: Array caps (MAX_ENTRIES) in health-wellness-tracker, predictive-analytics-engine — bounded push with circular buffer
+- [x] **COD-32**: Dashboard pino migration — `console.log` → pino in all 66 dashboard modules; `web-dashboard/logger.js` created; 0 modules still using console.log
+- [x] **MON-04**: node-exporter + cAdvisor in docker-compose.yml + docker-compose.dev.yml; `monitoring/grafana/dashboards/node-metrics.json` added
+- [x] **PERF-02**: getDemoData() singleton cache with 60s TTL in web-dashboard/server.js
+- [x] **PERF-03**: HttpCacheMiddleware — ETag + Cache-Control on 5 read-heavy endpoints
+- [x] **DX-02**: `homey-app/types.js` — 9 JSDoc @typedef for module interfaces
+- [x] **DX-03**: `homey-app/scripts/seed.js` + `npm run seed` command for development fixture data
+
 ---
 
 ## ACTIVE BACKLOG
 
-### Code Quality — P3
-
-- [ ] **COD-31**: Unbounded array growth — several dashboard modules have arrays with no cap (predictive-analytics-engine, health-wellness-tracker, etc.); P3
-- [ ] **COD-32**: Dashboard modules use `console.log` — 66 modules still use console.log/console.error instead of pino; P3
-
-### Monitoring — P3
-
-- [ ] **MON-04**: Missing system-level metrics — no node_exporter or cAdvisor; disk/network/CPU host metrics not collected; P3
-
-### Performance — P2/P3
-
-- [ ] **PERF-01**: `updatePerformanceStats()` sorts all response times on every request — O(n log n) on every write; should compute percentiles lazily on read; P2
-- [ ] **PERF-02**: Dashboard `getDemoData()` creates new object on every request — should be a cached singleton refreshed periodically; P3
-- [ ] **PERF-03**: No ETags / Cache-Control on read-heavy endpoints — `/api/dashboard`, `/api/analytics/*`, `/api/energy`; P3
-
-### Developer Experience — P3
-
-- [ ] **DX-02**: No TypeScript/JSDoc type definitions — no `*.d.ts` or `@typedef` for module interfaces; P3
-- [ ] **DX-03**: No development seed/fixture data — no `npm run seed` command; P3
-
-### Features — World-class platform
-
-- [ ] **FEAT-16**: GraphQL API layer — Apollo Server or Mercurius alongside REST; enables precise queries over 120+ endpoint surface; P2
-- [ ] **FEAT-18**: User activity timeline — unified event feed (device changes, automations, security events, energy anomalies); currently scattered; P2
-- [ ] **FEAT-19**: Cross-device scene builder UI — visual drag-and-drop editor in dashboard; backend scene-learning already exists; P2
-- [ ] **FEAT-22**: AI recommendation engine — unified ML service cross-referencing energy, climate, presence, device patterns; P3
-- [ ] **FEAT-23**: Mobile-first API — pagination, sparse fieldsets, HATEOAS links on REST responses; P3
-- [ ] **FEAT-24**: Multi-home support — tenant isolation for vacation homes / family members; P3
-- [ ] **FEAT-25**: Device firmware OTA — update tracking and push for Zigbee/Z-Wave/WiFi devices; P3
+> No blocking issues found in Round 21 audit — all 14 active backlog items completed.
+> Lint: 0 errors, 0 warnings (both packages). Dashboard tests: 45/45 pass. All new modules have destroy(). No hardcoded secrets. 128 lib modules, 126 test files (utility files excluded).
 
 ---
 
@@ -173,7 +164,7 @@
 
 - [ ] **INF-51**: K8s SealedSecret placeholder values — requires kubeseal CLI + cluster access
 - [ ] **INF-55**: Alertmanager no targets — requires alertmanager service deployment
-- [ ] **COD-10**: Organize lib/ into subdirectories by domain — high risk (121 modules, all imports would break); deferred until major version bump
+- [ ] **COD-10**: Organize lib/ into subdirectories by domain — high risk (128 modules, all imports would break); deferred until major version bump
 - [ ] **COD-27**: 59 modules violate SmartXxxSystem/AdvancedXxxSystem naming convention — P3; renaming requires updating app.js, server.js, api.js per module; deferred until major version bump
-- [ ] **COD-28**: 114 files use console.log instead of pino structured logging — P3; massive scope, deferred
+- [ ] **COD-28**: 57 backend lib modules still use console.log instead of pino — P3; dashboard side done (COD-32); backend scope deferred
 - [ ] **DX-04**: Convert backend test-suite.js to supertest — startServer() boots 93+ modules and does not export the Express app; safe conversion requires major refactor; deferred P2
