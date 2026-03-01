@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Geofencing Manager
@@ -350,7 +352,7 @@ class GeofencingManager {
   // ============================================
 
   async handleZoneTransition(device, fromZone, toZone) {
-    console.log(`📍 ${device.ownerName}: ${fromZone || 'away'} → ${toZone || 'away'}`);
+    logger.info(`📍 ${device.ownerName}: ${fromZone || 'away'} → ${toZone || 'away'}`);
 
     // Update zone occupancy
     if (fromZone) {
@@ -451,13 +453,13 @@ class GeofencingManager {
   }
 
   async executeTrigger(trigger, device) {
-    console.log(`  → Executing trigger: ${trigger.name}`);
+    logger.info(`  → Executing trigger: ${trigger.name}`);
 
     for (const action of trigger.actions) {
       try {
         await this.executeAction(action, device);
       } catch (error) {
-        console.error(`Action failed:`, error);
+        logger.error(`Action failed:`, error);
       }
     }
   }
@@ -465,32 +467,32 @@ class GeofencingManager {
   async executeAction(action, _device) {
     switch (action.type) {
       case 'device_on':
-        console.log(`    Turn on: ${action.deviceId}`);
+        logger.info(`    Turn on: ${action.deviceId}`);
         // await this.app.devices.get(action.deviceId).setCapability('onoff', true);
         break;
       
       case 'device_off':
-        console.log(`    Turn off: ${action.deviceId}`);
+        logger.info(`    Turn off: ${action.deviceId}`);
         // await this.app.devices.get(action.deviceId).setCapability('onoff', false);
         break;
       
       case 'scene':
-        console.log(`    Activate scene: ${action.sceneId}`);
+        logger.info(`    Activate scene: ${action.sceneId}`);
         // await this.app.flow.triggerScene(action.sceneId);
         break;
       
       case 'notification':
-        console.log(`    Send notification: ${action.message}`);
+        logger.info(`    Send notification: ${action.message}`);
         // await this.app.notifications.send(action);
         break;
       
       case 'alarm':
-        console.log(`    Control alarm: ${action.state}`);
+        logger.info(`    Control alarm: ${action.state}`);
         // await this.app.alarm.setState(action.state);
         break;
       
       case 'climate':
-        console.log(`    Set climate mode: ${action.mode}`);
+        logger.info(`    Set climate mode: ${action.mode}`);
         // await this.app.climate.setMode(action.mode);
         break;
     }
@@ -744,6 +746,7 @@ class GeofencingManager {
 
   logLocation(data) {
     this.locationHistory.push(data);
+    if (this.locationHistory.length > MAX_ENTRIES) this.locationHistory.shift();
 
     // Keep last 24 hours (at 2-minute intervals = 720 records per device)
     if (this.locationHistory.length > 2160) { // 720 * 3 devices
@@ -753,6 +756,7 @@ class GeofencingManager {
 
   logEvent(event) {
     this.events.push(event);
+    if (this.events.length > MAX_ENTRIES) this.events.shift();
 
     // Keep last 500 events
     if (this.events.length > 500) {

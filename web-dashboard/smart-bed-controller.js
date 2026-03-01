@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Smart Bed Controller
@@ -91,10 +93,10 @@ class SmartBedController {
 
     if (bed.type === 'dual') {
       bed.sides[side].position[part] = degrees;
-      console.log(`🛏️ ${bed.name} (${side}): ${part} → ${degrees}°`);
+      logger.info(`🛏️ ${bed.name} (${side}): ${part} → ${degrees}°`);
     } else {
       bed.position[part] = degrees;
-      console.log(`🛏️ ${bed.name}: ${part} → ${degrees}°`);
+      logger.info(`🛏️ ${bed.name}: ${part} → ${degrees}°`);
     }
 
     return { success: true, position: degrees };
@@ -112,10 +114,10 @@ class SmartBedController {
 
     if (bed.type === 'dual') {
       bed.sides[side].temperature = temperature;
-      console.log(`🌡️ ${bed.name} (${side}): ${temperature}°C`);
+      logger.info(`🌡️ ${bed.name} (${side}): ${temperature}°C`);
     } else {
       bed.temperature = temperature;
-      console.log(`🌡️ ${bed.name}: ${temperature}°C`);
+      logger.info(`🌡️ ${bed.name}: ${temperature}°C`);
     }
 
     return { success: true, temperature };
@@ -133,10 +135,10 @@ class SmartBedController {
 
     if (bed.type === 'dual') {
       bed.sides[side].firmness = firmness;
-      console.log(`💪 ${bed.name} (${side}): firmness ${firmness}/10`);
+      logger.info(`💪 ${bed.name} (${side}): firmness ${firmness}/10`);
     } else {
       bed.firmness = firmness;
-      console.log(`💪 ${bed.name}: firmness ${firmness}/10`);
+      logger.info(`💪 ${bed.name}: firmness ${firmness}/10`);
     }
 
     return { success: true, firmness };
@@ -164,14 +166,14 @@ class SmartBedController {
         intensity,
         program
       };
-      console.log(`💆 ${bed.name} (${side}): ${program} massage @ intensity ${intensity}`);
+      logger.info(`💆 ${bed.name} (${side}): ${program} massage @ intensity ${intensity}`);
     } else {
       bed.massage = {
         enabled: true,
         intensity,
         program
       };
-      console.log(`💆 ${bed.name}: ${program} massage @ intensity ${intensity}`);
+      logger.info(`💆 ${bed.name}: ${program} massage @ intensity ${intensity}`);
     }
 
     // Auto-stop after 15 minutes
@@ -191,10 +193,10 @@ class SmartBedController {
 
     if (bed.type === 'dual') {
       bed.sides[side].massage.enabled = false;
-      console.log(`💆 ${bed.name} (${side}): massage stopped`);
+      logger.info(`💆 ${bed.name} (${side}): massage stopped`);
     } else {
       bed.massage.enabled = false;
-      console.log(`💆 ${bed.name}: massage stopped`);
+      logger.info(`💆 ${bed.name}: massage stopped`);
     }
 
     return { success: true };
@@ -218,20 +220,20 @@ class SmartBedController {
       bed.sides[side].occupied = isOccupied;
       
       if (isOccupied && !this.isUserAsleep(bed.sides[side].user)) {
-        console.log(`😴 ${bed.sides[side].user} got into bed (${side} side)`);
+        logger.info(`😴 ${bed.sides[side].user} got into bed (${side} side)`);
         await this.startSleepSession(bedId, side);
       } else if (!isOccupied && this.isUserAsleep(bed.sides[side].user)) {
-        console.log(`☀️ ${bed.sides[side].user} left bed (${side} side)`);
+        logger.info(`☀️ ${bed.sides[side].user} left bed (${side} side)`);
         await this.endSleepSession(bedId, side);
       }
     } else {
       bed.occupied = isOccupied;
       
       if (isOccupied && !this.hasActiveSleepSession(bedId)) {
-        console.log(`😴 Someone got into ${bed.name}`);
+        logger.info(`😴 Someone got into ${bed.name}`);
         await this.startSleepSession(bedId);
       } else if (!isOccupied && this.hasActiveSleepSession(bedId)) {
-        console.log(`☀️ Someone left ${bed.name}`);
+        logger.info(`☀️ Someone left ${bed.name}`);
         await this.endSleepSession(bedId);
       }
     }
@@ -259,8 +261,9 @@ class SmartBedController {
     };
 
     this.sleepSessions.push(session);
+    if (this.sleepSessions.length > MAX_ENTRIES) this.sleepSessions.shift();
 
-    console.log(`💤 Sleep session started: ${user}`);
+    logger.info(`💤 Sleep session started: ${user}`);
 
     // Initialize sleep data tracking
     if (!this.sleepData.has(user)) {
@@ -295,11 +298,11 @@ class SmartBedController {
     // Calculate sleep quality (0-100)
     session.quality = this.calculateSleepQuality(session);
 
-    console.log(`⏰ Sleep session ended: ${user}`);
-    console.log(`   Duration: ${Math.floor(session.duration / 60)}h ${Math.floor(session.duration % 60)}m`);
-    console.log(`   Quality: ${session.quality}/100`);
-    console.log(`   Movements: ${session.movements}`);
-    console.log(`   Snore events: ${session.snoreEvents}`);
+    logger.info(`⏰ Sleep session ended: ${user}`);
+    logger.info(`   Duration: ${Math.floor(session.duration / 60)}h ${Math.floor(session.duration % 60)}m`);
+    logger.info(`   Quality: ${session.quality}/100`);
+    logger.info(`   Movements: ${session.movements}`);
+    logger.info(`   Snore events: ${session.snoreEvents}`);
 
     // Update user sleep data
     const userData = this.sleepData.get(user);
@@ -381,7 +384,7 @@ class SmartBedController {
 
     if (isSnoring) {
       const user = bed.type === 'dual' ? bed.sides[side].user : 'Guest';
-      console.log(`😴 Snoring detected: ${user}`);
+      logger.info(`😴 Snoring detected: ${user}`);
 
       // Log snore event
       const session = this.sleepSessions.find(s => 
@@ -404,7 +407,7 @@ class SmartBedController {
   }
 
   async handleSnoring(bedId, side) {
-    console.log('   🛏️ Anti-snore action: Raising head 10°');
+    logger.info('   🛏️ Anti-snore action: Raising head 10°');
     
     // Gently raise head position
     const bed = this.beds.get(bedId);
@@ -424,7 +427,7 @@ class SmartBedController {
   // ============================================
 
   async activateSleepMode(bedId, side = null) {
-    console.log('😴 Activating sleep mode');
+    logger.info('😴 Activating sleep mode');
 
     // Set bed temperature to preferred sleep temp
     await this.setTemperature(bedId, side, 19);
@@ -434,45 +437,45 @@ class SmartBedController {
     await this.adjustPosition(bedId, side, 'foot', 0);
 
     // Enable under-bed lighting (dim)
-    console.log('   💡 Under-bed lighting: dim');
+    logger.info('   💡 Under-bed lighting: dim');
 
     // Set room conditions
-    console.log('   🌡️  Room temperature: 18°C');
-    console.log('   💡 Room lights: off');
-    console.log('   🔇 Do not disturb: enabled');
+    logger.info('   🌡️  Room temperature: 18°C');
+    logger.info('   💡 Room lights: off');
+    logger.info('   🔇 Do not disturb: enabled');
 
     return { success: true };
   }
 
   async triggerWakeUpRoutine(bedId, side = null) {
-    console.log('☀️ Wake-up routine starting');
+    logger.info('☀️ Wake-up routine starting');
 
     const bed = this.beds.get(bedId);
     const user = bed.type === 'dual' ? bed.sides[side].user : 'Guest';
 
     // Gradual lighting
-    console.log('   💡 Gradually increasing lights');
+    logger.info('   💡 Gradually increasing lights');
 
     // Raise head position gently
     await this.adjustPosition(bedId, side, 'head', 30);
-    console.log('   🛏️ Raising head position');
+    logger.info('   🛏️ Raising head position');
 
     // Warm up bed slightly
     await this.setTemperature(bedId, side, 24);
-    console.log('   🌡️  Warming bed');
+    logger.info('   🌡️  Warming bed');
 
     // Optional massage
-    console.log('   💆 Gentle wake-up massage available');
+    logger.info('   💆 Gentle wake-up massage available');
 
     // Home automation
-    console.log('   ☕ Starting coffee maker');
-    console.log('   🎵 Playing morning playlist');
+    logger.info('   ☕ Starting coffee maker');
+    logger.info('   🎵 Playing morning playlist');
 
     return { success: true, user };
   }
 
   async setPreset(bedId, side, preset) {
-    console.log(`🛏️ Setting preset: ${preset}`);
+    logger.info(`🛏️ Setting preset: ${preset}`);
 
     const presets = {
       flat: { head: 0, foot: 0 },
@@ -533,7 +536,7 @@ class SmartBedController {
       }
     }, 5 * 60 * 1000));
 
-    console.log('🛏️ Smart Bed Controller active');
+    logger.info('🛏️ Smart Bed Controller active');
   }
 
   // ============================================

@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Backup & Export System
@@ -62,7 +63,7 @@ class BackupSystem {
         }
       };
     } catch (error) {
-      console.error('Backup creation error:', error);
+      logger.error('Backup creation error:', error);
       return {
         success: false,
         error: error.message
@@ -406,7 +407,7 @@ class BackupSystem {
           await this.restoreComponent(component, data);
           results.restored.push(component);
         } catch (error) {
-          console.error(`Failed to restore ${component}:`, error);
+          logger.error(`Failed to restore ${component}:`, error);
           results.failed.push({ component, error: error.message });
         }
       }
@@ -416,7 +417,7 @@ class BackupSystem {
         results
       };
     } catch (error) {
-      console.error('Restore error:', error);
+      logger.error('Restore error:', error);
       return {
         success: false,
         error: error.message
@@ -425,7 +426,7 @@ class BackupSystem {
   }
 
   async restoreComponent(component, data) {
-    console.log(`Restoring component: ${component}`);
+    logger.info(`Restoring component: ${component}`);
     
     // Component-specific restore logic
     switch (component) {
@@ -445,33 +446,33 @@ class BackupSystem {
         await this.restorePreferences(data);
         break;
       default:
-        console.log(`No restore handler for ${component}`);
+        logger.info(`No restore handler for ${component}`);
     }
   }
 
   async restoreIntelligence(_data) {
     // Restore patterns, predictions, and learning data
-    console.log('Restoring intelligence data...');
+    logger.info('Restoring intelligence data...');
   }
 
   async restoreAutomations(_data) {
     // Restore automation configurations
-    console.log('Restoring automations...');
+    logger.info('Restoring automations...');
   }
 
   async restoreAnalytics(_data) {
     // Restore analytics data
-    console.log('Restoring analytics...');
+    logger.info('Restoring analytics...');
   }
 
   async restoreConfiguration(_data) {
     // Restore app configuration
-    console.log('Restoring configuration...');
+    logger.info('Restoring configuration...');
   }
 
   async restorePreferences(_data) {
     // Restore user preferences
-    console.log('Restoring preferences...');
+    logger.info('Restoring preferences...');
   }
 
   // ============================================
@@ -498,7 +499,7 @@ class BackupSystem {
         filename: this.generateExportFilename(format)
       };
     } catch (error) {
-      console.error('Export error:', error);
+      logger.error('Export error:', error);
       return {
         success: false,
         error: error.message
@@ -577,7 +578,7 @@ class BackupSystem {
         result
       };
     } catch (error) {
-      console.error('Import error:', error);
+      logger.error('Import error:', error);
       return {
         success: false,
         error: error.message
@@ -673,7 +674,7 @@ class BackupSystem {
   }
 
   async performAutoBackup() {
-    console.log('Performing automatic backup...');
+    logger.info('Performing automatic backup...');
     
     const result = await this.createBackup({
       type: 'scheduled',
@@ -681,9 +682,9 @@ class BackupSystem {
     });
 
     if (result.success) {
-      console.log('Auto-backup completed successfully');
+      logger.info('Auto-backup completed successfully');
     } else {
-      console.error('Auto-backup failed:', result.error);
+      logger.error('Auto-backup failed:', result.error);
     }
   }
 

@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Emergency Response Coordinator
@@ -217,7 +218,7 @@ class EmergencyResponseCoordinator {
   // ============================================
 
   async detectEmergency(type, data) {
-    console.log(`🚨 Emergency detected: ${type}`);
+    logger.info(`🚨 Emergency detected: ${type}`);
 
     const emergencyType = this.emergencyTypes.get(type);
     
@@ -248,7 +249,7 @@ class EmergencyResponseCoordinator {
     if (protocol && protocol.autoActivate) {
       await this.activateProtocol(emergency.id, protocolId);
     } else {
-      console.log(`  ⚠️ Protocol requires manual confirmation`);
+      logger.info(`  ⚠️ Protocol requires manual confirmation`);
     }
 
     return { success: true, emergency };
@@ -288,7 +289,7 @@ class EmergencyResponseCoordinator {
     this.emergencyHistory.push(emergency);
     this.activeEmergencies = this.activeEmergencies.filter(e => e.id !== emergencyId);
 
-    console.log(`✅ Emergency resolved: ${emergency.name}`);
+    logger.info(`✅ Emergency resolved: ${emergency.name}`);
 
     return { success: true };
   }
@@ -305,7 +306,7 @@ class EmergencyResponseCoordinator {
       return { success: false, error: 'Emergency or protocol not found' };
     }
 
-    console.log(`🚨 Activating protocol: ${protocol.name}`);
+    logger.info(`🚨 Activating protocol: ${protocol.name}`);
 
     emergency.responseActivated = true;
     emergency.protocol = protocolId;
@@ -316,52 +317,52 @@ class EmergencyResponseCoordinator {
       await this.executeProtocolStep(step, emergency);
     }
 
-    console.log(`✅ Protocol completed: ${protocol.name}`);
+    logger.info(`✅ Protocol completed: ${protocol.name}`);
 
     return { success: true };
   }
 
   async executeProtocolStep(step, emergency) {
-    console.log(`  Step ${step.order}: ${step.action}`);
+    logger.info(`  Step ${step.order}: ${step.action}`);
 
     // Simulate step execution
     switch (step.action) {
       case 'call_emergency':
-        console.log(`    📞 Calling ${step.params.number}...`);
+        logger.info(`    📞 Calling ${step.params.number}...`);
         break;
 
       case 'unlock_all_doors':
       case 'unlock_front_door':
-        console.log(`    🔓 Unlocking doors...`);
+        logger.info(`    🔓 Unlocking doors...`);
         break;
 
       case 'lock_all_doors':
-        console.log(`    🔒 Locking doors...`);
+        logger.info(`    🔒 Locking doors...`);
         break;
 
       case 'turn_on_all_lights':
       case 'turn_on_lights':
-        console.log(`    💡 Turning on lights (${step.params.brightness || 100}%)...`);
+        logger.info(`    💡 Turning on lights (${step.params.brightness || 100}%)...`);
         break;
 
       case 'disable_hvac':
-        console.log(`    ❄️ Disabling HVAC...`);
+        logger.info(`    ❄️ Disabling HVAC...`);
         break;
 
       case 'shut_off_water':
-        console.log(`    💧 Shutting off water main...`);
+        logger.info(`    💧 Shutting off water main...`);
         break;
 
       case 'shut_off_gas':
-        console.log(`    🔥 Shutting off gas main...`);
+        logger.info(`    🔥 Shutting off gas main...`);
         break;
 
       case 'open_all_windows':
-        console.log(`    🪟 Opening windows...`);
+        logger.info(`    🪟 Opening windows...`);
         break;
 
       case 'close_all_windows':
-        console.log(`    🪟 Closing windows...`);
+        logger.info(`    🪟 Closing windows...`);
         break;
 
       case 'notify_contacts':
@@ -374,16 +375,16 @@ class EmergencyResponseCoordinator {
         break;
 
       case 'activate_alarm':
-        console.log(`    🚨 Activating alarm (volume: ${step.params.volume || 80}%)...`);
+        logger.info(`    🚨 Activating alarm (volume: ${step.params.volume || 80}%)...`);
         break;
 
       case 'start_recording':
       case 'record_video':
-        console.log(`    📹 Starting video recording...`);
+        logger.info(`    📹 Starting video recording...`);
         break;
 
       default:
-        console.log(`    ⚙️ Executing: ${step.action}`);
+        logger.info(`    ⚙️ Executing: ${step.action}`);
     }
 
     // Simulate execution delay
@@ -453,7 +454,7 @@ class EmergencyResponseCoordinator {
   }
 
   async notifyEmergencyContacts(emergency, urgency = 'high') {
-    console.log(`    📢 Notifying emergency contacts (${urgency})...`);
+    logger.info(`    📢 Notifying emergency contacts (${urgency})...`);
 
     const contacts = Array.from(this.emergencyContacts.values())
       .filter(c => {
@@ -466,7 +467,7 @@ class EmergencyResponseCoordinator {
     for (const contact of contacts) {
       const message = `🚨 NÖDLÄGE: ${emergency.name} detected at ${emergency.location}`;
       
-      console.log(`      → ${contact.name}: ${message}`);
+      logger.info(`      → ${contact.name}: ${message}`);
 
       contact.lastNotified = Date.now();
       contact.timesNotified += 1;
@@ -520,22 +521,22 @@ class EmergencyResponseCoordinator {
   }
 
   async activateEvacuation(emergencyType) {
-    console.log(`    🏃 Activating evacuation procedure...`);
+    logger.info(`    🏃 Activating evacuation procedure...`);
 
     const plan = Array.from(this.evacuationPlans.values())
       .find(p => p.emergencyTypes.includes(emergencyType));
 
     if (!plan) {
-      console.log(`      ⚠️ No evacuation plan for ${emergencyType}`);
+      logger.info(`      ⚠️ No evacuation plan for ${emergencyType}`);
       return;
     }
 
-    console.log(`      📋 Following plan: ${plan.name}`);
-    console.log(`      🚪 Primary exit: ${plan.primaryExit}`);
-    console.log(`      📍 Assembly point: ${plan.assemblyPoint}`);
+    logger.info(`      📋 Following plan: ${plan.name}`);
+    logger.info(`      🚪 Primary exit: ${plan.primaryExit}`);
+    logger.info(`      📍 Assembly point: ${plan.assemblyPoint}`);
 
     for (const instruction of plan.instructions) {
-      console.log(`        - ${instruction}`);
+      logger.info(`        - ${instruction}`);
     }
   }
 
@@ -557,43 +558,43 @@ class EmergencyResponseCoordinator {
       }
     }, 24 * 60 * 60 * 1000));
 
-    console.log('🚨 Emergency Response Coordinator active');
+    logger.info('🚨 Emergency Response Coordinator active');
   }
 
   async monitorActiveEmergencies() {
     if (this.activeEmergencies.length === 0) return;
 
-    console.log(`🚨 Monitoring ${this.activeEmergencies.length} active emergencies...`);
+    logger.info(`🚨 Monitoring ${this.activeEmergencies.length} active emergencies...`);
 
     for (const emergency of this.activeEmergencies) {
       const duration = Date.now() - emergency.timestamp;
       const minutes = Math.floor(duration / 60000);
 
-      console.log(`  ${emergency.name}: ${minutes} minutes (Status: ${emergency.status})`);
+      logger.info(`  ${emergency.name}: ${minutes} minutes (Status: ${emergency.status})`);
 
       // Alert if emergency not resolved after 30 minutes
       if (minutes > 30 && emergency.status === 'active') {
-        console.log(`    ⚠️ Long-running emergency - consider escalation`);
+        logger.info(`    ⚠️ Long-running emergency - consider escalation`);
       }
     }
   }
 
   async testEmergencySystems() {
-    console.log('🧪 Testing emergency systems...');
+    logger.info('🧪 Testing emergency systems...');
 
     // Test smoke detectors
-    console.log('  Testing smoke detectors...');
+    logger.info('  Testing smoke detectors...');
     
     // Test water sensors
-    console.log('  Testing water sensors...');
+    logger.info('  Testing water sensors...');
     
     // Test door/window sensors
-    console.log('  Testing security sensors...');
+    logger.info('  Testing security sensors...');
     
     // Test emergency contacts
-    console.log('  Verifying emergency contacts...');
+    logger.info('  Verifying emergency contacts...');
 
-    console.log('✅ Emergency systems test completed');
+    logger.info('✅ Emergency systems test completed');
   }
 
   // ============================================

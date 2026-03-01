@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Home Security System
@@ -331,7 +332,7 @@ class HomeSecuritySystem {
 
     camera.recordings.push(recording);
 
-    console.log(`📹 Started recording on ${camera.name} for ${duration}s`);
+    logger.info(`📹 Started recording on ${camera.name} for ${duration}s`);
 
     // Stop recording after duration
     this._timeouts.push(setTimeout(() => {
@@ -353,7 +354,7 @@ class HomeSecuritySystem {
     recording.endTime = Date.now();
     camera.recording = camera.recordings.some(r => r.status === 'recording');
 
-    console.log(`⏹️ Stopped recording on ${camera.name}`);
+    logger.info(`⏹️ Stopped recording on ${camera.name}`);
   }
 
   async detectMotionOnCamera(cameraId) {
@@ -375,7 +376,7 @@ class HomeSecuritySystem {
       await this.startRecording(cameraId, 60);
     }
 
-    console.log(`📸 Motion detected on ${camera.name}`);
+    logger.info(`📸 Motion detected on ${camera.name}`);
   }
 
   // ============================================
@@ -440,7 +441,7 @@ class HomeSecuritySystem {
     if (previousMode === 'disarmed' && modeId !== 'disarmed') {
       const entryZone = this.zones.get('entry');
       if (entryZone && entryZone.delayExit > 0) {
-        console.log(`⏳ Arming in ${entryZone.delayExit} seconds...`);
+        logger.info(`⏳ Arming in ${entryZone.delayExit} seconds...`);
         
         this._timeouts.push(setTimeout(() => {
           this.applyMode(mode, userId);
@@ -488,7 +489,7 @@ class HomeSecuritySystem {
       armedZones: mode.armedZones.length
     });
 
-    console.log(`🔒 Security mode: ${mode.name}`);
+    logger.info(`🔒 Security mode: ${mode.name}`);
 
     // Start presence simulation if vacation mode
     if (mode.simulatePresence) {
@@ -528,7 +529,7 @@ class HomeSecuritySystem {
       ...data
     });
 
-    console.log(`🚨 ALARM! ${data.sensorName} (${data.severity})`);
+    logger.info(`🚨 ALARM! ${data.sensorName} (${data.severity})`);
 
     // Take actions based on severity
     await this.handleAlarm(alert);
@@ -567,7 +568,7 @@ class HomeSecuritySystem {
   }
 
   async callEmergencyServices(alert) {
-    console.log(`📞 Calling emergency services for: ${alert.sensorName}`);
+    logger.info(`📞 Calling emergency services for: ${alert.sensorName}`);
     
     // In real implementation, this would call actual emergency services
     this.logEvent({
@@ -582,13 +583,13 @@ class HomeSecuritySystem {
     
     for (const user of users) {
       if (user.notifications) {
-        console.log(`📱 Notifying ${user.name}: ${alert.sensorName} ${alert.severity}`);
+        logger.info(`📱 Notifying ${user.name}: ${alert.sensorName} ${alert.severity}`);
       }
     }
   }
 
   async activateSirens() {
-    console.log(`🔊 Sirens activated`);
+    logger.info(`🔊 Sirens activated`);
     
     this.logEvent({
       type: 'siren_activated'
@@ -596,7 +597,7 @@ class HomeSecuritySystem {
   }
 
   async recordAllCameras() {
-    console.log(`📹 Recording all cameras`);
+    logger.info(`📹 Recording all cameras`);
     
     for (const [cameraId, camera] of this.cameras) {
       if (camera.status === 'online') {
@@ -616,7 +617,7 @@ class HomeSecuritySystem {
   }
 
   async sendAlertToNeighbors(alert) {
-    console.log(`👨‍👩‍👧‍👦 Alert sent to neighbors: ${alert.sensorName}`);
+    logger.info(`👨‍👩‍👧‍👦 Alert sent to neighbors: ${alert.sensorName}`);
   }
 
   async acknowledgeAlert(alertId, userId) {
@@ -630,7 +631,7 @@ class HomeSecuritySystem {
     alert.acknowledgedBy = userId;
     alert.acknowledgedAt = Date.now();
 
-    console.log(`✓ Alert acknowledged by user ${userId}`);
+    logger.info(`✓ Alert acknowledged by user ${userId}`);
 
     return { success: true, alert };
   }
@@ -652,7 +653,7 @@ class HomeSecuritySystem {
       zone.triggered = false;
     }
 
-    console.log(`✅ Alert resolved: ${resolution}`);
+    logger.info(`✅ Alert resolved: ${resolution}`);
 
     return { success: true, alert };
   }
@@ -713,7 +714,7 @@ class HomeSecuritySystem {
         user.lastSeen = Date.now();
         user.totalAccesses += 1;
 
-        console.log(`✓ User authenticated: ${user.name}`);
+        logger.info(`✓ User authenticated: ${user.name}`);
 
         return { success: true, user };
       }
@@ -767,14 +768,14 @@ class HomeSecuritySystem {
   }
 
   async checkSensorBatteries() {
-    console.log('🔋 Checking sensor batteries...');
+    logger.info('🔋 Checking sensor batteries...');
 
     for (const [sensorId, sensor] of this.sensors) {
       // Simulate battery drain
       sensor.batteryLevel -= Math.random() * 5;
 
       if (sensor.batteryLevel < 20) {
-        console.log(`⚠️ Low battery: ${sensor.name} (${Math.round(sensor.batteryLevel)}%)`);
+        logger.info(`⚠️ Low battery: ${sensor.name} (${Math.round(sensor.batteryLevel)}%)`);
         
         this.logEvent({
           type: 'low_battery',
@@ -792,12 +793,12 @@ class HomeSecuritySystem {
     );
 
     if (unacknowledged.length > 0) {
-      console.log(`⚠️ ${unacknowledged.length} unacknowledged alert(s)`);
+      logger.info(`⚠️ ${unacknowledged.length} unacknowledged alert(s)`);
     }
   }
 
   async startPresenceSimulation() {
-    console.log('🏠 Starting presence simulation...');
+    logger.info('🏠 Starting presence simulation...');
 
     // Simulate someone being home
     const interval = setInterval(() => {
@@ -811,7 +812,7 @@ class HomeSecuritySystem {
 
       if (hour >= 18 && hour <= 23) {
         // Evening activities
-        console.log('  💡 Simulating evening presence');
+        logger.info('  💡 Simulating evening presence');
       }
     }, 30 * 60 * 1000); // Every 30 minutes
 

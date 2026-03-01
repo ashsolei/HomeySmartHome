@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Room-by-Room Presence Tracking
@@ -190,6 +192,7 @@ class PresenceTracker {
 
   logPresenceEvent(event) {
     this.presenceHistory.push(event);
+    if (this.presenceHistory.length > MAX_ENTRIES) this.presenceHistory.shift();
 
     // Trim history
     if (this.presenceHistory.length > this.maxHistorySize) {
@@ -403,7 +406,7 @@ class PresenceTracker {
   triggerRoomAutomations(roomId, eventType) {
     const room = this.rooms.get(roomId);
     
-    console.log(`Room automation: ${eventType} in ${room.name}`);
+    logger.info(`Room automation: ${eventType} in ${room.name}`);
 
     if (eventType === 'entry') {
       this.handleEntryAutomation(roomId);
@@ -418,19 +421,19 @@ class PresenceTracker {
 
     // Turn on lights if dark
     if (hour < 7 || hour > 18) {
-      console.log(`  → Turning on lights in ${room.name}`);
+      logger.info(`  → Turning on lights in ${room.name}`);
     }
 
     // Room-specific automations
     switch (roomId) {
       case 'kitchen':
-        console.log(`  → Activating kitchen fan`);
+        logger.info(`  → Activating kitchen fan`);
         break;
       case 'bathroom':
-        console.log(`  → Activating bathroom fan`);
+        logger.info(`  → Activating bathroom fan`);
         break;
       case 'office':
-        console.log(`  → Setting office lighting to work mode`);
+        logger.info(`  → Setting office lighting to work mode`);
         break;
     }
   }
@@ -439,13 +442,13 @@ class PresenceTracker {
     const room = this.rooms.get(roomId);
 
     // Turn off lights after exit
-    console.log(`  → Turning off lights in ${room.name}`);
+    logger.info(`  → Turning off lights in ${room.name}`);
 
     // Check if home is empty
     const anyOccupied = Array.from(this.rooms.values()).some(r => r.occupied);
     
     if (!anyOccupied) {
-      console.log(`  → Home is empty - activating away mode`);
+      logger.info(`  → Home is empty - activating away mode`);
     }
   }
 

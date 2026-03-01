@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Advanced Home Theater Controller
@@ -134,32 +135,32 @@ class AdvancedHomeTheaterController {
     switch (command) {
       case 'power_on':
         device.power = 'on';
-        console.log(`✅ ${device.name} powered ON`);
+        logger.info(`✅ ${device.name} powered ON`);
         break;
       
       case 'power_off':
         device.power = 'off';
-        console.log(`✅ ${device.name} powered OFF`);
+        logger.info(`✅ ${device.name} powered OFF`);
         break;
       
       case 'volume':
         device.volume = value;
-        console.log(`🔊 ${device.name} volume: ${value}`);
+        logger.info(`🔊 ${device.name} volume: ${value}`);
         break;
       
       case 'mute':
         device.muted = true;
-        console.log(`🔇 ${device.name} muted`);
+        logger.info(`🔇 ${device.name} muted`);
         break;
       
       case 'unmute':
         device.muted = false;
-        console.log(`🔊 ${device.name} unmuted`);
+        logger.info(`🔊 ${device.name} unmuted`);
         break;
       
       case 'input':
         device.input = value;
-        console.log(`📺 ${device.name} input: ${value}`);
+        logger.info(`📺 ${device.name} input: ${value}`);
         break;
       
       default:
@@ -272,7 +273,7 @@ class AdvancedHomeTheaterController {
       return { success: false, error: 'Activity not found' };
     }
 
-    console.log(`🎬 Starting activity: ${activity.name}`);
+    logger.info(`🎬 Starting activity: ${activity.name}`);
 
     // Stop current activity first
     if (this.currentActivity) {
@@ -288,7 +289,7 @@ class AdvancedHomeTheaterController {
       } else if (step.setting) {
         device.settings = device.settings || {};
         device.settings[step.setting] = step.value;
-        console.log(`   ${device.name} ${step.setting}: ${step.value}`);
+        logger.info(`   ${device.name} ${step.setting}: ${step.value}`);
       }
 
       // Small delay between commands
@@ -297,17 +298,17 @@ class AdvancedHomeTheaterController {
 
     // Set lighting
     if (activity.lighting) {
-      console.log(`   💡 Lighting: ${activity.lighting}`);
+      logger.info(`   💡 Lighting: ${activity.lighting}`);
     }
 
     // Set temperature
     if (activity.temperature) {
-      console.log(`   🌡️  Temperature: ${activity.temperature}°C`);
+      logger.info(`   🌡️  Temperature: ${activity.temperature}°C`);
     }
 
     this.currentActivity = activityId;
 
-    console.log(`✅ Activity started: ${activity.name}`);
+    logger.info(`✅ Activity started: ${activity.name}`);
 
     return { success: true };
   }
@@ -319,7 +320,7 @@ class AdvancedHomeTheaterController {
 
     const activity = this.activities.get(this.currentActivity);
     
-    console.log(`⏹️  Stopping activity: ${activity.name}`);
+    logger.info(`⏹️  Stopping activity: ${activity.name}`);
 
     // Power off all devices
     for (const deviceId of activity.devices) {
@@ -327,7 +328,7 @@ class AdvancedHomeTheaterController {
     }
 
     // Restore normal lighting
-    console.log('   💡 Lighting: normal');
+    logger.info('   💡 Lighting: normal');
 
     this.currentActivity = null;
 
@@ -371,7 +372,7 @@ class AdvancedHomeTheaterController {
   // ============================================
 
   async calibrateAudio() {
-    console.log('🎵 Calibrating audio system...');
+    logger.info('🎵 Calibrating audio system...');
     
     const calibration = {
       speakerDistances: {
@@ -393,15 +394,15 @@ class AdvancedHomeTheaterController {
       roomCorrection: true
     };
 
-    console.log('   Speaker distances configured');
-    console.log('   Audio levels balanced');
-    console.log('   Room correction enabled');
+    logger.info('   Speaker distances configured');
+    logger.info('   Audio levels balanced');
+    logger.info('   Room correction enabled');
 
     return { success: true, calibration };
   }
 
   async calibrateVideo() {
-    console.log('📺 Calibrating video settings...');
+    logger.info('📺 Calibrating video settings...');
     
     const calibration = {
       brightness: 50,
@@ -413,9 +414,9 @@ class AdvancedHomeTheaterController {
       colorSpace: 'BT.2020'
     };
 
-    console.log('   Picture settings optimized');
-    console.log('   HDR mode: auto');
-    console.log('   Color space: BT.2020');
+    logger.info('   Picture settings optimized');
+    logger.info('   HDR mode: auto');
+    logger.info('   Color space: BT.2020');
 
     return { success: true, calibration };
   }
@@ -431,15 +432,15 @@ class AdvancedHomeTheaterController {
     if (hour >= 22 || hour < 7) {
       // Night time - lower volume
       targetVolume = 50;
-      console.log('🌙 Night mode: Reducing volume to 50');
+      logger.info('🌙 Night mode: Reducing volume to 50');
     } else if (hour >= 7 && hour < 9) {
       // Morning - moderate volume
       targetVolume = 60;
-      console.log('🌅 Morning mode: Volume at 60');
+      logger.info('🌅 Morning mode: Volume at 60');
     } else {
       // Day/evening - normal volume
       targetVolume = 70;
-      console.log('☀️ Day mode: Volume at 70');
+      logger.info('☀️ Day mode: Volume at 70');
     }
 
     await this.controlDevice('receiver', 'volume', targetVolume);
@@ -452,21 +453,21 @@ class AdvancedHomeTheaterController {
     const contentTypes = ['movie', 'sports', 'news', 'music', 'gaming'];
     const detected = contentTypes[Math.floor(Math.random() * contentTypes.length)];
 
-    console.log(`🎬 Content detected: ${detected}`);
+    logger.info(`🎬 Content detected: ${detected}`);
 
     switch (detected) {
       case 'movie':
-        console.log('   Optimizing for cinematic experience');
+        logger.info('   Optimizing for cinematic experience');
         await this.optimizePictureForMovies();
         break;
       
       case 'sports':
-        console.log('   Optimizing for sports viewing');
+        logger.info('   Optimizing for sports viewing');
         await this.optimizePictureForSports();
         break;
       
       case 'gaming':
-        console.log('   Optimizing for gaming');
+        logger.info('   Optimizing for gaming');
         await this.optimizePictureForGaming();
         break;
     }
@@ -482,9 +483,9 @@ class AdvancedHomeTheaterController {
     tv.settings.contrast = 50;
     tv.settings.sharpness = 20;
 
-    console.log('   Picture mode: Movie');
-    console.log('   Motion smoothing: OFF');
-    console.log('   Black levels: optimized');
+    logger.info('   Picture mode: Movie');
+    logger.info('   Motion smoothing: OFF');
+    logger.info('   Black levels: optimized');
 
     return { success: true };
   }
@@ -497,9 +498,9 @@ class AdvancedHomeTheaterController {
     tv.settings.contrast = 55;
     tv.settings.sharpness = 30;
 
-    console.log('   Picture mode: Vivid');
-    console.log('   Motion smoothing: ON');
-    console.log('   Clarity: enhanced');
+    logger.info('   Picture mode: Vivid');
+    logger.info('   Motion smoothing: ON');
+    logger.info('   Clarity: enhanced');
 
     return { success: true };
   }
@@ -512,9 +513,9 @@ class AdvancedHomeTheaterController {
     tv.settings.contrast = 50;
     tv.settings.sharpness = 25;
 
-    console.log('   Picture mode: Game');
-    console.log('   Input lag: minimized');
-    console.log('   VRR: enabled');
+    logger.info('   Picture mode: Game');
+    logger.info('   Input lag: minimized');
+    logger.info('   VRR: enabled');
 
     return { success: true };
   }
@@ -530,41 +531,41 @@ class AdvancedHomeTheaterController {
       return { success: false, error: 'Device not found' };
     }
 
-    console.log(`🎮 Remote command: ${button} → ${device.name}`);
+    logger.info(`🎮 Remote command: ${button} → ${device.name}`);
 
     // Handle common buttons
     switch (button) {
       case 'play':
-        console.log('   ▶️ Playing');
+        logger.info('   ▶️ Playing');
         break;
       case 'pause':
-        console.log('   ⏸️ Paused');
+        logger.info('   ⏸️ Paused');
         break;
       case 'stop':
-        console.log('   ⏹️ Stopped');
+        logger.info('   ⏹️ Stopped');
         break;
       case 'volume_up':
         device.volume = Math.min(100, device.volume + 5);
-        console.log(`   🔊 Volume: ${device.volume}`);
+        logger.info(`   🔊 Volume: ${device.volume}`);
         break;
       case 'volume_down':
         device.volume = Math.max(0, device.volume - 5);
-        console.log(`   🔉 Volume: ${device.volume}`);
+        logger.info(`   🔉 Volume: ${device.volume}`);
         break;
       case 'channel_up':
-        console.log('   📺 Channel up');
+        logger.info('   📺 Channel up');
         break;
       case 'channel_down':
-        console.log('   📺 Channel down');
+        logger.info('   📺 Channel down');
         break;
       case 'menu':
-        console.log('   📋 Menu opened');
+        logger.info('   📋 Menu opened');
         break;
       case 'back':
-        console.log('   ⬅️ Back');
+        logger.info('   ⬅️ Back');
         break;
       case 'home':
-        console.log('   🏠 Home screen');
+        logger.info('   🏠 Home screen');
         break;
     }
 
@@ -588,13 +589,13 @@ class AdvancedHomeTheaterController {
       }
     }, 30 * 60 * 1000));
 
-    console.log('🎬 Home Theater Controller active');
+    logger.info('🎬 Home Theater Controller active');
   }
 
   async checkDeviceStatus() {
     for (const [_id, device] of this.devices) {
       if (device.power === 'on') {
-        console.log(`   ${device.name}: Online`);
+        logger.info(`   ${device.name}: Online`);
       }
     }
   }

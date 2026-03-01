@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Family Calendar Coordinator
@@ -115,7 +116,7 @@ class FamilyCalendarCoordinator {
     const previousLocation = member.location;
     member.location = location;
 
-    console.log(`📍 ${member.name}: ${previousLocation} → ${location}`);
+    logger.info(`📍 ${member.name}: ${previousLocation} → ${location}`);
 
     // Trigger location-based automations
     await this.handleLocationChange(member, location);
@@ -132,7 +133,7 @@ class FamilyCalendarCoordinator {
         // Event starting within 30 minutes
         if (event.attendees.includes(member.id)) {
           if (location === 'away' && event.location === 'home') {
-            console.log(`  ⚠️ ${member.name} is away but has event "${event.title}" at home soon`);
+            logger.info(`  ⚠️ ${member.name} is away but has event "${event.title}" at home soon`);
           }
         }
       }
@@ -149,7 +150,7 @@ class FamilyCalendarCoordinator {
   }
 
   async handleArrival(member) {
-    console.log(`  👋 ${member.name} arrived home`);
+    logger.info(`  👋 ${member.name} arrived home`);
     
     // Check for pending tasks or reminders
     const pendingReminders = this.reminders.filter(r => 
@@ -159,19 +160,19 @@ class FamilyCalendarCoordinator {
     );
 
     for (const reminder of pendingReminders) {
-      console.log(`  📌 Reminder for ${member.name}: ${reminder.message}`);
+      logger.info(`  📌 Reminder for ${member.name}: ${reminder.message}`);
       reminder.status = 'delivered';
     }
   }
 
   async handleDeparture(member) {
-    console.log(`  🚪 ${member.name} left home`);
+    logger.info(`  🚪 ${member.name} left home`);
     
     // Check if forgot anything
     const upcomingEvents = this.getUpcomingEvents(member.id, 2); // Next 2 hours
     
     if (upcomingEvents.length > 0) {
-      console.log(`  📅 Upcoming: ${upcomingEvents[0].title} at ${new Date(upcomingEvents[0].startTime).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}`);
+      logger.info(`  📅 Upcoming: ${upcomingEvents[0].title} at ${new Date(upcomingEvents[0].startTime).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}`);
     }
   }
 
@@ -275,7 +276,7 @@ class FamilyCalendarCoordinator {
     // Create automatic reminders
     await this.createAutomaticReminders(event);
 
-    console.log(`📅 Event created: ${event.title} (${new Date(event.startTime).toLocaleString('sv-SE')})`);
+    logger.info(`📅 Event created: ${event.title} (${new Date(event.startTime).toLocaleString('sv-SE')})`);
 
     return { success: true, event };
   }
@@ -292,7 +293,7 @@ class FamilyCalendarCoordinator {
     // Recheck conflicts
     await this.checkConflicts(eventId);
 
-    console.log(`📝 Event updated: ${event.title}`);
+    logger.info(`📝 Event updated: ${event.title}`);
 
     return { success: true, event };
   }
@@ -309,7 +310,7 @@ class FamilyCalendarCoordinator {
     // Remove associated reminders
     this.reminders = this.reminders.filter(r => r.eventId !== eventId);
 
-    console.log(`🗑️ Event deleted: ${event.title}`);
+    logger.info(`🗑️ Event deleted: ${event.title}`);
 
     return { success: true };
   }
@@ -352,13 +353,13 @@ class FamilyCalendarCoordinator {
     }
 
     if (conflicts.length > 0) {
-      console.log(`⚠️ Conflicts detected for "${event.title}":`);
+      logger.info(`⚠️ Conflicts detected for "${event.title}":`);
       
       for (const conflict of conflicts) {
         const other = this.events.get(conflict.event2);
         const memberNames = conflict.members.map(m => this.members.get(m)?.name).join(', ');
         
-        console.log(`  - Overlaps with "${other.title}" (${memberNames})`);
+        logger.info(`  - Overlaps with "${other.title}" (${memberNames})`);
         
         this.conflicts.push(conflict);
       }
@@ -419,7 +420,7 @@ class FamilyCalendarCoordinator {
 
     this.conflicts.splice(conflictIndex, 1);
 
-    console.log(`✓ Conflict resolved: ${resolution.action}`);
+    logger.info(`✓ Conflict resolved: ${resolution.action}`);
 
     return { success: true };
   }
@@ -477,7 +478,7 @@ class FamilyCalendarCoordinator {
         for (const memberId of reminder.memberId) {
           const member = this.members.get(memberId);
           if (member) {
-            console.log(`🔔 Reminder for ${member.name}: ${reminder.message}`);
+            logger.info(`🔔 Reminder for ${member.name}: ${reminder.message}`);
           }
         }
 
@@ -692,17 +693,17 @@ class FamilyCalendarCoordinator {
   }
 
   async generateDailySummary() {
-    console.log('📅 Daily Summary:');
+    logger.info('📅 Daily Summary:');
     
     for (const [memberId, member] of this.members) {
       const todayEvents = this.getDaySchedule(Date.now(), memberId);
       
       if (todayEvents.length > 0) {
-        console.log(`  ${member.name}:`);
+        logger.info(`  ${member.name}:`);
         
         for (const event of todayEvents) {
           const time = new Date(event.startTime).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-          console.log(`    - ${time}: ${event.title}`);
+          logger.info(`    - ${time}: ${event.title}`);
         }
       }
     }
@@ -714,7 +715,7 @@ class FamilyCalendarCoordinator {
     });
 
     if (todayConflicts.length > 0) {
-      console.log(`  ⚠️ ${todayConflicts.length} conflict(s) today`);
+      logger.info(`  ⚠️ ${todayConflicts.length} conflict(s) today`);
     }
   }
 

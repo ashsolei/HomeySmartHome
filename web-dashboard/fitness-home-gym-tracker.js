@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Fitness & Home Gym Tracker
@@ -185,7 +186,7 @@ class FitnessHomeGymTracker {
     equipment.currentUser = userId;
 
     const user = this.users.get(userId);
-    console.log(`🏋️ ${user.name} started using ${equipment.name}`);
+    logger.info(`🏋️ ${user.name} started using ${equipment.name}`);
 
     return { success: true };
   }
@@ -200,7 +201,7 @@ class FitnessHomeGymTracker {
     equipment.inUse = false;
     equipment.currentUser = null;
 
-    console.log(`✅ ${equipment.name} available`);
+    logger.info(`✅ ${equipment.name} available`);
 
     return { success: true };
   }
@@ -264,13 +265,13 @@ class FitnessHomeGymTracker {
 
     this.workouts.push(workout);
 
-    console.log(`🏋️ ${user.name} started ${type} workout`);
+    logger.info(`🏋️ ${user.name} started ${type} workout`);
 
     // Set gym environment
-    console.log('   💡 Gym lights: on');
-    console.log('   🎵 Workout playlist: playing');
-    console.log('   🌡️  Temperature: 18°C (cool)');
-    console.log('   📺 Mirror display: workout mode');
+    logger.info('   💡 Gym lights: on');
+    logger.info('   🎵 Workout playlist: playing');
+    logger.info('   🌡️  Temperature: 18°C (cool)');
+    logger.info('   📺 Mirror display: workout mode');
 
     return { success: true, workoutId: workout.id };
   }
@@ -314,15 +315,15 @@ class FitnessHomeGymTracker {
     workout.exercises.push(exerciseLog);
     workout.totalCalories += exerciseLog.calories;
 
-    console.log(`   ✅ Logged: ${exercise.name}`);
+    logger.info(`   ✅ Logged: ${exercise.name}`);
     
     if (exerciseLog.sets && exerciseLog.reps) {
-      console.log(`      ${exerciseLog.sets} sets × ${exerciseLog.reps} reps @ ${exerciseLog.weight || 'bodyweight'} kg`);
+      logger.info(`      ${exerciseLog.sets} sets × ${exerciseLog.reps} reps @ ${exerciseLog.weight || 'bodyweight'} kg`);
     } else if (exerciseLog.duration) {
-      console.log(`      ${exerciseLog.duration} minutes`);
+      logger.info(`      ${exerciseLog.duration} minutes`);
     }
     
-    console.log(`      Calories: ${Math.round(exerciseLog.calories)}`);
+    logger.info(`      Calories: ${Math.round(exerciseLog.calories)}`);
 
     // Check for personal record
     if (exercise.type === 'strength' && exerciseLog.weight) {
@@ -348,13 +349,13 @@ class FitnessHomeGymTracker {
       workout.averageHeartRate = Math.round(sum / workout.heartRate.length);
     }
 
-    console.log(`✅ ${workout.user} finished workout`);
-    console.log(`   Duration: ${Math.round(workout.duration)} minutes`);
-    console.log(`   Exercises: ${workout.exercises.length}`);
-    console.log(`   Calories: ${Math.round(workout.totalCalories)}`);
+    logger.info(`✅ ${workout.user} finished workout`);
+    logger.info(`   Duration: ${Math.round(workout.duration)} minutes`);
+    logger.info(`   Exercises: ${workout.exercises.length}`);
+    logger.info(`   Calories: ${Math.round(workout.totalCalories)}`);
     
     if (workout.averageHeartRate) {
-      console.log(`   Avg Heart Rate: ${workout.averageHeartRate} bpm`);
+      logger.info(`   Avg Heart Rate: ${workout.averageHeartRate} bpm`);
     }
 
     // Update user stats
@@ -364,8 +365,8 @@ class FitnessHomeGymTracker {
     user.stats.caloriesBurned += workout.totalCalories;
 
     // Cool-down recommendations
-    console.log('   💧 Hydration reminder');
-    console.log('   🧘 Cool-down stretch recommended');
+    logger.info('   💧 Hydration reminder');
+    logger.info('   🧘 Cool-down stretch recommended');
 
     return { success: true, workout };
   }
@@ -425,11 +426,11 @@ class FitnessHomeGymTracker {
     if (!currentPR || weight > currentPR) {
       user.stats.personalRecords[exerciseName] = weight;
       
-      console.log(`   🏆 NEW PERSONAL RECORD! ${exercise.name}: ${weight} kg`);
+      logger.info(`   🏆 NEW PERSONAL RECORD! ${exercise.name}: ${weight} kg`);
       
       // Celebrate
-      console.log('   🎉 Confetti effect!');
-      console.log('   🔊 Victory sound!');
+      logger.info('   🎉 Confetti effect!');
+      logger.info('   🔊 Victory sound!');
     }
   }
 
@@ -494,10 +495,10 @@ class FitnessHomeGymTracker {
       suggestedType = user.preferences.workoutType;
     }
 
-    console.log(`💡 Workout suggestion for ${user.name}:`);
-    console.log(`   Type: ${suggestedType}`);
-    console.log(`   Duration: 45 minutes`);
-    console.log(`   Reason: Balance and recovery`);
+    logger.info(`💡 Workout suggestion for ${user.name}:`);
+    logger.info(`   Type: ${suggestedType}`);
+    logger.info(`   Duration: 45 minutes`);
+    logger.info(`   Reason: Balance and recovery`);
 
     return {
       success: true,
@@ -514,9 +515,9 @@ class FitnessHomeGymTracker {
       return;
     }
 
-    console.log(`⏰ Workout reminder: ${user.name}`);
-    console.log(`   Time: ${user.preferences.reminderTime}`);
-    console.log(`   Goal: ${user.goals.weeklyWorkouts} workouts/week`);
+    logger.info(`⏰ Workout reminder: ${user.name}`);
+    logger.info(`   Time: ${user.preferences.reminderTime}`);
+    logger.info(`   Goal: ${user.goals.weeklyWorkouts} workouts/week`);
 
     return { success: true };
   }
@@ -550,12 +551,12 @@ class FitnessHomeGymTracker {
       goalProgress: (avgWorkoutsPerWeek / user.goals.weeklyWorkouts * 100).toFixed(0) + '%'
     };
 
-    console.log(`📊 Progress analysis for ${user.name} (${days} days):`);
-    console.log(`   Workouts: ${progress.workouts}`);
-    console.log(`   Time: ${progress.minutes} minutes`);
-    console.log(`   Calories: ${progress.calories}`);
-    console.log(`   Avg/week: ${progress.avgPerWeek}`);
-    console.log(`   Goal: ${progress.goalProgress}`);
+    logger.info(`📊 Progress analysis for ${user.name} (${days} days):`);
+    logger.info(`   Workouts: ${progress.workouts}`);
+    logger.info(`   Time: ${progress.minutes} minutes`);
+    logger.info(`   Calories: ${progress.calories}`);
+    logger.info(`   Avg/week: ${progress.avgPerWeek}`);
+    logger.info(`   Goal: ${progress.goalProgress}`);
 
     return progress;
   }
@@ -584,12 +585,12 @@ class FitnessHomeGymTracker {
       for (const [_id, equipment] of this.equipment) {
         if (equipment.totalHours > 200 && !equipment.maintenanceDue) {
           equipment.maintenanceDue = true;
-          console.log(`🔧 Maintenance due: ${equipment.name}`);
+          logger.info(`🔧 Maintenance due: ${equipment.name}`);
         }
       }
     }, 24 * 60 * 60 * 1000));
 
-    console.log('🏋️ Fitness Tracker active');
+    logger.info('🏋️ Fitness Tracker active');
   }
 
   // ============================================

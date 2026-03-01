@@ -4726,3 +4726,9 @@ module.exports = {
     return homey.app.energySpotPriceSystem.getStatistics();
   }
 };
+
+// ── Additional routes registered directly in server.js ──
+// POST /graphql              — GraphQL API endpoint (FEAT-16)
+// GET  /api/v1/timeline      — User activity timeline with ?limit, ?type, ?since filters (FEAT-18)
+// GET  /api/v1/scenes        — List all scenes (FEAT-19)
+// POST /api/v1/scenes        — Create a new scene { name, actions[] } (FEAT-19)

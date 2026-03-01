@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Package Delivery Manager
@@ -121,7 +122,7 @@ class PackageDeliveryManager {
 
     this.packages.set(pkgId, pkg);
 
-    console.log(`📦 Package added: ${pkg.trackingNumber} (${pkg.carrier})`);
+    logger.info(`📦 Package added: ${pkg.trackingNumber} (${pkg.carrier})`);
 
     return { success: true, packageId: pkgId };
   }
@@ -139,7 +140,7 @@ class PackageDeliveryManager {
       pkg.location = location;
     }
 
-    console.log(`📦 Package status updated: ${pkg.trackingNumber} → ${status}`);
+    logger.info(`📦 Package status updated: ${pkg.trackingNumber} → ${status}`);
 
     // Send notifications
     await this.sendDeliveryNotification(pkg);
@@ -224,28 +225,28 @@ class PackageDeliveryManager {
   // ============================================
 
   async handleDelivery(pkg) {
-    console.log(`📬 Handling delivery: ${pkg.trackingNumber}`);
+    logger.info(`📬 Handling delivery: ${pkg.trackingNumber}`);
 
     const zone = await this.getPreferredDeliveryZone(pkg);
     const zoneInfo = this.deliveryZones.get(zone);
 
-    console.log(`   Delivery zone: ${zoneInfo.name}`);
+    logger.info(`   Delivery zone: ${zoneInfo.name}`);
 
     // Take photo if camera available
     if (zoneInfo.camera) {
-      console.log(`   📸 Taking photo with ${zoneInfo.camera}`);
+      logger.info(`   📸 Taking photo with ${zoneInfo.camera}`);
     }
 
     // Log delivery time
-    console.log(`   ⏰ Delivered at ${new Date(pkg.actualDelivery).toLocaleTimeString('sv-SE')}`);
+    logger.info(`   ⏰ Delivered at ${new Date(pkg.actualDelivery).toLocaleTimeString('sv-SE')}`);
 
     // Notify recipient
     await this.sendDeliveryNotification(pkg);
 
     // Home automation
     if (zone === 'front_door') {
-      console.log('   💡 Turning on porch light');
-      console.log('   🔔 Playing doorbell chime');
+      logger.info('   💡 Turning on porch light');
+      logger.info('   🔔 Playing doorbell chime');
     }
 
     return { success: true, zone: zoneInfo.name };
@@ -262,7 +263,7 @@ class PackageDeliveryManager {
 
     this.notifications.push(notification);
 
-    console.log(`📢 Notification: ${notification.message}`);
+    logger.info(`📢 Notification: ${notification.message}`);
 
     return notification;
   }
@@ -295,11 +296,11 @@ class PackageDeliveryManager {
     const knownCarriers = ['PostNord', 'DHL', 'UPS', 'Bring', 'Budbee'];
     const recognizedCarrier = knownCarriers[Math.floor(Math.random() * knownCarriers.length)];
 
-    console.log(`👤 Delivery person recognized: ${recognizedCarrier}`);
+    logger.info(`👤 Delivery person recognized: ${recognizedCarrier}`);
 
     // Automatically unlock parcel locker if recognized
     if (recognizedCarrier) {
-      console.log('   🔓 Unlocking parcel locker');
+      logger.info('   🔓 Unlocking parcel locker');
       return { success: true, carrier: recognizedCarrier, access: 'granted' };
     }
 
@@ -310,12 +311,12 @@ class PackageDeliveryManager {
     // Grant temporary access code (5 minutes)
     const code = Math.floor(1000 + Math.random() * 9000);
 
-    console.log(`🔑 Temporary access granted to ${carrier}`);
-    console.log(`   Code: ${code}`);
-    console.log(`   Valid for: ${duration} seconds`);
+    logger.info(`🔑 Temporary access granted to ${carrier}`);
+    logger.info(`   Code: ${code}`);
+    logger.info(`   Valid for: ${duration} seconds`);
 
     this._timeouts.push(setTimeout(() => {
-      console.log(`   🔒 Access code ${code} expired`);
+      logger.info(`   🔒 Access code ${code} expired`);
     }, duration * 1000));
 
     return { success: true, code, expiresIn: duration };
@@ -332,9 +333,9 @@ class PackageDeliveryManager {
       weekends: { start: '10:00', end: '20:00' }
     };
 
-    console.log('📅 Safe delivery times configured:');
-    console.log(`   Weekdays: ${schedule.weekdays.start} - ${schedule.weekdays.end}`);
-    console.log(`   Weekends: ${schedule.weekends.start} - ${schedule.weekends.end}`);
+    logger.info('📅 Safe delivery times configured:');
+    logger.info(`   Weekdays: ${schedule.weekdays.start} - ${schedule.weekdays.end}`);
+    logger.info(`   Weekends: ${schedule.weekends.start} - ${schedule.weekends.end}`);
 
     return schedule;
   }
@@ -348,8 +349,8 @@ class PackageDeliveryManager {
     });
 
     if (packages.length > 1) {
-      console.log(`📦 ${packages.length} packages expected on ${new Date(date).toLocaleDateString('sv-SE')}`);
-      console.log('   Coordinating deliveries to same time slot');
+      logger.info(`📦 ${packages.length} packages expected on ${new Date(date).toLocaleDateString('sv-SE')}`);
+      logger.info('   Coordinating deliveries to same time slot');
     }
 
     return packages;
@@ -362,11 +363,11 @@ class PackageDeliveryManager {
       return { success: false, error: 'Package not found' };
     }
 
-    console.log(`❌ Missed delivery: ${pkg.trackingNumber}`);
-    console.log('   Options:');
-    console.log('   1. Reschedule delivery');
-    console.log('   2. Collect at pickup point');
-    console.log('   3. Deliver to neighbor');
+    logger.info(`❌ Missed delivery: ${pkg.trackingNumber}`);
+    logger.info('   Options:');
+    logger.info('   1. Reschedule delivery');
+    logger.info('   2. Collect at pickup point');
+    logger.info('   3. Deliver to neighbor');
 
     pkg.status = 'failed';
 
@@ -383,8 +384,8 @@ class PackageDeliveryManager {
     pkg.status = 'rescheduled';
     pkg.estimatedDelivery = preferredTime;
 
-    console.log(`🔄 Redelivery requested: ${pkg.trackingNumber}`);
-    console.log(`   New time: ${new Date(preferredTime).toLocaleString('sv-SE')}`);
+    logger.info(`🔄 Redelivery requested: ${pkg.trackingNumber}`);
+    logger.info(`   New time: ${new Date(preferredTime).toLocaleString('sv-SE')}`);
 
     return { success: true };
   }
@@ -404,7 +405,7 @@ class PackageDeliveryManager {
       this.checkTodaysDeliveries();
     }, 60 * 60 * 1000));
 
-    console.log('📦 Package Manager active');
+    logger.info('📦 Package Manager active');
   }
 
   async checkDeliveryUpdates() {
@@ -431,7 +432,7 @@ class PackageDeliveryManager {
     });
 
     if (expected.length > 0) {
-      console.log(`📦 ${expected.length} deliveries expected today`);
+      logger.info(`📦 ${expected.length} deliveries expected today`);
     }
   }
 

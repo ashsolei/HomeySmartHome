@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Water Consumption Monitor
@@ -395,8 +396,8 @@ class WaterConsumptionMonitor {
     if (!existing) {
       this.leakAlerts.push(leak);
       
-      console.log(`💧 Leak Alert: ${leak.message}`);
-      console.log(`   Severity: ${leak.severity}`);
+      logger.info(`💧 Leak Alert: ${leak.message}`);
+      logger.info(`   Severity: ${leak.severity}`);
       
       // Trigger notification
       // this.app.notifications.send({
@@ -701,7 +702,7 @@ class WaterConsumptionMonitor {
       meter.todayUsage = 0;
     }
 
-    console.log('Daily water statistics reset');
+    logger.info('Daily water statistics reset');
   }
 
   logUsage(usage) {

@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Home Office Optimizer
@@ -149,34 +150,34 @@ class HomeOfficeOptimizer {
       return { success: false, error: 'Mode not found' };
     }
 
-    console.log(`💼 Activating work mode: ${mode.name}`);
+    logger.info(`💼 Activating work mode: ${mode.name}`);
 
     // Apply lighting settings
     if (mode.settings.lighting.desk) {
-      console.log(`  💡 Desk lamp: ${mode.settings.lighting.brightness}% @ ${mode.settings.lighting.temperature}K`);
+      logger.info(`  💡 Desk lamp: ${mode.settings.lighting.brightness}% @ ${mode.settings.lighting.temperature}K`);
     }
     if (mode.settings.lighting.ceiling) {
-      console.log(`  💡 Ceiling light: ${mode.settings.lighting.brightness}% @ ${mode.settings.lighting.temperature}K`);
+      logger.info(`  💡 Ceiling light: ${mode.settings.lighting.brightness}% @ ${mode.settings.lighting.temperature}K`);
     }
     if (mode.settings.lighting.fill) {
-      console.log(`  💡 Fill light: ON (for video)`);
+      logger.info(`  💡 Fill light: ON (for video)`);
     }
 
     // Apply audio settings
     if (mode.settings.audio.enabled) {
-      console.log(`  🎵 Audio: ${mode.settings.audio.type} @ ${mode.settings.audio.volume}%`);
+      logger.info(`  🎵 Audio: ${mode.settings.audio.type} @ ${mode.settings.audio.volume}%`);
     } else {
-      console.log(`  🔇 Audio: OFF`);
+      logger.info(`  🔇 Audio: OFF`);
     }
 
     // Apply climate settings
-    console.log(`  🌡️ Temperature: ${mode.settings.temperature}°C`);
+    logger.info(`  🌡️ Temperature: ${mode.settings.temperature}°C`);
 
     // Apply notification settings
     if (mode.settings.doNotDisturb) {
-      console.log(`  🔕 Do Not Disturb: ON`);
+      logger.info(`  🔕 Do Not Disturb: ON`);
     } else {
-      console.log(`  🔔 Notifications: ${mode.settings.notifications}`);
+      logger.info(`  🔔 Notifications: ${mode.settings.notifications}`);
     }
 
     // Start work session
@@ -209,7 +210,7 @@ class HomeOfficeOptimizer {
 
     this.workSessions.push(session);
 
-    console.log(`⏱️ Work session started: ${mode.name} (${mode.settings.duration} min)`);
+    logger.info(`⏱️ Work session started: ${mode.name} (${mode.settings.duration} min)`);
 
     // Schedule break reminder
     if (mode.settings.duration > 30) {
@@ -231,7 +232,7 @@ class HomeOfficeOptimizer {
 
     const actualDuration = (session.endTime - session.startTime) / (60 * 1000);
 
-    console.log(`✅ Work session ended: ${actualDuration.toFixed(0)} minutes`);
+    logger.info(`✅ Work session ended: ${actualDuration.toFixed(0)} minutes`);
 
     // Update productivity stats
     await this.updateProductivityStats(session);
@@ -254,11 +255,11 @@ class HomeOfficeOptimizer {
       type: breakType
     });
 
-    console.log(`☕ Break started: ${breakDuration} minutes`);
+    logger.info(`☕ Break started: ${breakDuration} minutes`);
 
     // Adjust office environment for break
-    console.log('  💡 Dimming lights to 50%');
-    console.log('  🎵 Playing relaxing music');
+    logger.info('  💡 Dimming lights to 50%');
+    logger.info('  🎵 Playing relaxing music');
 
     return { success: true, duration: breakDuration };
   }
@@ -289,9 +290,9 @@ class HomeOfficeOptimizer {
 
     this.focusPeriods.push(focusPeriod);
 
-    console.log(`🎯 Focus period started: ${duration} minutes`);
-    console.log('  🔕 Blocking all notifications');
-    console.log('  📵 Phone on silent');
+    logger.info(`🎯 Focus period started: ${duration} minutes`);
+    logger.info('  🔕 Blocking all notifications');
+    logger.info('  📵 Phone on silent');
 
     return { success: true, focusId: focusPeriod.id };
   }
@@ -305,8 +306,8 @@ class HomeOfficeOptimizer {
 
     const actualDuration = (Date.now() - period.startTime) / (60 * 1000);
 
-    console.log(`✅ Focus period ended: ${actualDuration.toFixed(0)} minutes`);
-    console.log(`  Interruptions: ${period.interruptions}`);
+    logger.info(`✅ Focus period ended: ${actualDuration.toFixed(0)} minutes`);
+    logger.info(`  Interruptions: ${period.interruptions}`);
 
     return { success: true, duration: actualDuration };
   }
@@ -316,7 +317,7 @@ class HomeOfficeOptimizer {
     
     if (period) {
       period.interruptions++;
-      console.log(`⚠️ Interruption recorded (total: ${period.interruptions})`);
+      logger.info(`⚠️ Interruption recorded (total: ${period.interruptions})`);
     }
   }
 
@@ -424,37 +425,37 @@ class HomeOfficeOptimizer {
   // ============================================
 
   async optimizeForVideoCall() {
-    console.log('🎥 Optimizing for video call...');
+    logger.info('🎥 Optimizing for video call...');
     
-    console.log('  💡 Setting key light: 100% @ 5000K');
-    console.log('  💡 Setting fill light: 60% @ 4500K');
-    console.log('  💡 Setting back light: 40%');
-    console.log('  🌡️ Temperature: 20°C (prevent overheating)');
-    console.log('  🔕 Do Not Disturb: ON');
-    console.log('  🔇 Muting other audio sources');
+    logger.info('  💡 Setting key light: 100% @ 5000K');
+    logger.info('  💡 Setting fill light: 60% @ 4500K');
+    logger.info('  💡 Setting back light: 40%');
+    logger.info('  🌡️ Temperature: 20°C (prevent overheating)');
+    logger.info('  🔕 Do Not Disturb: ON');
+    logger.info('  🔇 Muting other audio sources');
 
     return { success: true };
   }
 
   async optimizeForFocus() {
-    console.log('🎯 Optimizing for focus...');
+    logger.info('🎯 Optimizing for focus...');
     
-    console.log('  💡 Bright white light: 100% @ 5500K');
-    console.log('  🌡️ Temperature: 21°C (alertness)');
-    console.log('  🎵 Focus music: 25%');
-    console.log('  🔕 Blocking notifications');
-    console.log('  📵 Phone silent mode');
+    logger.info('  💡 Bright white light: 100% @ 5500K');
+    logger.info('  🌡️ Temperature: 21°C (alertness)');
+    logger.info('  🎵 Focus music: 25%');
+    logger.info('  🔕 Blocking notifications');
+    logger.info('  📵 Phone silent mode');
 
     return { success: true };
   }
 
   async optimizeForCreativity() {
-    console.log('🎨 Optimizing for creativity...');
+    logger.info('🎨 Optimizing for creativity...');
     
-    console.log('  💡 Warm light: 80% @ 4000K');
-    console.log('  🌡️ Temperature: 21°C');
-    console.log('  🎵 Ambient music: 35%');
-    console.log('  🪟 Natural light preferred');
+    logger.info('  💡 Warm light: 80% @ 4000K');
+    logger.info('  🌡️ Temperature: 21°C');
+    logger.info('  🎵 Ambient music: 35%');
+    logger.info('  🪟 Natural light preferred');
 
     return { success: true };
   }
@@ -464,20 +465,20 @@ class HomeOfficeOptimizer {
   // ============================================
 
   async startPostureMonitoring() {
-    console.log('🪑 Posture monitoring: ENABLED');
+    logger.info('🪑 Posture monitoring: ENABLED');
     
     // In real implementation, would connect to posture sensor
     // For now, just remind periodically
     this._intervals.push(setInterval(() => {
-      console.log('💺 Posture reminder: Sit up straight!');
+      logger.info('💺 Posture reminder: Sit up straight!');
     }, 30 * 60 * 1000));  // Every 30 minutes
 
     return { success: true };
   }
 
   async remindToStand() {
-    console.log('🚶 Stand up reminder: Time to stretch!');
-    console.log('  Target: 5 minutes of standing/walking');
+    logger.info('🚶 Stand up reminder: Time to stretch!');
+    logger.info('  Target: 5 minutes of standing/walking');
     
     return { success: true };
   }
@@ -497,7 +498,7 @@ class HomeOfficeOptimizer {
       this.remindToStand();
     }, 60 * 60 * 1000));
 
-    console.log('💼 Home Office Optimizer active');
+    logger.info('💼 Home Office Optimizer active');
   }
 
   async checkBreakReminders() {
@@ -510,8 +511,8 @@ class HomeOfficeOptimizer {
         const session = this.workSessions.find(s => s.id === reminder.sessionId);
         
         if (session && !session.completed) {
-          console.log('⏰ Break reminder: Time for a break!');
-          console.log('  Recommendation: 5-15 minute break');
+          logger.info('⏰ Break reminder: Time for a break!');
+          logger.info('  Recommendation: 5-15 minute break');
         }
       }
     }

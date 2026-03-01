@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Energy Storage Optimizer
@@ -358,7 +359,7 @@ class EnergyStorageOptimizer {
     // Get current energy situation
     const situation = await this.assessEnergySituation();
     
-    console.log(`⚡ Energy Optimization (${hour}:00, ${currentPrice} öre/kWh)`);
+    logger.info(`⚡ Energy Optimization (${hour}:00, ${currentPrice} öre/kWh)`);
     
     // Execute strategies in priority order
     const sortedStrategies = Array.from(this.strategies.values())
@@ -417,14 +418,14 @@ class EnergyStorageOptimizer {
             situation.netProduction,
             homeBattery.maxChargePower
           ));
-          console.log(`  ☀️ Charging from solar: ${situation.netProduction.toFixed(1)} kW`);
+          logger.info(`  ☀️ Charging from solar: ${situation.netProduction.toFixed(1)} kW`);
         } else if (situation.netProduction < 0 && homeBattery.currentSoC > homeBattery.reservePower) {
           // Need power - discharge battery
           await this.dischargeBattery('battery_home', Math.min(
             Math.abs(situation.netProduction),
             homeBattery.maxDischargePower
           ));
-          console.log(`  🔋 Discharging to cover load: ${Math.abs(situation.netProduction).toFixed(1)} kW`);
+          logger.info(`  🔋 Discharging to cover load: ${Math.abs(situation.netProduction).toFixed(1)} kW`);
         }
         break;
 
@@ -434,11 +435,11 @@ class EnergyStorageOptimizer {
         if (priceRatio < 0.7 && homeBattery.currentSoC < 90) {
           // Cheap price - charge
           await this.chargeBattery('battery_home', homeBattery.maxChargePower);
-          console.log(`  💰 Cheap price (${situation.currentPrice} öre) - charging`);
+          logger.info(`  💰 Cheap price (${situation.currentPrice} öre) - charging`);
         } else if (priceRatio > 1.3 && homeBattery.currentSoC > homeBattery.reservePower) {
           // Expensive price - discharge
           await this.dischargeBattery('battery_home', homeBattery.maxDischargePower);
-          console.log(`  💸 Expensive price (${situation.currentPrice} öre) - discharging`);
+          logger.info(`  💸 Expensive price (${situation.currentPrice} öre) - discharging`);
         }
         break;
 
@@ -449,7 +450,7 @@ class EnergyStorageOptimizer {
             peakExcess,
             homeBattery.maxDischargePower
           ));
-          console.log(`  📊 Peak shaving: Reducing grid load by ${peakExcess.toFixed(1)} kW`);
+          logger.info(`  📊 Peak shaving: Reducing grid load by ${peakExcess.toFixed(1)} kW`);
         }
         break;
 
@@ -462,7 +463,7 @@ class EnergyStorageOptimizer {
           
           if (cheapHours.some(h => h.hour === currentHour)) {
             await this.chargeBattery('battery_ev', evBattery.maxChargePower);
-            console.log(`  🚗 Smart EV charging (cheap hour)`);
+            logger.info(`  🚗 Smart EV charging (cheap hour)`);
           }
         }
         break;
@@ -559,7 +560,7 @@ class EnergyStorageOptimizer {
       }
     }
 
-    console.log(`💰 Daily savings: ${totalSavings.toFixed(2)} SEK`);
+    logger.info(`💰 Daily savings: ${totalSavings.toFixed(2)} SEK`);
     
     return totalSavings;
   }
@@ -696,7 +697,7 @@ class EnergyStorageOptimizer {
 
     strategy.enabled = enabled;
     
-    console.log(`${enabled ? '✅' : '❌'} Strategy ${strategy.name}: ${enabled ? 'enabled' : 'disabled'}`);
+    logger.info(`${enabled ? '✅' : '❌'} Strategy ${strategy.name}: ${enabled ? 'enabled' : 'disabled'}`);
 
     return { success: true, strategy };
   }

@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Comfort Optimizer Engine
@@ -567,10 +568,10 @@ class ComfortOptimizer {
   }
 
   async executeOptimizationActions(zoneId, actions) {
-    console.log(`Optimizing zone: ${this.zones.get(zoneId).name}`);
+    logger.info(`Optimizing zone: ${this.zones.get(zoneId).name}`);
     
     for (const action of actions) {
-      console.log(`  → ${action.reason}: ${action.type} ${action.action || ''}`);
+      logger.info(`  → ${action.reason}: ${action.type} ${action.action || ''}`);
       
       // Execute action (integrate with actual device control)
       // await this.app.devices.get(action.device).setCapability(...)

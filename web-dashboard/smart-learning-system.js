@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Smart Learning System
@@ -40,9 +42,9 @@ class SmartLearningSystem {
           lastAnalyzed: null
         });
       }
-      console.log('📚 Learning data loaded: 5 pattern categories initialized');
+      logger.info('📚 Learning data loaded: 5 pattern categories initialized');
     } catch (error) {
-      console.error('Failed to load learning data:', error.message);
+      logger.error('Failed to load learning data:', error.message);
       // Non-fatal — continue with empty data
     }
   }
@@ -52,7 +54,7 @@ class SmartLearningSystem {
   // ============================================
 
   async analyzeUserBehavior(category) {
-    console.log(`🧠 Analyzing ${category} patterns...`);
+    logger.info(`🧠 Analyzing ${category} patterns...`);
 
     const behaviors = {
       schedule: await this.analyzeSchedulePatterns(),
@@ -371,7 +373,7 @@ class SmartLearningSystem {
         rule.confidence = rule.timesSuccessful / rule.timesTriggered;
       }
 
-      console.log(`🤖 Rule triggered: ${rule.name} (Confidence: ${(rule.confidence * 100).toFixed(0)}%)`);
+      logger.info(`🤖 Rule triggered: ${rule.name} (Confidence: ${(rule.confidence * 100).toFixed(0)}%)`);
 
       return {
         shouldTrigger: true,
@@ -401,7 +403,7 @@ class SmartLearningSystem {
 
     this.rules.set(newRule.id, newRule);
 
-    console.log(`✨ Created adaptive rule: ${newRule.name}`);
+    logger.info(`✨ Created adaptive rule: ${newRule.name}`);
 
     return newRule;
   }
@@ -411,7 +413,7 @@ class SmartLearningSystem {
   // ============================================
 
   async learnFromData(dataType, data) {
-    console.log(`📚 Learning from ${dataType} data...`);
+    logger.info(`📚 Learning from ${dataType} data...`);
 
     const insights = {
       dataType,
@@ -472,12 +474,14 @@ class SmartLearningSystem {
     }
 
     this.insights.push(insights);
+    if (this.insights.length > MAX_ENTRIES) this.insights.shift();
     this.learningHistory.push({
       timestamp: Date.now(),
       dataType,
       samplesProcessed: data.length,
       insightsGenerated: insights.patterns.length
     });
+    if (this.learningHistory.length > MAX_ENTRIES) this.learningHistory.shift();
 
     return insights;
   }
@@ -514,7 +518,7 @@ class SmartLearningSystem {
   // ============================================
 
   async predictBehavior(type, timeframe = 24) {
-    console.log(`🔮 Predicting ${type} for next ${timeframe} hours...`);
+    logger.info(`🔮 Predicting ${type} for next ${timeframe} hours...`);
 
     const patterns = this.patterns.get(type);
     
@@ -571,6 +575,7 @@ class SmartLearningSystem {
       timeframe,
       predictions
     });
+    if (this.predictions.length > MAX_ENTRIES) this.predictions.shift();
 
     return predictions;
   }
@@ -580,7 +585,7 @@ class SmartLearningSystem {
   // ============================================
 
   async suggestOptimization(system) {
-    console.log(`💡 Suggesting optimization for ${system}...`);
+    logger.info(`💡 Suggesting optimization for ${system}...`);
 
     const suggestions = [];
 
@@ -661,6 +666,7 @@ class SmartLearningSystem {
       system,
       suggestions
     });
+    if (this.adaptations.length > MAX_ENTRIES) this.adaptations.shift();
 
     return suggestions;
   }
@@ -682,7 +688,7 @@ class SmartLearningSystem {
             }))
           });
 
-          console.log(`✅ Implemented: ${suggestion.title}`);
+          logger.info(`✅ Implemented: ${suggestion.title}`);
 
           return { success: true, rule };
         }
@@ -725,7 +731,7 @@ class SmartLearningSystem {
   }
 
   async continuousLearning() {
-    console.log('🧠 Continuous learning cycle...');
+    logger.info('🧠 Continuous learning cycle...');
 
     // Simulate data collection
     const energyData = Array(24).fill(0).map((_, i) => ({
@@ -737,7 +743,7 @@ class SmartLearningSystem {
   }
 
   async dailyAnalysis() {
-    console.log('📊 Daily analysis...');
+    logger.info('📊 Daily analysis...');
 
     await this.analyzeUserBehavior('schedule');
     await this.analyzeUserBehavior('energy');
@@ -747,19 +753,19 @@ class SmartLearningSystem {
     for (const [_ruleId, rule] of this.rules) {
       if (rule.timesTriggered > 0) {
         const successRate = (rule.timesSuccessful / rule.timesTriggered * 100).toFixed(0);
-        console.log(`  Rule: ${rule.name} - ${successRate}% success rate`);
+        logger.info(`  Rule: ${rule.name} - ${successRate}% success rate`);
       }
     }
   }
 
   async weeklyOptimization() {
-    console.log('💡 Weekly optimization...');
+    logger.info('💡 Weekly optimization...');
 
     const energySuggestions = await this.suggestOptimization('energy');
     const comfortSuggestions = await this.suggestOptimization('comfort');
     const securitySuggestions = await this.suggestOptimization('security');
 
-    console.log(`Generated ${energySuggestions.length + comfortSuggestions.length + securitySuggestions.length} optimization suggestions`);
+    logger.info(`Generated ${energySuggestions.length + comfortSuggestions.length + securitySuggestions.length} optimization suggestions`);
   }
 
   // ============================================

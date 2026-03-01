@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Maintenance Scheduler
@@ -553,7 +554,7 @@ class MaintenanceScheduler {
   async sendReminder(task) {
     const daysUntil = Math.ceil((task.dueDate - Date.now()) / (1000 * 60 * 60 * 24));
     
-    console.log(`🔔 Påminnelse: ${task.title} - förfaller om ${daysUntil} dag(ar)`);
+    logger.info(`🔔 Påminnelse: ${task.title} - förfaller om ${daysUntil} dag(ar)`);
     
     // In production: send actual notification
     // await this.app.notifications.send({

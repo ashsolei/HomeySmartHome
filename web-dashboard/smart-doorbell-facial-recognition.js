@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Smart Doorbell with Facial Recognition
@@ -113,7 +114,7 @@ class SmartDoorbellFacialRecognition {
     if (Math.random() < 0.7) {
       const person = knownPeople[Math.floor(Math.random() * knownPeople.length)];
       
-      console.log(`👤 Face recognized: ${person.name} (${person.relation})`);
+      logger.info(`👤 Face recognized: ${person.name} (${person.relation})`);
       
       await this.handleKnownPerson(person);
       
@@ -125,7 +126,7 @@ class SmartDoorbellFacialRecognition {
       };
     } else {
       // Unknown person
-      console.log('👤 Unknown person detected');
+      logger.info('👤 Unknown person detected');
       
       await this.handleUnknownPerson(imageData);
       
@@ -137,17 +138,17 @@ class SmartDoorbellFacialRecognition {
   }
 
   async handleKnownPerson(person) {
-    console.log(`   Processing known person: ${person.name}`);
+    logger.info(`   Processing known person: ${person.name}`);
 
     // Greet the person
     if (person.greeting) {
-      console.log(`   🔊 "${person.greeting}"`);
+      logger.info(`   🔊 "${person.greeting}"`);
       await this.speak(person.greeting);
     }
 
     // Auto-unlock if enabled
     if (person.autoUnlock) {
-      console.log('   🔓 Auto-unlocking door');
+      logger.info('   🔓 Auto-unlocking door');
       await this.unlockDoor();
     }
 
@@ -167,22 +168,22 @@ class SmartDoorbellFacialRecognition {
 
     // Home automation
     if (person.relation === 'family') {
-      console.log('   💡 Turning on entrance lights');
-      console.log('   🌡️  Setting temperature to comfort mode');
+      logger.info('   💡 Turning on entrance lights');
+      logger.info('   🌡️  Setting temperature to comfort mode');
     }
   }
 
   async handleUnknownPerson(_imageData) {
-    console.log('   Processing unknown person');
+    logger.info('   Processing unknown person');
 
     // Record video
-    console.log('   📹 Starting video recording');
+    logger.info('   📹 Starting video recording');
 
     // Notify homeowners
     await this.sendNotification('⚠️ Okänd person vid dörren', 'high');
 
     // Take multiple photos
-    console.log('   📸 Taking photos for identification');
+    logger.info('   📸 Taking photos for identification');
 
     // Log visit
     await this.logVisit({
@@ -194,7 +195,7 @@ class SmartDoorbellFacialRecognition {
     });
 
     // Enable two-way communication
-    console.log('   🎤 Two-way audio ready');
+    logger.info('   🎤 Two-way audio ready');
   }
 
   async addKnownPerson(data) {
@@ -212,7 +213,7 @@ class SmartDoorbellFacialRecognition {
 
     this.knownPeople.set(personId, person);
 
-    console.log(`✅ Known person added: ${person.name}`);
+    logger.info(`✅ Known person added: ${person.name}`);
 
     return { success: true, personId };
   }
@@ -226,7 +227,7 @@ class SmartDoorbellFacialRecognition {
 
     this.knownPeople.delete(personId);
 
-    console.log(`❌ Known person removed: ${person.name}`);
+    logger.info(`❌ Known person removed: ${person.name}`);
 
     return { success: true };
   }
@@ -236,7 +237,7 @@ class SmartDoorbellFacialRecognition {
   // ============================================
 
   async handleDoorbellPress() {
-    console.log('🔔 Doorbell pressed!');
+    logger.info('🔔 Doorbell pressed!');
 
     const event = {
       id: 'event_' + Date.now(),
@@ -247,14 +248,14 @@ class SmartDoorbellFacialRecognition {
     };
 
     // Take snapshot
-    console.log('   📸 Taking snapshot');
+    logger.info('   📸 Taking snapshot');
 
     // Recognize face
     const recognition = await this.recognizeFace(event.imageData);
     event.recognition = recognition;
 
     // Start recording
-    console.log('   📹 Recording video');
+    logger.info('   📹 Recording video');
     event.videoUrl = `recording_${event.id}.mp4`;
 
     // Send notification
@@ -265,7 +266,7 @@ class SmartDoorbellFacialRecognition {
     }
 
     // Play chime inside
-    console.log('   🎵 Playing doorbell chime');
+    logger.info('   🎵 Playing doorbell chime');
 
     this.events.push(event);
 
@@ -309,7 +310,7 @@ class SmartDoorbellFacialRecognition {
       return { motionDetected: false };
     }
 
-    console.log(`🎯 Motion detected in ${zone.name}`);
+    logger.info(`🎯 Motion detected in ${zone.name}`);
 
     const event = {
       id: 'motion_' + Date.now(),
@@ -319,7 +320,7 @@ class SmartDoorbellFacialRecognition {
     };
 
     // Take snapshot
-    console.log('   📸 Taking snapshot');
+    logger.info('   📸 Taking snapshot');
 
     // Try to recognize face
     const recognition = await this.recognizeFace('snapshot_data');
@@ -327,7 +328,7 @@ class SmartDoorbellFacialRecognition {
 
     // Record video if stranger
     if (!recognition.recognized) {
-      console.log('   📹 Recording video (unknown person)');
+      logger.info('   📹 Recording video (unknown person)');
       event.videoUrl = `motion_recording_${event.id}.mp4`;
       
       await this.sendNotification(`⚠️ Rörelse detekterad vid ${zone.name}`, 'medium');
@@ -343,7 +344,7 @@ class SmartDoorbellFacialRecognition {
   // ============================================
 
   async detectPackage() {
-    console.log('📦 Package detected on doorstep');
+    logger.info('📦 Package detected on doorstep');
 
     const event = {
       id: 'package_' + Date.now(),
@@ -353,7 +354,7 @@ class SmartDoorbellFacialRecognition {
     };
 
     // Take photo of package
-    console.log('   📸 Taking photo of package');
+    logger.info('   📸 Taking photo of package');
 
     // Notify
     await this.sendNotification('📦 Paket levererat till dörren');
@@ -386,14 +387,14 @@ class SmartDoorbellFacialRecognition {
   // ============================================
 
   async speak(message) {
-    console.log(`🔊 Speaking: "${message}"`);
+    logger.info(`🔊 Speaking: "${message}"`);
     return { success: true };
   }
 
   async enableTwoWayAudio() {
-    console.log('🎤 Two-way audio enabled');
-    console.log('   Microphone: active');
-    console.log('   Speaker: active');
+    logger.info('🎤 Two-way audio enabled');
+    logger.info('   Microphone: active');
+    logger.info('   Speaker: active');
     
     return { success: true, status: 'active' };
   }
@@ -418,18 +419,18 @@ class SmartDoorbellFacialRecognition {
   // ============================================
 
   async unlockDoor() {
-    console.log('🔓 Unlocking door');
+    logger.info('🔓 Unlocking door');
     
     // Temporary unlock (5 minutes)
     this._timeouts.push(setTimeout(() => {
-      console.log('🔒 Auto-locking door');
+      logger.info('🔒 Auto-locking door');
     }, 5 * 60 * 1000));
 
     return { success: true, duration: 300 };
   }
 
   async lockDoor() {
-    console.log('🔒 Locking door');
+    logger.info('🔒 Locking door');
     return { success: true };
   }
 
@@ -450,7 +451,7 @@ class SmartDoorbellFacialRecognition {
 
     this.visitors.push(visit);
 
-    console.log(`📝 Visit logged: ${visit.name}`);
+    logger.info(`📝 Visit logged: ${visit.name}`);
 
     return visit;
   }
@@ -489,11 +490,11 @@ class SmartDoorbellFacialRecognition {
   // ============================================
 
   async enableQuietMode(startTime, endTime) {
-    console.log('🔕 Quiet mode enabled');
-    console.log(`   Active: ${startTime} - ${endTime}`);
-    console.log('   Doorbell chime: disabled');
-    console.log('   Notifications: silent');
-    console.log('   Recording: continues');
+    logger.info('🔕 Quiet mode enabled');
+    logger.info(`   Active: ${startTime} - ${endTime}`);
+    logger.info('   Doorbell chime: disabled');
+    logger.info('   Notifications: silent');
+    logger.info('   Recording: continues');
 
     return { success: true };
   }
@@ -506,7 +507,7 @@ class SmartDoorbellFacialRecognition {
       person.greeting = greeting;
     });
 
-    console.log(`✅ Custom greeting set for ${relation}: "${greeting}"`);
+    logger.info(`✅ Custom greeting set for ${relation}: "${greeting}"`);
 
     return { success: true, count: people.length };
   }
@@ -523,9 +524,9 @@ class SmartDoorbellFacialRecognition {
       averageVisitsPerDay: 3.2
     };
 
-    console.log('📊 Visitor pattern analysis:');
-    console.log(`   Peak hours: ${patterns.peakHours.join(', ')}`);
-    console.log(`   Average visits/day: ${patterns.averageVisitsPerDay}`);
+    logger.info('📊 Visitor pattern analysis:');
+    logger.info(`   Peak hours: ${patterns.peakHours.join(', ')}`);
+    logger.info(`   Average visits/day: ${patterns.averageVisitsPerDay}`);
 
     return patterns;
   }
@@ -549,11 +550,11 @@ class SmartDoorbellFacialRecognition {
       }
     }, 60 * 1000));
 
-    console.log('🔔 Smart Doorbell active');
+    logger.info('🔔 Smart Doorbell active');
   }
 
   async sendNotification(message, priority = 'normal') {
-    console.log(`📢 Notification [${priority}]: ${message}`);
+    logger.info(`📢 Notification [${priority}]: ${message}`);
     return { success: true };
   }
 

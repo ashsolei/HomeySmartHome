@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Learning Dashboard Visualizer
@@ -52,7 +53,7 @@ class LearningVisualizer {
 
       return this.learningData;
     } catch (error) {
-      console.error('Learning data collection error:', error);
+      logger.error('Learning data collection error:', error);
       return this.getDefaultData();
     }
   }

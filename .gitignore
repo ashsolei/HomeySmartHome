@@ -38,6 +38,9 @@ run_tests.sh
 test-results/
 playwright-report/
 
+# Seed data output
+homey-app/data/
+
 # Symlinked from AgentHub (source of truth)
 .github/copilot/agents/
 .github/skills/

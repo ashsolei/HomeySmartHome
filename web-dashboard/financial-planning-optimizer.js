@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Financial Planning & Budget Optimizer
@@ -114,7 +115,7 @@ class FinancialPlanningOptimizer {
 
     account.lastUpdated = Date.now();
 
-    console.log(`💰 ${txn.type}: ${txn.amount} SEK - ${txn.description}`);
+    logger.info(`💰 ${txn.type}: ${txn.amount} SEK - ${txn.description}`);
 
     // Check budget impact
     await this.checkBudgetImpact(txn);
@@ -233,14 +234,14 @@ class FinancialPlanningOptimizer {
     const percentUsed = (budget.spent / budget.monthlyLimit) * 100;
 
     if (percentUsed >= 100) {
-      console.log(`⚠️ BUDGET ÖVERSKRIDNING: ${budget.name} (${budget.spent}/${budget.monthlyLimit} SEK)`);
+      logger.info(`⚠️ BUDGET ÖVERSKRIDNING: ${budget.name} (${budget.spent}/${budget.monthlyLimit} SEK)`);
     } else if (percentUsed >= 80) {
-      console.log(`⚠️ Varning: ${budget.name} 80% använt (${budget.spent}/${budget.monthlyLimit} SEK)`);
+      logger.info(`⚠️ Varning: ${budget.name} 80% använt (${budget.spent}/${budget.monthlyLimit} SEK)`);
     }
   }
 
   async resetMonthlyBudgets() {
-    console.log('🔄 Resetting monthly budgets...');
+    logger.info('🔄 Resetting monthly budgets...');
 
     for (const [_id, budget] of this.budgets) {
       budget.spent = 0;
@@ -351,7 +352,7 @@ class FinancialPlanningOptimizer {
 
       // Check if due soon
       if (bill.nextDue - now <= threeDays) {
-        console.log(`💳 Bill due soon: ${bill.name} (${bill.amount} SEK) - Due: ${new Date(bill.nextDue).toLocaleDateString('sv-SE')}`);
+        logger.info(`💳 Bill due soon: ${bill.name} (${bill.amount} SEK) - Due: ${new Date(bill.nextDue).toLocaleDateString('sv-SE')}`);
         
         // Auto-pay if enabled
         if (bill.autoPayment && bill.nextDue <= now) {
@@ -381,7 +382,7 @@ class FinancialPlanningOptimizer {
     bill.status = 'paid';
     bill.nextDue = this.calculateNextDueDate(bill);
 
-    console.log(`✅ Paid: ${bill.name} (${bill.amount} SEK)`);
+    logger.info(`✅ Paid: ${bill.name} (${bill.amount} SEK)`);
 
     // Reset status for next month
     this._timeouts.push(setTimeout(() => {
@@ -465,10 +466,10 @@ class FinancialPlanningOptimizer {
     goal.progress = (goal.current / goal.target) * 100;
     goal.monthlyContribution = this.calculateRequiredMonthlyContribution(goal);
 
-    console.log(`🎯 Contributed ${amount} SEK to ${goal.name} (${goal.progress.toFixed(1)}% complete)`);
+    logger.info(`🎯 Contributed ${amount} SEK to ${goal.name} (${goal.progress.toFixed(1)}% complete)`);
 
     if (goal.current >= goal.target) {
-      console.log(`🎉 Goal achieved: ${goal.name}!`);
+      logger.info(`🎉 Goal achieved: ${goal.name}!`);
       goal.status = 'achieved';
       goal.achievedDate = Date.now();
     }
@@ -522,7 +523,7 @@ class FinancialPlanningOptimizer {
   // ============================================
 
   async generateForecast(months = 12) {
-    console.log(`📊 Generating ${months}-month financial forecast...`);
+    logger.info(`📊 Generating ${months}-month financial forecast...`);
 
     const forecast = [];
     
@@ -575,7 +576,7 @@ class FinancialPlanningOptimizer {
   }
 
   async identifyOptimizations() {
-    console.log('💡 Identifying optimization opportunities...');
+    logger.info('💡 Identifying optimization opportunities...');
 
     const optimizations = [];
 
@@ -690,7 +691,7 @@ class FinancialPlanningOptimizer {
   }
 
   async generateWeeklyReport() {
-    console.log('📊 Weekly Financial Report:');
+    logger.info('📊 Weekly Financial Report:');
     
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     
@@ -702,24 +703,24 @@ class FinancialPlanningOptimizer {
       .filter(e => e.date >= weekAgo)
       .reduce((sum, e) => sum + e.amount, 0);
 
-    console.log(`  Income: ${weeklyIncome} SEK`);
-    console.log(`  Expenses: ${weeklyExpenses} SEK`);
-    console.log(`  Net: ${weeklyIncome - weeklyExpenses} SEK`);
+    logger.info(`  Income: ${weeklyIncome} SEK`);
+    logger.info(`  Expenses: ${weeklyExpenses} SEK`);
+    logger.info(`  Net: ${weeklyIncome - weeklyExpenses} SEK`);
 
     // Budget status
-    console.log('\n  Budget Status:');
+    logger.info('\n  Budget Status:');
     for (const [_id, budget] of this.budgets) {
       if (budget.monthlyLimit) {
         const percentUsed = (budget.spent / budget.monthlyLimit) * 100;
-        console.log(`    ${budget.name}: ${percentUsed.toFixed(0)}% (${budget.spent}/${budget.monthlyLimit} SEK)`);
+        logger.info(`    ${budget.name}: ${percentUsed.toFixed(0)}% (${budget.spent}/${budget.monthlyLimit} SEK)`);
       }
     }
 
     // Financial goals
-    console.log('\n  Goal Progress:');
+    logger.info('\n  Goal Progress:');
     for (const [_id, goal] of this.financialGoals) {
       if (goal.status !== 'achieved') {
-        console.log(`    ${goal.name}: ${goal.progress.toFixed(1)}% (${goal.current}/${goal.target} SEK)`);
+        logger.info(`    ${goal.name}: ${goal.progress.toFixed(1)}% (${goal.current}/${goal.target} SEK)`);
       }
     }
   }

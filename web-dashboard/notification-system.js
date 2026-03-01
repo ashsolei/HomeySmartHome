@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Advanced Notification System
@@ -201,7 +202,7 @@ class NotificationSystem {
     // Check all enabled rules
     for (const [_key, rule] of this.rules) {
       if (rule.enabled && !rule.check(notification)) {
-        console.log(`Notification blocked by rule: ${rule.name}`);
+        logger.info(`Notification blocked by rule: ${rule.name}`);
         return false;
       }
     }
@@ -250,7 +251,7 @@ class NotificationSystem {
         await channel.send(notification);
         results.push({ channel: channelId, success: true });
       } catch (error) {
-        console.error(`Channel ${channelId} error:`, error);
+        logger.error(`Channel ${channelId} error:`, error);
         results.push({ channel: channelId, success: false, error: error.message });
       }
     }
@@ -269,26 +270,26 @@ class NotificationSystem {
       });
       return { sent: true };
     } catch (error) {
-      console.error('Homey notification error:', error);
+      logger.error('Homey notification error:', error);
       return { sent: false, error };
     }
   }
 
   async sendMobilePush(notification) {
     // Integration with mobile push service (FCM, APNS, etc.)
-    console.log('Mobile push:', notification.title);
+    logger.info('Mobile push:', notification.title);
     return { sent: true, platform: 'mobile' };
   }
 
   async sendEmail(notification) {
     // Email integration (SMTP, SendGrid, etc.)
-    console.log('Email notification:', notification.title);
+    logger.info('Email notification:', notification.title);
     return { sent: true, platform: 'email' };
   }
 
   async sendSMS(notification) {
     // SMS integration (Twilio, etc.)
-    console.log('SMS notification:', notification.title);
+    logger.info('SMS notification:', notification.title);
     return { sent: true, platform: 'sms' };
   }
 
@@ -300,14 +301,14 @@ class NotificationSystem {
       });
       return { sent: true };
     } catch (error) {
-      console.error('Speech notification error:', error);
+      logger.error('Speech notification error:', error);
       return { sent: false, error };
     }
   }
 
   async sendDashboardNotification(notification) {
     // Emit to dashboard via Socket.io or similar
-    console.log('Dashboard notification:', notification.title);
+    logger.info('Dashboard notification:', notification.title);
     return { sent: true, platform: 'dashboard' };
   }
 

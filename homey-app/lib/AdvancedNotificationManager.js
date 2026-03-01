@@ -40,7 +40,7 @@
  */
 class AdvancedNotificationManager {
   /**
-   * @param {import('homey').Homey} homey - Homey app instance
+   * @param {import('../types').HomeyContext} homey - Homey app instance
    */
   constructor(homey) {
     this.homey = homey;

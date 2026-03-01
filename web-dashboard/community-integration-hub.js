@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Community Integration Hub
@@ -108,7 +110,7 @@ class CommunityIntegrationHub {
 
     this.neighbors.set(neighbor.id, neighbor);
 
-    console.log(`👋 New neighbor added: ${neighbor.name}`);
+    logger.info(`👋 New neighbor added: ${neighbor.name}`);
 
     return neighbor;
   }
@@ -247,6 +249,7 @@ class CommunityIntegrationHub {
     };
 
     this.transactions.push(transaction);
+    if (this.transactions.length > MAX_ENTRIES) this.transactions.shift();
     resource.borrowHistory.push(transaction);
 
     // Update neighbor relationship
@@ -259,7 +262,7 @@ class CommunityIntegrationHub {
       }
     }
 
-    console.log(`📦 Borrowed: ${resource.name} from ${resource.owner} (Return: ${new Date(returnDate).toLocaleDateString('sv-SE')})`);
+    logger.info(`📦 Borrowed: ${resource.name} from ${resource.owner} (Return: ${new Date(returnDate).toLocaleDateString('sv-SE')})`);
 
     return { success: true, transaction };
   }
@@ -294,7 +297,7 @@ class CommunityIntegrationHub {
         await this.updateTrustLevel(resource.owner, onTime ? 'positive' : 'negative');
       }
 
-      console.log(`✅ Returned: ${resource.name} ${onTime ? 'on time' : 'late'}`);
+      logger.info(`✅ Returned: ${resource.name} ${onTime ? 'on time' : 'late'}`);
     }
 
     return { success: true };
@@ -317,7 +320,7 @@ class CommunityIntegrationHub {
 
     this.sharedResources.set(resource.id, resource);
 
-    console.log(`🎁 Shared resource: ${resourceName}`);
+    logger.info(`🎁 Shared resource: ${resourceName}`);
 
     return resource;
   }
@@ -386,7 +389,7 @@ class CommunityIntegrationHub {
 
     event.participants.push('self');
 
-    console.log(`🎉 Joined event: ${event.name}`);
+    logger.info(`🎉 Joined event: ${event.name}`);
 
     // Update neighbor relationships
     for (const participantId of event.participants) {
@@ -413,8 +416,9 @@ class CommunityIntegrationHub {
     };
 
     this.communityEvents.push(event);
+    if (this.communityEvents.length > MAX_ENTRIES) this.communityEvents.shift();
 
-    console.log(`📅 Created event: ${event.name}`);
+    logger.info(`📅 Created event: ${event.name}`);
 
     return event;
   }
@@ -555,7 +559,7 @@ class CommunityIntegrationHub {
       service.usedBy.push('self');
     }
 
-    console.log(`🛠️ Used service: ${service.name}`);
+    logger.info(`🛠️ Used service: ${service.name}`);
 
     return { success: true, service };
   }
@@ -667,7 +671,7 @@ class CommunityIntegrationHub {
   }
 
   async checkBorrowedResources() {
-    console.log('📦 Checking borrowed resources...');
+    logger.info('📦 Checking borrowed resources...');
 
     const now = Date.now();
     const oneDayWarning = 24 * 60 * 60 * 1000;
@@ -678,15 +682,15 @@ class CommunityIntegrationHub {
       const timeUntilReturn = transaction.returnDate - now;
 
       if (timeUntilReturn <= 0) {
-        console.log(`  ⚠️ OVERDUE: ${transaction.resourceName}`);
+        logger.info(`  ⚠️ OVERDUE: ${transaction.resourceName}`);
       } else if (timeUntilReturn <= oneDayWarning) {
-        console.log(`  📅 Due tomorrow: ${transaction.resourceName}`);
+        logger.info(`  📅 Due tomorrow: ${transaction.resourceName}`);
       }
     }
   }
 
   async checkUpcomingEvents() {
-    console.log('📅 Checking upcoming events...');
+    logger.info('📅 Checking upcoming events...');
 
     const now = Date.now();
     const threeDayWarning = 3 * 24 * 60 * 60 * 1000;
@@ -699,10 +703,10 @@ class CommunityIntegrationHub {
 
       if (timeUntilEvent <= 0) {
         event.status = 'completed';
-        console.log(`  ✅ Event completed: ${event.name}`);
+        logger.info(`  ✅ Event completed: ${event.name}`);
       } else if (timeUntilEvent <= threeDayWarning) {
         const daysUntil = Math.ceil(timeUntilEvent / (24 * 60 * 60 * 1000));
-        console.log(`  📅 Upcoming: ${event.name} (${daysUntil} days)`);
+        logger.info(`  📅 Upcoming: ${event.name} (${daysUntil} days)`);
       }
     }
   }

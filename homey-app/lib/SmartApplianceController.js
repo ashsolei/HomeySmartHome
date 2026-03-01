@@ -7,6 +7,7 @@
  * water tracking, consumable management, and notification escalation
  */
 class SmartApplianceController {
+  /** @param {import('../types').HomeyContext} homey */
   constructor(homey) {
     this.homey = homey;
     this.appliances = new Map();

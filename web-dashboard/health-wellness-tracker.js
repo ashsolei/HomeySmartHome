@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Health & Wellness Tracker
@@ -216,12 +218,13 @@ class HealthWellnessTracker {
     };
 
     this.activities.push(activity);
+    if (this.activities.length > MAX_ENTRIES) this.activities.shift();
 
     // Update user stats
     user.currentMetrics.activeMinutes += activity.duration;
     user.weeklyStats.workouts += 1;
 
-    console.log(`🏃 ${user.name}: ${activity.type} for ${activity.duration} min (${activity.caloriesBurned} cal)`);
+    logger.info(`🏃 ${user.name}: ${activity.type} for ${activity.duration} min (${activity.caloriesBurned} cal)`);
 
     return { success: true, activity };
   }
@@ -271,8 +274,9 @@ class HealthWellnessTracker {
     };
 
     this.sleepSessions.push(session);
+    if (this.sleepSessions.length > MAX_ENTRIES) this.sleepSessions.shift();
 
-    console.log(`😴 ${user.name}: Slept ${(session.duration / 60).toFixed(1)} hours (${session.quality} quality)`);
+    logger.info(`😴 ${user.name}: Slept ${(session.duration / 60).toFixed(1)} hours (${session.quality} quality)`);
 
     // Update weekly average
     const recentSleep = this.sleepSessions
@@ -368,7 +372,7 @@ class HealthWellnessTracker {
     this.goals.set(id, goal);
 
     const user = this.users.get(data.userId);
-    console.log(`🎯 Goal set for ${user?.name}: ${data.target} ${data.type} per ${data.period}`);
+    logger.info(`🎯 Goal set for ${user?.name}: ${data.target} ${data.type} per ${data.period}`);
 
     return { success: true, goal };
   }
@@ -403,7 +407,7 @@ class HealthWellnessTracker {
         goal.status = 'achieved';
         goal.achievedDate = Date.now();
         
-        console.log(`🎉 ${user.name} achieved goal: ${goal.target} ${goal.type}!`);
+        logger.info(`🎉 ${user.name} achieved goal: ${goal.target} ${goal.type}!`);
       }
     }
   }
@@ -426,6 +430,7 @@ class HealthWellnessTracker {
     };
 
     this.environmentalData.push(environmentalSnapshot);
+    if (this.environmentalData.length > MAX_ENTRIES) this.environmentalData.shift();
 
     // Keep last 7 days
     const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -477,7 +482,7 @@ class HealthWellnessTracker {
 
     if (warnings.length > 0) {
       for (const warning of warnings) {
-        console.log(`⚠️ Health warning: ${warning.message}`);
+        logger.info(`⚠️ Health warning: ${warning.message}`);
       }
     }
   }
@@ -590,7 +595,7 @@ class HealthWellnessTracker {
       user.currentMetrics.activeMinutes = 0;
     }
 
-    console.log('🔄 Daily metrics reset');
+    logger.info('🔄 Daily metrics reset');
   }
 
   // ============================================

@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Smart Lighting Choreographer
@@ -86,7 +87,7 @@ class SmartLightingChoreographer {
       light.brightness = Math.min(Math.max(brightness, 0), 100);
     }
 
-    console.log(`💡 ${light.name} ON (${light.brightness}%)`);
+    logger.info(`💡 ${light.name} ON (${light.brightness}%)`);
 
     return { success: true };
   }
@@ -99,7 +100,7 @@ class SmartLightingChoreographer {
     }
 
     light.on = false;
-    console.log(`💡 ${light.name} OFF`);
+    logger.info(`💡 ${light.name} OFF`);
 
     return { success: true };
   }
@@ -117,7 +118,7 @@ class SmartLightingChoreographer {
       light.on = true;
     }
 
-    console.log(`💡 ${light.name} brightness: ${light.brightness}%`);
+    logger.info(`💡 ${light.name} brightness: ${light.brightness}%`);
 
     return { success: true };
   }
@@ -130,7 +131,7 @@ class SmartLightingChoreographer {
     }
 
     light.color = { r, g, b };
-    console.log(`🎨 ${light.name} color: RGB(${r}, ${g}, ${b})`);
+    logger.info(`🎨 ${light.name} color: RGB(${r}, ${g}, ${b})`);
 
     return { success: true };
   }
@@ -143,7 +144,7 @@ class SmartLightingChoreographer {
     }
 
     light.temperature = Math.min(Math.max(kelvin, 2000), 6500);
-    console.log(`🌡️ ${light.name} temperature: ${light.temperature}K`);
+    logger.info(`🌡️ ${light.name} temperature: ${light.temperature}K`);
 
     return { success: true };
   }
@@ -159,7 +160,7 @@ class SmartLightingChoreographer {
       return { success: false, error: 'No lights in room' };
     }
 
-    console.log(`🏠 Controlling ${room}: ${action}`);
+    logger.info(`🏠 Controlling ${room}: ${action}`);
 
     for (const light of roomLights) {
       switch (action) {
@@ -285,7 +286,7 @@ class SmartLightingChoreographer {
       return { success: false, error: 'Scene not found' };
     }
 
-    console.log(`✨ Activating scene: ${scene.name}`);
+    logger.info(`✨ Activating scene: ${scene.name}`);
 
     for (const lightConfig of scene.lights) {
       const light = this.lights.get(lightConfig.id);
@@ -306,7 +307,7 @@ class SmartLightingChoreographer {
         light.temperature = lightConfig.temperature;
       }
 
-      console.log(`  ${light.name}: ${light.on ? 'ON' : 'OFF'} ${light.on ? light.brightness + '%' : ''}`);
+      logger.info(`  ${light.name}: ${light.on ? 'ON' : 'OFF'} ${light.on ? light.brightness + '%' : ''}`);
     }
 
     return { success: true, lights: scene.lights.length };
@@ -361,7 +362,7 @@ class SmartLightingChoreographer {
       return { success: false, error: 'No circadian settings' };
     }
 
-    console.log(`🌅 Applying circadian lighting: ${settings.description}`);
+    logger.info(`🌅 Applying circadian lighting: ${settings.description}`);
 
     const lightsToAdjust = rooms 
       ? Array.from(this.lights.values()).filter(l => rooms.includes(l.room))
@@ -432,7 +433,7 @@ class SmartLightingChoreographer {
       return { success: false, error: 'Choreography not found' };
     }
 
-    console.log(`🎭 Playing choreography: ${choreography.name} (${choreography.duration / 1000}s)`);
+    logger.info(`🎭 Playing choreography: ${choreography.name} (${choreography.duration / 1000}s)`);
 
     // In a real implementation, this would use timers to execute each step
     // For now, we'll just apply the final step
@@ -459,7 +460,7 @@ class SmartLightingChoreographer {
 
   async enableMusicSync(enabled) {
     this.musicSync = enabled;
-    console.log(`🎵 Music sync: ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    logger.info(`🎵 Music sync: ${enabled ? 'ENABLED' : 'DISABLED'}`);
     return { success: true };
   }
 
@@ -503,7 +504,7 @@ class SmartLightingChoreographer {
       }
     }, 60 * 60 * 1000));
 
-    console.log('💡 Lighting Choreographer active');
+    logger.info('💡 Lighting Choreographer active');
   }
 
   // ============================================

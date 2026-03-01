@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Smart Grocery Manager
@@ -106,7 +107,7 @@ class SmartGroceryManager {
 
     this.inventory.set(id, item);
 
-    console.log(`➕ Added: ${item.name} (${item.quantity} ${item.unit})`);
+    logger.info(`➕ Added: ${item.name} (${item.quantity} ${item.unit})`);
 
     return { success: true, item };
   }
@@ -121,7 +122,7 @@ class SmartGroceryManager {
     item.quantity -= amount;
     item.lastUsed = Date.now();
 
-    console.log(`📉 Consumed: ${item.name} -${amount} ${item.unit} (${item.quantity} remaining)`);
+    logger.info(`📉 Consumed: ${item.name} -${amount} ${item.unit} (${item.quantity} remaining)`);
 
     // Track consumption pattern
     this.trackConsumption(itemId, amount);
@@ -129,7 +130,7 @@ class SmartGroceryManager {
     // Check if reorder needed
     if (item.quantity <= item.reorderPoint.quantity) {
       await this.addToShoppingList(item.name, item.category);
-      console.log(`  → Added to shopping list (below reorder point)`);
+      logger.info(`  → Added to shopping list (below reorder point)`);
     }
 
     // Remove if depleted
@@ -409,7 +410,7 @@ class SmartGroceryManager {
       }
     }
 
-    console.log(`📝 Added ingredients for ${recipe.name} to shopping list`);
+    logger.info(`📝 Added ingredients for ${recipe.name} to shopping list`);
 
     return { success: true, recipe, itemsAdded: recipe.ingredients.length };
   }
@@ -565,7 +566,7 @@ class SmartGroceryManager {
       }
     }
 
-    console.log(`🛒 Purchase recorded: ${data.total} SEK at ${data.store}`);
+    logger.info(`🛒 Purchase recorded: ${data.total} SEK at ${data.store}`);
 
     return { success: true, purchase };
   }
@@ -611,11 +612,11 @@ class SmartGroceryManager {
       const timeToExpiry = item.expiryDate - now;
 
       if (timeToExpiry < 0) {
-        console.log(`⚠️ EXPIRED: ${item.name} - remove from inventory`);
+        logger.info(`⚠️ EXPIRED: ${item.name} - remove from inventory`);
         this.inventory.delete(itemId);
       } else if (timeToExpiry < threeDays) {
         const daysLeft = Math.ceil(timeToExpiry / (24 * 60 * 60 * 1000));
-        console.log(`⏰ EXPIRING SOON: ${item.name} - ${daysLeft} day(s) left`);
+        logger.info(`⏰ EXPIRING SOON: ${item.name} - ${daysLeft} day(s) left`);
         
         // Suggest recipe using this ingredient
         await this.suggestRecipeWithIngredient(item.name);
@@ -631,12 +632,12 @@ class SmartGroceryManager {
     );
 
     if (matchingRecipes.length > 0) {
-      console.log(`  💡 Suggestion: Make ${matchingRecipes[0].name}`);
+      logger.info(`  💡 Suggestion: Make ${matchingRecipes[0].name}`);
     }
   }
 
   async analyzeConsumptionPatterns() {
-    console.log('📊 Analyzing consumption patterns...');
+    logger.info('📊 Analyzing consumption patterns...');
 
     for (const [itemId, pattern] of this.consumptionPatterns) {
       if (pattern.history.length < 3) continue; // Need more data
@@ -649,7 +650,7 @@ class SmartGroceryManager {
         const daysUntilEmpty = item.quantity / pattern.averageDaily;
         
         if (daysUntilEmpty < 7 && daysUntilEmpty > 0) {
-          console.log(`  📉 ${item.name} will run out in ~${Math.round(daysUntilEmpty)} days`);
+          logger.info(`  📉 ${item.name} will run out in ~${Math.round(daysUntilEmpty)} days`);
           
           // Add to shopping list if not already there
           const weeklyList = this.shoppingLists.get('weekly');

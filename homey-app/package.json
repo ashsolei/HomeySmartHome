@@ -17,7 +17,8 @@
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f smarthomepro",
     "docker:full": "docker compose -f ../docker-compose.yml up -d --build",
-    "docker:health": "curl -s http://localhost:3000/health | node -e \"process.stdin.on('data',d=>console.log(JSON.parse(d)))\""
+    "docker:health": "curl -s http://localhost:3000/health | node -e \"process.stdin.on('data',d=>console.log(JSON.parse(d)))\"",
+    "seed": "node scripts/seed.js"
   },
   "dependencies": {
     "compression": "^1.7.5",
@@ -25,6 +26,7 @@
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
+    "graphql": "^16.13.0",
     "helmet": "^8.0.0",
     "homey": "file:./lib/standalone/homey-shim-pkg",
     "ioredis": "^5.10.0",

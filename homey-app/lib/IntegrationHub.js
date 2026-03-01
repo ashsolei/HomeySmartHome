@@ -8,6 +8,7 @@ const crypto = require('crypto');
  * External service integration with webhooks, API connectors, and OAuth
  */
 class IntegrationHub {
+  /** @param {import('../types').HomeyContext} homey */
   constructor(homey) {
     this.homey = homey;
     this.integrations = new Map();

@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Advanced Weather Predictor
@@ -46,13 +48,14 @@ class AdvancedWeatherPredictor {
       timestamp: Date.now()
     };
 
-    console.log(`🌤️ Weather updated: ${this.currentWeather.temperature}°C, ${this.currentWeather.description}`);
+    logger.info(`🌤️ Weather updated: ${this.currentWeather.temperature}°C, ${this.currentWeather.description}`);
 
     // Store in history
     this.weatherHistory.push({
       ...this.currentWeather,
       timestamp: Date.now()
     });
+    if (this.weatherHistory.length > MAX_ENTRIES) this.weatherHistory.shift();
 
     // Trigger automation based on weather
     await this.checkWeatherAutomation();
@@ -93,9 +96,10 @@ class AdvancedWeatherPredictor {
       };
 
       this.forecast.push(forecast);
+    if (this.forecast.length > MAX_ENTRIES) this.forecast.shift();
     }
 
-    console.log(`📅 Forecast updated for ${this.forecast.length} days`);
+    logger.info(`📅 Forecast updated for ${this.forecast.length} days`);
 
     return this.forecast;
   }
@@ -175,9 +179,9 @@ class AdvancedWeatherPredictor {
     this.weatherAlerts = alerts;
 
     if (alerts.length > 0) {
-      console.log(`⚠️ ${alerts.length} weather alerts`);
+      logger.info(`⚠️ ${alerts.length} weather alerts`);
       for (const alert of alerts) {
-        console.log(`  ${alert.severity.toUpperCase()}: ${alert.title}`);
+        logger.info(`  ${alert.severity.toUpperCase()}: ${alert.title}`);
       }
     }
 
@@ -308,40 +312,40 @@ class AdvancedWeatherPredictor {
   }
 
   async executeAutomationActions(rule) {
-    console.log(`🤖 Executing weather automation: ${rule.name}`);
+    logger.info(`🤖 Executing weather automation: ${rule.name}`);
 
     for (const action of rule.actions) {
       switch (action.type) {
         case 'notify':
-          console.log(`  📢 ${action.message}`);
+          logger.info(`  📢 ${action.message}`);
           break;
 
         case 'close_windows':
-          console.log(`  🪟 Closing windows in: ${action.rooms.join(', ')}`);
+          logger.info(`  🪟 Closing windows in: ${action.rooms.join(', ')}`);
           break;
 
         case 'lower_blinds':
-          console.log(`  🪟 Lowering blinds in: ${action.rooms.join(', ')}`);
+          logger.info(`  🪟 Lowering blinds in: ${action.rooms.join(', ')}`);
           break;
 
         case 'adjust_ac':
-          console.log(`  ❄️ Adjusting AC to ${action.target}°C`);
+          logger.info(`  ❄️ Adjusting AC to ${action.target}°C`);
           break;
 
         case 'increase_heating':
-          console.log(`  🔥 Increasing heating by ${action.delta}°C`);
+          logger.info(`  🔥 Increasing heating by ${action.delta}°C`);
           break;
 
         case 'turn_off_lights':
-          console.log(`  💡 Turning off lights in: ${action.rooms.join(', ')}`);
+          logger.info(`  💡 Turning off lights in: ${action.rooms.join(', ')}`);
           break;
 
         case 'turn_on_lights':
-          console.log(`  💡 Turning on lights in: ${action.rooms.join(', ')} @ ${action.brightness}%`);
+          logger.info(`  💡 Turning on lights in: ${action.rooms.join(', ')} @ ${action.brightness}%`);
           break;
 
         case 'check_batteries':
-          console.log(`  🔋 Checking batteries in: ${action.devices.join(', ')}`);
+          logger.info(`  🔋 Checking batteries in: ${action.devices.join(', ')}`);
           break;
       }
     }
@@ -547,7 +551,7 @@ class AdvancedWeatherPredictor {
       this.checkWeatherAlerts();
     }, 60 * 60 * 1000));
 
-    console.log('🌦️ Weather Predictor active');
+    logger.info('🌦️ Weather Predictor active');
   }
 
   // ============================================

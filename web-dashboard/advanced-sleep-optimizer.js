@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Advanced Sleep Optimizer
@@ -165,7 +166,7 @@ class AdvancedSleepOptimizer {
     // Update profile averages
     this.updateSleepAverages(userId);
 
-    console.log(`😴 Sleep tracked for ${profile.name}: ${duration.toFixed(1)}h (quality: ${(quality * 100).toFixed(0)}%)`);
+    logger.info(`😴 Sleep tracked for ${profile.name}: ${duration.toFixed(1)}h (quality: ${(quality * 100).toFixed(0)}%)`);
 
     return { success: true, session };
   }
@@ -316,22 +317,22 @@ class AdvancedSleepOptimizer {
       return { success: false, error: 'Alarm or profile not found' };
     }
 
-    console.log(`⏰ Executing wake-up routine for ${profile.name}...`);
+    logger.info(`⏰ Executing wake-up routine for ${profile.name}...`);
 
     switch (alarm.wakeupRoutine) {
       case 'gradual_light':
-        console.log('  ☀️ Gradually increasing bedroom light (0% → 100% over 15 min)');
-        console.log('  🌡️ Adjusting temperature to 21°C');
+        logger.info('  ☀️ Gradually increasing bedroom light (0% → 100% over 15 min)');
+        logger.info('  🌡️ Adjusting temperature to 21°C');
         break;
 
       case 'gradual_light_music':
-        console.log('  ☀️ Gradually increasing bedroom light (0% → 100% over 15 min)');
-        console.log('  🎵 Playing gentle wake-up music');
-        console.log('  🌡️ Adjusting temperature to 21°C');
+        logger.info('  ☀️ Gradually increasing bedroom light (0% → 100% over 15 min)');
+        logger.info('  🎵 Playing gentle wake-up music');
+        logger.info('  🌡️ Adjusting temperature to 21°C');
         break;
 
       case 'sound_only':
-        console.log('  🔔 Playing alarm sound');
+        logger.info('  🔔 Playing alarm sound');
         break;
     }
 
@@ -395,30 +396,30 @@ class AdvancedSleepOptimizer {
       return { success: false, error: 'Profile or environment not found' };
     }
 
-    console.log(`🌙 Optimizing sleep environment for ${profile.name}...`);
+    logger.info(`🌙 Optimizing sleep environment for ${profile.name}...`);
 
     // Temperature
     if (environment.temperature !== profile.preferences.temperature) {
-      console.log(`  🌡️ Adjusting temperature: ${environment.temperature}°C → ${profile.preferences.temperature}°C`);
+      logger.info(`  🌡️ Adjusting temperature: ${environment.temperature}°C → ${profile.preferences.temperature}°C`);
       environment.temperature = profile.preferences.temperature;
     }
 
     // Humidity
     if (environment.humidity !== profile.preferences.humidity) {
-      console.log(`  💧 Adjusting humidity: ${environment.humidity}% → ${profile.preferences.humidity}%`);
+      logger.info(`  💧 Adjusting humidity: ${environment.humidity}% → ${profile.preferences.humidity}%`);
       environment.humidity = profile.preferences.humidity;
     }
 
     // Lighting
     const targetLight = profile.preferences.darkness === 'complete' ? 0 : 5;
     if (environment.lightLevel !== targetLight) {
-      console.log(`  💡 Adjusting lighting: ${environment.lightLevel}% → ${targetLight}%`);
+      logger.info(`  💡 Adjusting lighting: ${environment.lightLevel}% → ${targetLight}%`);
       environment.lightLevel = targetLight;
     }
 
     // Noise
     if (environment.noiseLevel !== profile.preferences.noise) {
-      console.log(`  🔊 Setting noise level: ${profile.preferences.noise}`);
+      logger.info(`  🔊 Setting noise level: ${profile.preferences.noise}`);
       environment.noiseLevel = profile.preferences.noise;
     }
 
@@ -432,16 +433,16 @@ class AdvancedSleepOptimizer {
       return { success: false, error: 'Profile not found' };
     }
 
-    console.log(`🌙 Activating bedtime routine for ${profile.name}...`);
+    logger.info(`🌙 Activating bedtime routine for ${profile.name}...`);
 
     // Optimize environment
     await this.optimizeSleepEnvironment(userId);
 
     // Additional bedtime actions
-    console.log('  🔒 Locking doors');
-    console.log('  🔦 Turning off main lights');
-    console.log('  📺 Turning off TVs');
-    console.log('  🔇 Setting phone to Do Not Disturb');
+    logger.info('  🔒 Locking doors');
+    logger.info('  🔦 Turning off main lights');
+    logger.info('  📺 Turning off TVs');
+    logger.info('  🔇 Setting phone to Do Not Disturb');
 
     return { success: true };
   }
@@ -533,12 +534,12 @@ class AdvancedSleepOptimizer {
 
         // 30 minutes before bedtime
         if (Math.abs(currentTime - targetMinutes + 30) < 2) {
-          console.log(`💤 Bedtime reminder for ${profile.name} in 30 minutes`);
+          logger.info(`💤 Bedtime reminder for ${profile.name} in 30 minutes`);
         }
       }
     }, 60000));  // Check every minute
 
-    console.log('😴 Sleep Optimizer active');
+    logger.info('😴 Sleep Optimizer active');
   }
 
   // ============================================
