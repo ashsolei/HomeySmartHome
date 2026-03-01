@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Home Maintenance Predictor
@@ -327,6 +329,7 @@ class HomeMaintenancePredictor {
       notes: data.notes || null,
       contractor: data.contractor || null
     });
+    if (this.maintenanceHistory.length > MAX_ENTRIES) this.maintenanceHistory.shift();
 
     // Update system
     const system = this.systems.get(task.system);
@@ -336,7 +339,7 @@ class HomeMaintenancePredictor {
       system.healthScore = this.calculateSystemHealth(system);
     }
 
-    console.log(`✅ Completed: ${task.name} (Cost: ${data.actualCost || task.cost} SEK)`);
+    logger.info(`✅ Completed: ${task.name} (Cost: ${data.actualCost || task.cost} SEK)`);
 
     // Reset status after logging
     this._timeouts.push(setTimeout(() => {
@@ -351,7 +354,7 @@ class HomeMaintenancePredictor {
   // ============================================
 
   async analyzeSystems() {
-    console.log('🔍 Analyzing home systems...');
+    logger.info('🔍 Analyzing home systems...');
 
     const predictions = [];
 
@@ -387,14 +390,14 @@ class HomeMaintenancePredictor {
           priority: system.criticalityLevel
         });
 
-        console.log(`  ⚠️ ${system.name}: ${failureRisk} risk (Health: ${healthScore}%)`);
+        logger.info(`  ⚠️ ${system.name}: ${failureRisk} risk (Health: ${healthScore}%)`);
       }
 
       // Check overdue maintenance
       if (system.lastService) {
         const daysSinceService = (Date.now() - system.lastService) / (24 * 60 * 60 * 1000);
         if (daysSinceService > system.serviceInterval * 1.2) {
-          console.log(`  📅 ${system.name}: Service overdue by ${Math.round(daysSinceService - system.serviceInterval)} days`);
+          logger.info(`  📅 ${system.name}: Service overdue by ${Math.round(daysSinceService - system.serviceInterval)} days`);
         }
       }
     }
@@ -431,7 +434,7 @@ class HomeMaintenancePredictor {
   }
 
   async predictMaintenanceCosts(years = 5) {
-    console.log(`💰 Predicting maintenance costs for next ${years} years...`);
+    logger.info(`💰 Predicting maintenance costs for next ${years} years...`);
 
     const yearlyPredictions = [];
 
@@ -469,7 +472,7 @@ class HomeMaintenancePredictor {
             cost: replacementCost
           });
 
-          console.log(`  Year ${year}: Replace ${system.name} (~${replacementCost} SEK)`);
+          logger.info(`  Year ${year}: Replace ${system.name} (~${replacementCost} SEK)`);
         }
       }
 
@@ -656,23 +659,23 @@ class HomeMaintenancePredictor {
       const daysUntilDue = Math.ceil((task.nextDue - now) / (24 * 60 * 60 * 1000));
 
       if (task.nextDue <= now) {
-        console.log(`⚠️ OVERDUE: ${task.name} (${Math.abs(daysUntilDue)} days overdue)`);
+        logger.info(`⚠️ OVERDUE: ${task.name} (${Math.abs(daysUntilDue)} days overdue)`);
       } else if (task.nextDue - now <= thirtyDays) {
-        console.log(`📅 Upcoming: ${task.name} (${daysUntilDue} days until due)`);
+        logger.info(`📅 Upcoming: ${task.name} (${daysUntilDue} days until due)`);
       }
     }
   }
 
   async checkWarranties() {
-    console.log('📜 Checking warranties...');
+    logger.info('📜 Checking warranties...');
 
     for (const [_warrantyId, warranty] of this.warranties) {
       if (warranty.daysRemaining < 90 && warranty.active) {
-        console.log(`⚠️ Warranty expiring soon: ${this.systems.get(warranty.system)?.name} (${warranty.daysRemaining} days)`);
+        logger.info(`⚠️ Warranty expiring soon: ${this.systems.get(warranty.system)?.name} (${warranty.daysRemaining} days)`);
       }
 
       if (!warranty.active) {
-        console.log(`  ❌ Expired: ${this.systems.get(warranty.system)?.name} warranty`);
+        logger.info(`  ❌ Expired: ${this.systems.get(warranty.system)?.name} warranty`);
       }
     }
   }

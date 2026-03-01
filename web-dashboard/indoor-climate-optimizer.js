@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Indoor Climate Optimizer
@@ -186,7 +187,7 @@ class IndoorClimateOptimizer {
 
     Object.assign(zone, updates);
 
-    console.log(`🌡️ Updated HVAC zone ${zone.name}: ${JSON.stringify(updates)}`);
+    logger.info(`🌡️ Updated HVAC zone ${zone.name}: ${JSON.stringify(updates)}`);
 
     return { success: true, zone };
   }
@@ -290,7 +291,7 @@ class IndoorClimateOptimizer {
   // ============================================
 
   async optimizeClimate() {
-    console.log('🌡️ Optimizing climate...');
+    logger.info('🌡️ Optimizing climate...');
 
     for (const [_zoneId, zone] of this.hvacZones) {
       if (!zone.enabled) continue;
@@ -327,7 +328,7 @@ class IndoorClimateOptimizer {
       const maxCO2 = Math.max(...zoneRooms.map(r => r.currentCO2));
       if (maxCO2 > 1000) {
         zone.fanSpeed = 'high';
-        console.log(`  💨 Increased ventilation in ${zone.name} (CO2: ${Math.round(maxCO2)} ppm)`);
+        logger.info(`  💨 Increased ventilation in ${zone.name} (CO2: ${Math.round(maxCO2)} ppm)`);
       }
 
       // Track energy usage (kWh)
@@ -348,7 +349,7 @@ class IndoorClimateOptimizer {
       room.targetHumidity = humidity;
     }
 
-    console.log(`🎯 ${room.name}: Target ${temperature}°C${humidity ? `, ${humidity}%` : ''}`);
+    logger.info(`🎯 ${room.name}: Target ${temperature}°C${humidity ? `, ${humidity}%` : ''}`);
 
     // Trigger immediate optimization
     await this.optimizeClimate();
@@ -457,7 +458,7 @@ class IndoorClimateOptimizer {
     
     if (!schedule || !schedule.enabled) return;
 
-    console.log(`📅 Executing schedule: ${schedule.name}`);
+    logger.info(`📅 Executing schedule: ${schedule.name}`);
 
     for (const action of schedule.actions) {
       await this.setRoomTarget(action.room, action.temp, action.humidity);
@@ -503,7 +504,7 @@ class IndoorClimateOptimizer {
     
     if (prefs) {
       prefs[key] = value;
-      console.log(`💡 Preference updated: ${key} = ${value}`);
+      logger.info(`💡 Preference updated: ${key} = ${value}`);
       
       return { success: true };
     }
@@ -524,14 +525,14 @@ class IndoorClimateOptimizer {
     room.occupancy = occupantCount;
 
     if (occupantCount > 0 && previousOccupancy === 0) {
-      console.log(`👤 ${room.name}: Occupied (${occupantCount} person(s))`);
+      logger.info(`👤 ${room.name}: Occupied (${occupantCount} person(s))`);
       
       // Adjust target temperature for comfort
       if (room.targetTemp < 20) {
         await this.setRoomTarget(roomId, 21);
       }
     } else if (occupantCount === 0 && previousOccupancy > 0) {
-      console.log(`🚪 ${room.name}: Vacant`);
+      logger.info(`🚪 ${room.name}: Vacant`);
       
       // Energy saving when vacant
       const prefs = this.preferences.get('comfort_mode');
@@ -542,7 +543,7 @@ class IndoorClimateOptimizer {
   }
 
   async optimizeForWeather(outdoorTemp, outdoorHumidity) {
-    console.log(`🌤️ Outdoor: ${outdoorTemp}°C, ${outdoorHumidity}%`);
+    logger.info(`🌤️ Outdoor: ${outdoorTemp}°C, ${outdoorHumidity}%`);
 
     // Adjust indoor targets based on outdoor conditions
     for (const [roomId, room] of this.rooms) {
@@ -566,20 +567,20 @@ class IndoorClimateOptimizer {
   }
 
   async optimizeForEnergyPrice(currentPrice, averagePrice) {
-    console.log(`💰 Energy price: ${currentPrice} öre/kWh (avg: ${averagePrice})`);
+    logger.info(`💰 Energy price: ${currentPrice} öre/kWh (avg: ${averagePrice})`);
 
     const priceRatio = currentPrice / averagePrice;
 
     if (priceRatio > 1.3) {
       // Very expensive - reduce heating/cooling
-      console.log('  ⚠️ High energy price - reducing HVAC usage');
+      logger.info('  ⚠️ High energy price - reducing HVAC usage');
       
       for (const [roomId, room] of this.rooms) {
         await this.setRoomTarget(roomId, room.targetTemp - 1);
       }
     } else if (priceRatio < 0.7) {
       // Very cheap - can be more comfortable
-      console.log('  💚 Low energy price - increasing comfort');
+      logger.info('  💚 Low energy price - increasing comfort');
       
       for (const [roomId, room] of this.rooms) {
         await this.setRoomTarget(roomId, room.targetTemp + 0.5);
@@ -594,7 +595,7 @@ class IndoorClimateOptimizer {
       return { success: false, error: 'Room not found' };
     }
 
-    console.log(`⏰ Pre-conditioning ${room.name} in ${minutesFromNow} minutes`);
+    logger.info(`⏰ Pre-conditioning ${room.name} in ${minutesFromNow} minutes`);
 
     // Calculate when to start heating/cooling
     const tempDiff = Math.abs(room.targetTemp - room.currentTemp);
@@ -604,7 +605,7 @@ class IndoorClimateOptimizer {
 
     if (startTime > 0) {
       this._timeouts.push(setTimeout(async () => {
-        console.log(`🌡️ Starting pre-conditioning for ${room.name}`);
+        logger.info(`🌡️ Starting pre-conditioning for ${room.name}`);
         await this.setRoomTarget(roomId, room.targetTemp);
       }, startTime * 60 * 1000));
     } else {
@@ -666,8 +667,8 @@ class IndoorClimateOptimizer {
       }
 
       if (warnings.length > 0) {
-        console.log(`⚠️ ${room.name}: ${warnings.join(', ')}`);
-        console.log(`  💨 Increasing ventilation`);
+        logger.info(`⚠️ ${room.name}: ${warnings.join(', ')}`);
+        logger.info(`  💨 Increasing ventilation`);
         
         // Increase ventilation for this zone
         const zone = this.hvacZones.get(room.hvacZone);

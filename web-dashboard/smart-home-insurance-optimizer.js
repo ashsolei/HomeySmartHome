@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Smart Home Insurance Optimizer
@@ -361,7 +362,7 @@ class SmartHomeInsuranceOptimizer {
     this.claims.push(claim);
     policy.claimsHistory.push(claim.id);
 
-    console.log(`📋 Claim filed: ${claim.type} (${claim.estimatedAmount} SEK)`);
+    logger.info(`📋 Claim filed: ${claim.type} (${claim.estimatedAmount} SEK)`);
 
     return { success: true, claim };
   }
@@ -383,7 +384,7 @@ class SmartHomeInsuranceOptimizer {
       const policy = this.insurancePolicies.get(claim.policyId);
       policy.totalClaimed += claim.payoutAmount;
       
-      console.log(`✅ Claim approved: ${claim.payoutAmount} SEK payout`);
+      logger.info(`✅ Claim approved: ${claim.payoutAmount} SEK payout`);
     }
 
     return { success: true, claim };
@@ -394,7 +395,7 @@ class SmartHomeInsuranceOptimizer {
   // ============================================
 
   async analyzeCoverage() {
-    console.log('🔍 Analyzing insurance coverage...');
+    logger.info('🔍 Analyzing insurance coverage...');
 
     const gaps = [];
 
@@ -445,7 +446,7 @@ class SmartHomeInsuranceOptimizer {
       });
     }
 
-    console.log(`  Found ${gaps.length} coverage gaps`);
+    logger.info(`  Found ${gaps.length} coverage gaps`);
 
     return gaps;
   }
@@ -455,7 +456,7 @@ class SmartHomeInsuranceOptimizer {
   // ============================================
 
   async generateRecommendations() {
-    console.log('💡 Generating insurance recommendations...');
+    logger.info('💡 Generating insurance recommendations...');
 
     const recommendations = [];
 
@@ -557,7 +558,7 @@ class SmartHomeInsuranceOptimizer {
   }
 
   async checkRenewals() {
-    console.log('📅 Checking policy renewals...');
+    logger.info('📅 Checking policy renewals...');
 
     const now = Date.now();
 
@@ -565,17 +566,17 @@ class SmartHomeInsuranceOptimizer {
       const daysUntilRenewal = Math.ceil((policy.renewalDate - now) / (24 * 60 * 60 * 1000));
 
       if (daysUntilRenewal === 60) {
-        console.log(`  📢 ${policy.name}: 60 days until renewal - Start comparing offers`);
+        logger.info(`  📢 ${policy.name}: 60 days until renewal - Start comparing offers`);
       } else if (daysUntilRenewal === 30) {
-        console.log(`  ⚠️ ${policy.name}: 30 days until renewal - Make decision soon`);
+        logger.info(`  ⚠️ ${policy.name}: 30 days until renewal - Make decision soon`);
       } else if (daysUntilRenewal === 7) {
-        console.log(`  🚨 ${policy.name}: 7 days until renewal - Urgent action needed`);
+        logger.info(`  🚨 ${policy.name}: 7 days until renewal - Urgent action needed`);
       }
     }
   }
 
   async updateRiskAssessment() {
-    console.log('🔍 Updating risk assessment...');
+    logger.info('🔍 Updating risk assessment...');
 
     for (const [_factorId, factor] of this.riskFactors) {
       // Recalculate score based on current factors
@@ -597,7 +598,7 @@ class SmartHomeInsuranceOptimizer {
         factor.currentLevel = 'high';
       }
 
-      console.log(`  ${factor.name}: ${factor.score} (${factor.currentLevel})`);
+      logger.info(`  ${factor.name}: ${factor.score} (${factor.currentLevel})`);
     }
   }
 

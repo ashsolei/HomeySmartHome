@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Smart Mirror Dashboard
@@ -176,7 +177,7 @@ class SmartMirrorDashboard {
     }
 
     widget.enabled = true;
-    console.log(`📱 Showing widget: ${widgetId}`);
+    logger.info(`📱 Showing widget: ${widgetId}`);
 
     return { success: true };
   }
@@ -189,7 +190,7 @@ class SmartMirrorDashboard {
     }
 
     widget.enabled = false;
-    console.log(`📱 Hiding widget: ${widgetId}`);
+    logger.info(`📱 Hiding widget: ${widgetId}`);
 
     return { success: true };
   }
@@ -204,7 +205,7 @@ class SmartMirrorDashboard {
     widget.data = { ...widget.data, ...data };
     widget.lastUpdate = Date.now();
 
-    console.log(`🔄 Widget updated: ${widgetId}`);
+    logger.info(`🔄 Widget updated: ${widgetId}`);
 
     return { success: true };
   }
@@ -274,9 +275,9 @@ class SmartMirrorDashboard {
       }
     }
 
-    console.log(`🎨 Layout activated: ${layout.name}`);
-    console.log(`   Active widgets: ${layout.activeWidgets.length}`);
-    console.log(`   Brightness: ${layout.brightness}%`);
+    logger.info(`🎨 Layout activated: ${layout.name}`);
+    logger.info(`   Active widgets: ${layout.activeWidgets.length}`);
+    logger.info(`   Brightness: ${layout.brightness}%`);
 
     return { success: true, activeWidgets: layout.activeWidgets.length };
   }
@@ -292,7 +293,7 @@ class SmartMirrorDashboard {
 
     this.currentUser = detectedUser;
 
-    console.log(`👤 User detected: ${detectedUser}`);
+    logger.info(`👤 User detected: ${detectedUser}`);
 
     // Load personalized layout
     await this.loadUserPreferences(detectedUser);
@@ -318,7 +319,7 @@ class SmartMirrorDashboard {
         await this.showWidget(widgetId);
       }
 
-      console.log(`✨ Loaded preferences for ${userId}`);
+      logger.info(`✨ Loaded preferences for ${userId}`);
     }
 
     return { success: true };
@@ -373,7 +374,7 @@ class SmartMirrorDashboard {
     for (const [id, command] of this.voiceCommands) {
       for (const phrase of command.phrases) {
         if (normalized.includes(phrase)) {
-          console.log(`🎤 Voice command: ${phrase}`);
+          logger.info(`🎤 Voice command: ${phrase}`);
           await command.action();
           return { success: true, command: id };
         }
@@ -391,21 +392,21 @@ class SmartMirrorDashboard {
     // Find widget at touch position
     for (const [id, widget] of this.widgets) {
       if (widget.enabled && this.isInBounds(x, y, widget.position)) {
-        console.log(`👆 Widget touched: ${id}`);
+        logger.info(`👆 Widget touched: ${id}`);
         
         // Widget-specific actions
         switch (widget.type) {
           case 'calendar':
-            console.log('   Opening detailed calendar view');
+            logger.info('   Opening detailed calendar view');
             break;
           case 'weather':
-            console.log('   Showing extended forecast');
+            logger.info('   Showing extended forecast');
             break;
           case 'tasks':
-            console.log('   Opening task details');
+            logger.info('   Opening task details');
             break;
           case 'home':
-            console.log('   Opening home controls');
+            logger.info('   Opening home controls');
             break;
         }
 
@@ -422,23 +423,23 @@ class SmartMirrorDashboard {
   }
 
   async handleGesture(gesture) {
-    console.log(`✋ Gesture detected: ${gesture}`);
+    logger.info(`✋ Gesture detected: ${gesture}`);
 
     switch (gesture) {
       case 'swipe_left':
-        console.log('   Switching to next layout');
+        logger.info('   Switching to next layout');
         break;
       case 'swipe_right':
-        console.log('   Switching to previous layout');
+        logger.info('   Switching to previous layout');
         break;
       case 'swipe_up':
-        console.log('   Showing more widgets');
+        logger.info('   Showing more widgets');
         break;
       case 'swipe_down':
-        console.log('   Hiding widgets');
+        logger.info('   Hiding widgets');
         break;
       case 'wave':
-        console.log('   Activating mirror');
+        logger.info('   Activating mirror');
         break;
     }
 
@@ -446,7 +447,7 @@ class SmartMirrorDashboard {
   }
 
   async adjustBrightness(delta) {
-    console.log(`💡 Adjusting brightness: ${delta > 0 ? '+' : ''}${delta}%`);
+    logger.info(`💡 Adjusting brightness: ${delta > 0 ? '+' : ''}${delta}%`);
     return { success: true };
   }
 
@@ -455,27 +456,27 @@ class SmartMirrorDashboard {
   // ============================================
 
   async activateMirrorMode(mode) {
-    console.log(`🪞 Activating mirror mode: ${mode}`);
+    logger.info(`🪞 Activating mirror mode: ${mode}`);
 
     switch (mode) {
       case 'makeup':
-        console.log('   💄 Makeup mode: Full brightness, warm light');
-        console.log('   💡 Activating ring light');
+        logger.info('   💄 Makeup mode: Full brightness, warm light');
+        logger.info('   💡 Activating ring light');
         await this.activateLayout('minimal');
         break;
 
       case 'outfit':
-        console.log('   👔 Outfit mode: Full-length view');
-        console.log('   📸 Camera ready for outfit photos');
+        logger.info('   👔 Outfit mode: Full-length view');
+        logger.info('   📸 Camera ready for outfit photos');
         break;
 
       case 'fitness':
-        console.log('   💪 Fitness mode: Showing workout stats');
+        logger.info('   💪 Fitness mode: Showing workout stats');
         await this.activateLayout('workout');
         break;
 
       case 'standby':
-        console.log('   💤 Standby mode: Clock only, low brightness');
+        logger.info('   💤 Standby mode: Clock only, low brightness');
         await this.activateLayout('minimal');
         await this.adjustBrightness(-40);
         break;
@@ -499,7 +500,7 @@ class SmartMirrorDashboard {
       this.checkAutoActivateLayouts();
     }, 60000));
 
-    console.log('🪞 Smart Mirror active');
+    logger.info('🪞 Smart Mirror active');
   }
 
   async updateActiveWidgets() {

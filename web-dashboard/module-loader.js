@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Dashboard Module Loader
@@ -65,7 +66,7 @@ class ModuleLoader {
    */
   async loadAll(app, services = {}) {
     const moduleNames = this.discover();
-    console.log(`\n📦 Module Loader: Discovered ${moduleNames.length} dashboard modules`);
+    logger.info(`Module Loader: Discovered ${moduleNames.length} dashboard modules`);
 
     const INIT_TIMEOUT = 15000; // 15s per module
 
@@ -88,7 +89,7 @@ class ModuleLoader {
       } catch (err) {
         this.statuses.set(name, 'load-error');
         this.loadErrors.set(name, err.message);
-        console.error(`   ✗ ${name}: Failed to load — ${err.message}`);
+        logger.error(`${name}: Failed to load — ${err.message}`);
       }
     }
 
@@ -107,7 +108,7 @@ class ModuleLoader {
         .catch((err) => {
           this.statuses.set(name, 'init-error');
           this.loadErrors.set(name, err.message);
-          console.error(`   ✗ ${name}: Init failed — ${err.message}`);
+          logger.error(`${name}: Init failed — ${err.message}`);
         });
 
       initPromises.push(p);
@@ -119,8 +120,7 @@ class ModuleLoader {
     const ready = [...this.statuses.values()].filter(s => s === 'ready').length;
     const failed = [...this.statuses.values()].filter(s => s.includes('error')).length;
 
-    console.log(`   ✅ ${ready} modules ready, ${loaded - ready} loaded, ${failed} failed`);
-    console.log('');
+    logger.info(`${ready} modules ready, ${loaded - ready} loaded, ${failed} failed`);
 
     return { total: moduleNames.length, loaded, ready, failed };
   }

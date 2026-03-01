@@ -181,6 +181,14 @@ const SmartHomeAutomatedTestingSystem = require('./lib/SmartHomeAutomatedTesting
 const PushNotificationSystem = require('./lib/PushNotificationSystem');
 const GeofencingAutomationEngine = require('./lib/GeofencingAutomationEngine');
 const EnergySpotPriceSystem = require('./lib/EnergySpotPriceSystem');
+// Wave 21 - GraphQL API, Activity Timeline
+const GraphQLServer = require('./lib/GraphQLServer');
+const UserActivityTimeline = require('./lib/UserActivityTimeline');
+// Wave 22 - AI Recommendations, Pagination, Multi-Home, Firmware OTA
+const AIRecommendationEngine = require('./lib/AIRecommendationEngine');
+const ApiPaginator = require('./lib/ApiPaginator');
+const MultiHomeManager = require('./lib/MultiHomeManager');
+const DeviceFirmwareOTASystem = require('./lib/DeviceFirmwareOTASystem');
 
 class SmartHomeProApp extends Homey.App {
   
@@ -383,6 +391,14 @@ class SmartHomeProApp extends Homey.App {
     this.pushNotificationSystem = new PushNotificationSystem(this.homey);
     this.geofencingAutomationEngine = new GeofencingAutomationEngine(this.homey);
     this.energySpotPriceSystem = new EnergySpotPriceSystem(this.homey);
+    // Wave 21
+    this.graphQLServer = new GraphQLServer(this.homey);
+    this.userActivityTimeline = new UserActivityTimeline(this.homey);
+    // Wave 22
+    this.aiRecommendationEngine = new AIRecommendationEngine(this.homey);
+    this.apiPaginator = new ApiPaginator();
+    this.multiHomeManager = new MultiHomeManager(this.homey);
+    this.deviceFirmwareOTASystem = new DeviceFirmwareOTASystem(this.homey);
 
     await Promise.all([
       this.deviceManager.initialize(),
@@ -513,7 +529,15 @@ class SmartHomeProApp extends Homey.App {
       // Wave 19
       this.pushNotificationSystem.initialize(),
       this.geofencingAutomationEngine.initialize(),
-      this.energySpotPriceSystem.initialize()
+      this.energySpotPriceSystem.initialize(),
+      // Wave 21
+      this.graphQLServer.initialize(),
+      this.userActivityTimeline.initialize(),
+      // Wave 22
+      this.aiRecommendationEngine.initialize(),
+      this.apiPaginator.initialize(),
+      this.multiHomeManager.initialize(),
+      this.deviceFirmwareOTASystem.initialize()
     ]);
 
     // Wave 11 post-initialization setup

@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Security AI Monitor
@@ -109,7 +111,7 @@ class SecurityMonitor {
       this.updateThreatLevel();
 
     } catch (error) {
-      console.error('Security check error:', error);
+      logger.error('Security check error:', error);
     }
   }
 
@@ -264,6 +266,7 @@ class SecurityMonitor {
   handleAnomaly(anomaly) {
     // Add to anomaly list
     this.anomalies.push(anomaly);
+    if (this.anomalies.length > MAX_ENTRIES) this.anomalies.shift();
 
     // Trim if too many
     if (this.anomalies.length > 1000) {
@@ -290,6 +293,7 @@ class SecurityMonitor {
       details: event.details,
       handled: false
     });
+    if (this.securityEvents.length > MAX_ENTRIES) this.securityEvents.shift();
 
     // Trim history
     if (this.securityEvents.length > this.maxEventsHistory) {
@@ -357,7 +361,7 @@ class SecurityMonitor {
           this.triggerAlert(rule, event);
         }
       } catch (error) {
-        console.error(`Alert rule ${key} error:`, error);
+        logger.error(`Alert rule ${key} error:`, error);
       }
     }
   }
@@ -371,9 +375,9 @@ class SecurityMonitor {
       timestamp: Date.now()
     };
 
-    console.log('🚨 Security Alert:', rule.name);
-    console.log('Event:', event.description);
-    console.log('Action:', rule.action);
+    logger.info('🚨 Security Alert:', rule.name);
+    logger.info('Event:', event.description);
+    logger.info('Action:', rule.action);
 
     // Send notifications through specified channels
     // (Integration with notification system)
@@ -431,7 +435,7 @@ class SecurityMonitor {
   }
 
   async executeSecurityAction(action) {
-    console.log(`Executing security action: ${action.description}`);
+    logger.info(`Executing security action: ${action.description}`);
     
     // Implementation would interact with actual devices
     switch (action.action) {
@@ -482,7 +486,7 @@ class SecurityMonitor {
   }
 
   logThreatLevelChange(oldLevel, newLevel) {
-    console.log(`Threat level changed: ${oldLevel} → ${newLevel}`);
+    logger.info(`Threat level changed: ${oldLevel} → ${newLevel}`);
     
     this.securityEvents.push({
       id: `threat_${Date.now()}`,
@@ -492,6 +496,7 @@ class SecurityMonitor {
       description: `Hotnivå ändrad från ${oldLevel} till ${newLevel}`,
       details: { oldLevel, newLevel }
     });
+    if (this.securityEvents.length > MAX_ENTRIES) this.securityEvents.shift();
   }
 
   // ============================================

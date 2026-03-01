@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * EV Charging & Vehicle Integration
@@ -104,7 +105,7 @@ class EVChargingVehicleIntegration {
     vehicle.climate.enabled = true;
     vehicle.climate.targetTemp = targetTemp;
 
-    console.log(`🚗 ${vehicle.name}: Precondition started (${targetTemp}°C)`);
+    logger.info(`🚗 ${vehicle.name}: Precondition started (${targetTemp}°C)`);
 
     return { success: true };
   }
@@ -116,7 +117,7 @@ class EVChargingVehicleIntegration {
       return { success: false, error: 'Vehicle not found' };
     }
 
-    console.log(`🔒 ${vehicle.name}: Locked`);
+    logger.info(`🔒 ${vehicle.name}: Locked`);
 
     return { success: true };
   }
@@ -128,7 +129,7 @@ class EVChargingVehicleIntegration {
       return { success: false, error: 'Vehicle not found' };
     }
 
-    console.log(`🔓 ${vehicle.name}: Unlocked`);
+    logger.info(`🔓 ${vehicle.name}: Unlocked`);
 
     return { success: true };
   }
@@ -200,13 +201,13 @@ class EVChargingVehicleIntegration {
 
     this.chargingSessions.push(session);
 
-    console.log(`⚡ Charging started: ${vehicle.name} at ${station.name}`);
-    console.log(`   Current: ${vehicle.currentBattery}% → Target: ${targetBattery}%`);
+    logger.info(`⚡ Charging started: ${vehicle.name} at ${station.name}`);
+    logger.info(`   Current: ${vehicle.currentBattery}% → Target: ${targetBattery}%`);
 
     // Calculate charging time
     const energyNeeded = (targetBattery - vehicle.currentBattery) / 100 * vehicle.batteryCapacity;
     const chargingTime = (energyNeeded / station.maxPower * 60).toFixed(0);
-    console.log(`   Estimated time: ${chargingTime} minutes`);
+    logger.info(`   Estimated time: ${chargingTime} minutes`);
 
     return { success: true, sessionId: session.id, estimatedTime: chargingTime };
   }
@@ -241,10 +242,10 @@ class EVChargingVehicleIntegration {
     station.currentPower = 0;
     vehicle.chargingStatus = 'idle';
 
-    console.log(`✅ Charging complete: ${vehicle.name}`);
-    console.log(`   Battery: ${vehicle.currentBattery.toFixed(0)}%`);
-    console.log(`   Energy: ${energyDelivered.toFixed(2)} kWh`);
-    console.log(`   Cost: ${session.cost.toFixed(2)} SEK`);
+    logger.info(`✅ Charging complete: ${vehicle.name}`);
+    logger.info(`   Battery: ${vehicle.currentBattery.toFixed(0)}%`);
+    logger.info(`   Energy: ${energyDelivered.toFixed(2)} kWh`);
+    logger.info(`   Cost: ${session.cost.toFixed(2)} SEK`);
 
     return { success: true, finalBattery: vehicle.currentBattery, cost: session.cost };
   }
@@ -270,10 +271,10 @@ class EVChargingVehicleIntegration {
     // Find cheapest charging periods
     const cheapestPeriods = await this.findCheapestChargingPeriods(timeUntilDeparture);
 
-    console.log(`🔌 Smart charging scheduled for ${vehicle.name}`);
-    console.log(`   Departure: ${new Date(departureTime).toLocaleString('sv-SE')}`);
-    console.log(`   Target: ${targetBattery}%`);
-    console.log(`   Will charge during cheapest periods`);
+    logger.info(`🔌 Smart charging scheduled for ${vehicle.name}`);
+    logger.info(`   Departure: ${new Date(departureTime).toLocaleString('sv-SE')}`);
+    logger.info(`   Target: ${targetBattery}%`);
+    logger.info(`   Will charge during cheapest periods`);
 
     return { success: true, chargingPeriods: cheapestPeriods };
   }
@@ -302,8 +303,8 @@ class EVChargingVehicleIntegration {
       return { success: false, error: 'Vehicle not found' };
     }
 
-    console.log(`☀️ Solar charging enabled for ${vehicle.name}`);
-    console.log(`   Will charge when solar production > 5 kW`);
+    logger.info(`☀️ Solar charging enabled for ${vehicle.name}`);
+    logger.info(`   Will charge when solar production > 5 kW`);
 
     return { success: true };
   }
@@ -364,9 +365,9 @@ class EVChargingVehicleIntegration {
     if (plan.chargingNeeded) {
       const chargingStops = Math.ceil((distance - currentRange) / 200);  // Every 200 km
       plan.suggestedChargingStops = chargingStops;
-      console.log(`🗺️ Trip to ${destination} requires ${chargingStops} charging stop(s)`);
+      logger.info(`🗺️ Trip to ${destination} requires ${chargingStops} charging stop(s)`);
     } else {
-      console.log(`🗺️ Trip to ${destination} possible without charging`);
+      logger.info(`🗺️ Trip to ${destination} possible without charging`);
     }
 
     return plan;
@@ -395,7 +396,7 @@ class EVChargingVehicleIntegration {
 
     this.trips.push(trip);
 
-    console.log(`🚗 Trip logged: ${distance} km in ${duration} min`);
+    logger.info(`🚗 Trip logged: ${distance} km in ${duration} min`);
 
     return { success: true };
   }
@@ -405,44 +406,44 @@ class EVChargingVehicleIntegration {
   // ============================================
 
   async openGarage() {
-    console.log('🚪 Opening garage door...');
+    logger.info('🚪 Opening garage door...');
     
     // Check if vehicles are approaching
     const approachingVehicles = Array.from(this.vehicles.values())
       .filter(v => v.location === 'approaching');
 
     if (approachingVehicles.length > 0) {
-      console.log(`   Vehicle detected: ${approachingVehicles[0].name}`);
+      logger.info(`   Vehicle detected: ${approachingVehicles[0].name}`);
     }
 
     return { success: true };
   }
 
   async closeGarage() {
-    console.log('🚪 Closing garage door...');
+    logger.info('🚪 Closing garage door...');
     return { success: true };
   }
 
   async activateGarageScene(scene) {
-    console.log(`🏠 Activating garage scene: ${scene}`);
+    logger.info(`🏠 Activating garage scene: ${scene}`);
 
     switch (scene) {
       case 'arrival':
-        console.log('   💡 Turning on garage lights');
-        console.log('   🚪 Opening garage door');
-        console.log('   🏠 Unlocking house door');
+        logger.info('   💡 Turning on garage lights');
+        logger.info('   🚪 Opening garage door');
+        logger.info('   🏠 Unlocking house door');
         break;
 
       case 'departure':
-        console.log('   ⚡ Stopping charging if complete');
-        console.log('   🚪 Opening garage door');
-        console.log('   🔒 Locking house');
+        logger.info('   ⚡ Stopping charging if complete');
+        logger.info('   🚪 Opening garage door');
+        logger.info('   🔒 Locking house');
         break;
 
       case 'charging':
-        console.log('   💡 Dimming lights to 30%');
-        console.log('   ⚡ Starting charging');
-        console.log('   🌡️ Setting garage temp to 15°C');
+        logger.info('   💡 Dimming lights to 30%');
+        logger.info('   ⚡ Starting charging');
+        logger.info('   🌡️ Setting garage temp to 15°C');
         break;
     }
 
@@ -464,7 +465,7 @@ class EVChargingVehicleIntegration {
       this.updateVehicleLocations();
     }, 10 * 60 * 1000));
 
-    console.log('🚗 EV Integration active');
+    logger.info('🚗 EV Integration active');
   }
 
   async checkChargingSessions() {

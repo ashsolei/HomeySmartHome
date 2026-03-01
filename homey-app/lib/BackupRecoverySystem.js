@@ -12,9 +12,7 @@ const crypto = require('crypto');
  * and encryption, automatic scheduling, and selective restore.
  */
 class BackupRecoverySystem {
-  /**
-   * @param {import('homey').Homey} homey - Homey app instance
-   */
+  /** @param {import('../types').HomeyContext} homey */
   constructor(homey) {
     this.homey = homey;
     this.backups = new Map();

@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Sleep Optimizer
@@ -161,7 +162,7 @@ class SleepOptimizer {
   }
 
   async sendBedtimeReminder(profile) {
-    console.log(`🌙 Bedtime reminder för ${profile.userName} om 30 minuter`);
+    logger.info(`🌙 Bedtime reminder för ${profile.userName} om 30 minuter`);
     
     // Send notification
     // await this.app.notifications.send({
@@ -172,7 +173,7 @@ class SleepOptimizer {
   }
 
   async initiateBedtimeRoutine(profile) {
-    console.log(`🛏️ Starting bedtime routine for ${profile.userName}`);
+    logger.info(`🛏️ Starting bedtime routine for ${profile.userName}`);
 
     // Start sleep session
     this.currentSession = {
@@ -200,30 +201,30 @@ class SleepOptimizer {
     const prefs = profile.preferences;
 
     // Set temperature
-    console.log(`  → Setting temperature to ${prefs.temperature.initial}°C`);
+    logger.info(`  → Setting temperature to ${prefs.temperature.initial}°C`);
     // await this.app.climate.setTemperature('bedroom', prefs.temperature.initial);
 
     // Set lighting
     if (prefs.light.nightLight) {
-      console.log(`  → Enabling night light (${prefs.light.brightness}%)`);
+      logger.info(`  → Enabling night light (${prefs.light.brightness}%)`);
       // await this.app.lights.set('bedroom_nightlight', {
       //   on: true,
       //   brightness: prefs.light.brightness,
       //   colorTemp: prefs.light.colorTemp
       // });
     } else {
-      console.log(`  → Turning off all lights`);
+      logger.info(`  → Turning off all lights`);
       // await this.app.lights.setRoom('bedroom', { on: false });
     }
 
     // Set sound
     if (prefs.sound.whiteNoise) {
-      console.log(`  → Starting white noise (${prefs.sound.volume}%)`);
+      logger.info(`  → Starting white noise (${prefs.sound.volume}%)`);
       // await this.app.audio.play('white_noise', { volume: prefs.sound.volume });
     }
 
     // Close blinds
-    console.log(`  → Closing blinds`);
+    logger.info(`  → Closing blinds`);
     // await this.app.blinds.close('bedroom');
   }
 
@@ -261,27 +262,27 @@ class SleepOptimizer {
 
     // Temperature too high or low
     if (environment.temperature < prefs.temperature.min) {
-      console.log(`⚠️ Temperature too low: ${environment.temperature.toFixed(1)}°C`);
+      logger.info(`⚠️ Temperature too low: ${environment.temperature.toFixed(1)}°C`);
       // await this.app.climate.adjustTemperature('bedroom', +1);
     } else if (environment.temperature > prefs.temperature.max) {
-      console.log(`⚠️ Temperature too high: ${environment.temperature.toFixed(1)}°C`);
+      logger.info(`⚠️ Temperature too high: ${environment.temperature.toFixed(1)}°C`);
       // await this.app.climate.adjustTemperature('bedroom', -1);
     }
 
     // CO2 too high
     if (environment.co2 > 1000) {
-      console.log(`⚠️ CO2 too high: ${environment.co2.toFixed(0)} ppm`);
+      logger.info(`⚠️ CO2 too high: ${environment.co2.toFixed(0)} ppm`);
       // await this.app.ventilation.increase('bedroom');
     }
 
     // Noise too high
     if (environment.noise > 40) {
-      console.log(`⚠️ Noise detected: ${environment.noise.toFixed(0)} dB`);
+      logger.info(`⚠️ Noise detected: ${environment.noise.toFixed(0)} dB`);
     }
 
     // Light too bright
     if (environment.light > 20) {
-      console.log(`⚠️ Light too bright: ${environment.light.toFixed(0)} lux`);
+      logger.info(`⚠️ Light too bright: ${environment.light.toFixed(0)} lux`);
     }
   }
 
@@ -374,7 +375,7 @@ class SleepOptimizer {
   }
 
   async initiateWakeupRoutine(profile) {
-    console.log(`☀️ Starting wake-up routine for ${profile.userName}`);
+    logger.info(`☀️ Starting wake-up routine for ${profile.userName}`);
 
     // End sleep session
     if (this.currentSession && this.currentSession.userId === profile.userId) {
@@ -399,7 +400,7 @@ class SleepOptimizer {
       case 'light_start':
       case 'light_increase':
       case 'light_full':
-        console.log(`  → Light: ${step.brightness}%, ${step.colorTemp}K`);
+        logger.info(`  → Light: ${step.brightness}%, ${step.colorTemp}K`);
         // await this.app.lights.set('bedroom', {
         //   on: true,
         //   brightness: step.brightness,
@@ -409,22 +410,22 @@ class SleepOptimizer {
       
       case 'sound_start':
       case 'sound_increase':
-        console.log(`  → Sound: ${step.type}, ${step.volume}%`);
+        logger.info(`  → Sound: ${step.type}, ${step.volume}%`);
         // await this.app.audio.play(step.type, { volume: step.volume });
         break;
       
       case 'sound_alarm':
-        console.log(`  → Alarm: ${step.type}, ${step.volume}%`);
+        logger.info(`  → Alarm: ${step.type}, ${step.volume}%`);
         // await this.app.audio.playAlarm(step.type, { volume: step.volume });
         break;
       
       case 'blinds_open':
-        console.log(`  → Opening blinds`);
+        logger.info(`  → Opening blinds`);
         // await this.app.blinds.open('bedroom');
         break;
       
       case 'temperature_increase':
-        console.log(`  → Temperature: ${step.target}°C`);
+        logger.info(`  → Temperature: ${step.target}°C`);
         // await this.app.climate.setTemperature('bedroom', step.target);
         break;
     }
@@ -454,7 +455,7 @@ class SleepOptimizer {
     // Update profile statistics
     await this.updateProfileStats(this.currentSession.userId, this.currentSession);
 
-    console.log(`Sleep session ended - Quality: ${quality.overall}%`);
+    logger.info(`Sleep session ended - Quality: ${quality.overall}%`);
 
     this.currentSession = null;
   }

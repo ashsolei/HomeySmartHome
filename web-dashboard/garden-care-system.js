@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Garden Care System
@@ -366,7 +367,7 @@ class GardenCareSystem {
 
       // Check if watering needed based on moisture
       if (readings.moisture < 30) {
-        console.log(`💧 Low moisture in ${sensor.zoneName}: ${readings.moisture}%`);
+        logger.info(`💧 Low moisture in ${sensor.zoneName}: ${readings.moisture}%`);
         
         // Consider triggering watering
         // await this.waterZone(sensor.zoneId, 10); // Quick 10-minute watering
@@ -483,7 +484,7 @@ class GardenCareSystem {
       return { success: false, error: 'Zone not found' };
     }
 
-    console.log(`💦 Watering ${zone.name} for ${duration} minutes`);
+    logger.info(`💦 Watering ${zone.name} for ${duration} minutes`);
 
     // Calculate water usage (approximate)
     let waterUsed;
@@ -533,11 +534,11 @@ class GardenCareSystem {
       }
     };
 
-    console.log(`🌤️ Weather check: Rain ${weather.rain ? 'yes' : 'no'}, Temp ${weather.temperature.toFixed(1)}°C`);
+    logger.info(`🌤️ Weather check: Rain ${weather.rain ? 'yes' : 'no'}, Temp ${weather.temperature.toFixed(1)}°C`);
 
     // Skip watering if rain today or forecast
     if (weather.rain && weather.rainAmount > 5) {
-      console.log(`  → Skipping watering due to rain (${weather.rainAmount.toFixed(1)}mm)`);
+      logger.info(`  → Skipping watering due to rain (${weather.rainAmount.toFixed(1)}mm)`);
       
       for (const [_zoneId, schedule] of this.wateringSchedule) {
         schedule.rainDelay = 24; // Skip next 24 hours
@@ -545,7 +546,7 @@ class GardenCareSystem {
     }
 
     if (weather.forecast.rainNext24h && weather.forecast.expectedRain > 10) {
-      console.log(`  → Rain expected (${weather.forecast.expectedRain.toFixed(1)}mm), delaying watering`);
+      logger.info(`  → Rain expected (${weather.forecast.expectedRain.toFixed(1)}mm), delaying watering`);
       
       for (const [_zoneId, schedule] of this.wateringSchedule) {
         schedule.skipNext = true;
@@ -560,7 +561,7 @@ class GardenCareSystem {
         const daysUntilHarvest = (plant.harvestTime - Date.now()) / (1000 * 60 * 60 * 24);
         
         if (daysUntilHarvest > 0 && daysUntilHarvest <= 7) {
-          console.log(`🌱 ${plant.name} ready to harvest in ${Math.ceil(daysUntilHarvest)} days`);
+          logger.info(`🌱 ${plant.name} ready to harvest in ${Math.ceil(daysUntilHarvest)} days`);
         }
       }
 
@@ -568,7 +569,7 @@ class GardenCareSystem {
       const sensor = Array.from(this.sensors.values()).find(s => s.zoneId === plant.zone);
       
       if (sensor && sensor.readings.moisture < 30 && plant.waterNeeds === 'high') {
-        console.log(`⚠️ ${plant.name} may need extra water (moisture ${sensor.readings.moisture}%)`);
+        logger.info(`⚠️ ${plant.name} may need extra water (moisture ${sensor.readings.moisture}%)`);
       }
     }
   }

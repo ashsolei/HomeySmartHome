@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Air Quality Manager
@@ -561,7 +562,7 @@ class AirQualityManager {
       
       if (!existing) {
         this.alerts.push(alert);
-        console.log(`🚨 Air Quality Alert: ${alert.message}`);
+        logger.info(`🚨 Air Quality Alert: ${alert.message}`);
       }
     }
 
@@ -681,7 +682,7 @@ class AirQualityManager {
     room.ventilationActive = true;
     room.lastVentilation = Date.now();
 
-    console.log(`✓ Activated ${device.name} at speed ${speed}`);
+    logger.info(`✓ Activated ${device.name} at speed ${speed}`);
   }
 
   async deactivateVentilation(deviceId) {
@@ -695,7 +696,7 @@ class AirQualityManager {
     const room = this.rooms.get(device.room);
     room.ventilationActive = false;
 
-    console.log(`✓ Deactivated ${device.name}`);
+    logger.info(`✓ Deactivated ${device.name}`);
   }
 
   async setVentilationSpeed(deviceId, speed) {
@@ -705,7 +706,7 @@ class AirQualityManager {
 
     device.speed = speed;
     
-    console.log(`✓ Set ${device.name} to speed ${speed}`);
+    logger.info(`✓ Set ${device.name} to speed ${speed}`);
   }
 
   // ============================================

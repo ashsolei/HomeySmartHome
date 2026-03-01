@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Smart Shopping List
@@ -160,7 +161,7 @@ class SmartShoppingList {
     // Check recipe-based suggestions
     this.checkRecipeSuggestions();
 
-    console.log(`Generated ${this.suggestions.length} shopping suggestions`);
+    logger.info(`Generated ${this.suggestions.length} shopping suggestions`);
 
     return this.suggestions;
   }

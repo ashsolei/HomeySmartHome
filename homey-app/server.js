@@ -169,6 +169,18 @@ const AuditLogSystem = require('./lib/AuditLogSystem');
 const SmartHomeAdaptiveLearningSystem = require('./lib/SmartHomeAdaptiveLearningSystem');
 const SmartHomeAutomatedTestingSystem = require('./lib/SmartHomeAutomatedTestingSystem');
 const SmartHomePredictiveCleaningSystem = require('./lib/SmartHomePredictiveCleaningSystem');
+// Wave 19 — Push Notifications, Geofencing Automation, Energy Spot Price
+const PushNotificationSystem = require('./lib/PushNotificationSystem');
+const GeofencingAutomationEngine = require('./lib/GeofencingAutomationEngine');
+const EnergySpotPriceSystem = require('./lib/EnergySpotPriceSystem');
+// Wave 21 — GraphQL API, Activity Timeline
+const GraphQLServer = require('./lib/GraphQLServer');
+const UserActivityTimeline = require('./lib/UserActivityTimeline');
+// Wave 22 — AI Recommendations, Pagination, Multi-Home, Firmware OTA
+const AIRecommendationEngine = require('./lib/AIRecommendationEngine');
+const ApiPaginator = require('./lib/ApiPaginator');
+const MultiHomeManager = require('./lib/MultiHomeManager');
+const DeviceFirmwareOTASystem = require('./lib/DeviceFirmwareOTASystem');
 
 // ============================================
 // BOOT SEQUENCE
@@ -383,6 +395,21 @@ async function boot() {
   app.smartHomeAutomatedTestingSystem = new SmartHomeAutomatedTestingSystem(homey);
   app.smartHomePredictiveCleaningSystem = new SmartHomePredictiveCleaningSystem(homey);
 
+  // ── Wave 19: constructor(homey) ──
+  app.pushNotificationSystem = new PushNotificationSystem(homey);
+  app.geofencingAutomationEngine = new GeofencingAutomationEngine(homey);
+  app.energySpotPriceSystem = new EnergySpotPriceSystem(homey);
+
+  // ── Wave 21: constructor(homey) ──
+  app.graphQLServer = new GraphQLServer(homey);
+  app.userActivityTimeline = new UserActivityTimeline(homey);
+
+  // ── Wave 22: constructor(homey) ──
+  app.aiRecommendationEngine = new AIRecommendationEngine(homey);
+  app.apiPaginator = new ApiPaginator();
+  app.multiHomeManager = new MultiHomeManager(homey);
+  app.deviceFirmwareOTASystem = new DeviceFirmwareOTASystem(homey);
+
   // 4. Wire homey.app
   homey.app = app;
 
@@ -528,6 +555,18 @@ async function boot() {
     { name: 'SmartHomeAdaptiveLearningSystem', ref: app.smartHomeAdaptiveLearningSystem },
     { name: 'SmartHomeAutomatedTestingSystem', ref: app.smartHomeAutomatedTestingSystem },
     { name: 'SmartHomePredictiveCleaningSystem', ref: app.smartHomePredictiveCleaningSystem },
+    // Wave 19
+    { name: 'PushNotificationSystem', ref: app.pushNotificationSystem },
+    { name: 'GeofencingAutomationEngine', ref: app.geofencingAutomationEngine },
+    { name: 'EnergySpotPriceSystem', ref: app.energySpotPriceSystem },
+    // Wave 21
+    { name: 'GraphQLServer', ref: app.graphQLServer },
+    { name: 'UserActivityTimeline', ref: app.userActivityTimeline },
+    // Wave 22
+    { name: 'AIRecommendationEngine', ref: app.aiRecommendationEngine },
+    { name: 'ApiPaginator', ref: app.apiPaginator },
+    { name: 'MultiHomeManager', ref: app.multiHomeManager },
+    { name: 'DeviceFirmwareOTASystem', ref: app.deviceFirmwareOTASystem },
   ];
 
   // 6. Initialize all systems with Promise.allSettled for resilience
@@ -1067,10 +1106,171 @@ async function startServer() {
     });
   });
 
+  // ── Scenes endpoints (FEAT-19) ──
+  server.get('/api/v1/scenes', (_req, res) => {
+    res.json({ scenes: smartApp.scenes || {}, timestamp: new Date().toISOString() });
+  });
+
+  server.post('/api/v1/scenes', (req, res) => {
+    const { name, actions } = req.body || {};
+    if (!name || typeof name !== 'string' || name.length > 128) {
+      return res.status(400).json({ error: 'Invalid or missing scene name' });
+    }
+    if (!Array.isArray(actions)) {
+      return res.status(400).json({ error: 'Actions must be an array' });
+    }
+    const id = `scene-${Date.now()}`;
+    smartApp.scenes[id] = { id, name, actions, createdAt: new Date().toISOString() };
+    res.status(201).json({ scene: smartApp.scenes[id] });
+  });
+
+  // ── Timeline endpoint (FEAT-18) ──
+  server.get('/api/v1/timeline', (req, res) => {
+    const { limit, type, since } = req.query;
+    const events = smartApp.userActivityTimeline.getEvents({
+      limit: limit ? parseInt(limit, 10) : undefined,
+      type,
+      since,
+    });
+    res.json({ events, total: events.length, timestamp: new Date().toISOString() });
+  });
+
+  // ── AI Recommendations endpoint (FEAT-22) ──
+  server.get('/api/v1/recommendations', (_req, res) => {
+    const { category } = _req.query;
+    const recs = smartApp.aiRecommendationEngine.getRecommendations(category || undefined);
+    res.json({ recommendations: recs, total: recs.length, timestamp: new Date().toISOString() });
+  });
+
+  // ── Paginated devices endpoint (FEAT-23) ──
+  server.get('/api/v1/devices', async (req, res) => {
+    try {
+      const devices = await smartApp.deviceManager.getDevicesSummary();
+      const { page, limit } = req.query;
+      if (page) {
+        const result = smartApp.apiPaginator.paginate(devices, { page, limit, baseUrl: '/api/v1/devices' });
+        res.set('X-Total-Count', String(result.pagination.total));
+        return res.json(result);
+      }
+      res.json(devices);
+    } catch (err) {
+      res.status(500).json({ error: err.message, timestamp: new Date().toISOString() });
+    }
+  });
+
+  // ── Paginated automations endpoint (FEAT-23) ──
+  server.get('/api/v1/automations', (req, res) => {
+    const automations = Array.from(smartApp.automationEngine.automations?.values() || []);
+    const { page, limit } = req.query;
+    if (page) {
+      const result = smartApp.apiPaginator.paginate(automations, { page, limit, baseUrl: '/api/v1/automations' });
+      res.set('X-Total-Count', String(result.pagination.total));
+      return res.json(result);
+    }
+    res.json({ automations });
+  });
+
+  // ── Multi-Home endpoints (FEAT-24) ──
+  server.get('/api/v1/homes', (req, res) => {
+    const { ownerId } = req.query;
+    const homes = smartApp.multiHomeManager.listHomes(ownerId || undefined);
+    res.json({ homes, total: homes.length, timestamp: new Date().toISOString() });
+  });
+
+  server.post('/api/v1/homes', (req, res) => {
+    try {
+      const home = smartApp.multiHomeManager.createHome(req.body);
+      res.status(201).json(home);
+    } catch (err) {
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
+  server.get('/api/v1/homes/:id', (req, res) => {
+    try {
+      const home = smartApp.multiHomeManager.getHome(req.params.id);
+      res.json(home);
+    } catch (err) {
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
+  server.put('/api/v1/homes/:id', (req, res) => {
+    try {
+      const home = smartApp.multiHomeManager.updateHome(req.params.id, req.body);
+      res.json(home);
+    } catch (err) {
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
+  server.delete('/api/v1/homes/:id', (req, res) => {
+    try {
+      const result = smartApp.multiHomeManager.deleteHome(req.params.id);
+      res.json(result);
+    } catch (err) {
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
+  server.post('/api/v1/homes/:id/activate', (req, res) => {
+    try {
+      const home = smartApp.multiHomeManager.switchActiveHome(req.params.id);
+      res.json({ success: true, activeHome: home });
+    } catch (err) {
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
+  // ── Firmware OTA endpoints (FEAT-25) ──
+  server.get('/api/v1/firmware/updates', (_req, res) => {
+    const updates = smartApp.deviceFirmwareOTASystem.checkForUpdates();
+    res.json({ updates, pending: smartApp.deviceFirmwareOTASystem.getPendingUpdates(), timestamp: new Date().toISOString() });
+  });
+
+  server.post('/api/v1/firmware/register', (req, res) => {
+    try {
+      const { deviceId, currentVersion, protocol } = req.body;
+      const device = smartApp.deviceFirmwareOTASystem.registerDevice(deviceId, currentVersion, protocol);
+      res.status(201).json(device);
+    } catch (err) {
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
+  server.post('/api/v1/firmware/schedule', (req, res) => {
+    try {
+      const { deviceId, version, scheduledAt } = req.body;
+      const schedule = smartApp.deviceFirmwareOTASystem.scheduleUpdate(deviceId, version, scheduledAt);
+      res.status(201).json(schedule);
+    } catch (err) {
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
+  server.get('/api/v1/firmware/status/:deviceId', (req, res) => {
+    try {
+      const status = smartApp.deviceFirmwareOTASystem.getUpdateStatus(req.params.deviceId);
+      res.json(status);
+    } catch (err) {
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
   // ── Auto-generate API routes from app.json + api.js ──
   const apiHandlers = require('./api.js');
   const appManifest = require('./app.json');
   const apiDefs = appManifest.api || {};
+  const { etagMiddleware } = require('./lib/HttpCacheMiddleware');
+
+  // Read-heavy GET endpoints that benefit from ETag / Cache-Control headers
+  const CACHEABLE_ENDPOINTS = new Set([
+    '/api/dashboard',
+    '/api/devices',
+    '/api/automations',
+    '/api/infrastructure/health',
+    '/api/billing/overview',
+  ]);
 
   const methodMap = { GET: 'get', POST: 'post', PUT: 'put', DELETE: 'delete', PATCH: 'patch' };
 
@@ -1103,8 +1303,12 @@ async function startServer() {
 
     const path = `/api${def.path}`;
     const requiredRole = METHOD_ROLE[httpMethod] || 'VIEWER';
+    const middlewares = [];
+    if (httpMethod === 'GET' && CACHEABLE_ENDPOINTS.has(path)) {
+      middlewares.push(etagMiddleware);
+    }
 
-    server[method](path, async (req, res) => {
+    server[method](path, ...middlewares, async (req, res) => {
       // ── FEAT-07: Authentication + Role-Based Access Control ──
       //
       // 1. Authenticate the request (validates Bearer token, rate limits, lockout).
@@ -1165,6 +1369,9 @@ async function startServer() {
   }
 
   logger.info({ routeCount }, 'API routes registered from app.json definitions');
+
+  // ── GraphQL endpoint (FEAT-16) ──
+  server.post('/graphql', express.json(), smartApp.graphQLServer.middleware());
 
   // ── OpenAPI / Swagger documentation ──
   const { specs, swaggerUi } = require('./lib/swagger');

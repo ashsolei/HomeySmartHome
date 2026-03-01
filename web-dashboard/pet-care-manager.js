@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Pet Care Manager
@@ -170,7 +171,7 @@ class PetCareManager {
     const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
     schedule.history = schedule.history.filter(f => f.timestamp >= cutoff);
 
-    console.log(`🍽️ Fed ${this.pets.get(petId).name}: ${data.amount}g ${data.type}`);
+    logger.info(`🍽️ Fed ${this.pets.get(petId).name}: ${data.amount}g ${data.type}`);
 
     return { success: true, feeding };
   }
@@ -198,7 +199,7 @@ class PetCareManager {
       fedBy: 'manual'
     });
 
-    console.log(`🦴 Treat dispensed to ${this.pets.get(petId).name}: ${amount}g`);
+    logger.info(`🦴 Treat dispensed to ${this.pets.get(petId).name}: ${amount}g`);
 
     return { success: true, remaining: schedule.treats.maxDaily - schedule.treats.current };
   }
@@ -245,7 +246,7 @@ class PetCareManager {
 
         // Time to feed!
         const pet = this.pets.get(petId);
-        console.log(`🔔 Feeding time for ${pet.name}!`);
+        logger.info(`🔔 Feeding time for ${pet.name}!`);
 
         // Send notification
         // await this.app.notifications.send({
@@ -462,7 +463,7 @@ class PetCareManager {
         const pet = this.pets.get(reminder.petId);
         const daysUntil = Math.ceil(timeUntilDue / (24 * 60 * 60 * 1000));
 
-        console.log(`🔔 Reminder: ${pet.name} - ${reminder.description} om ${daysUntil} dag(ar)`);
+        logger.info(`🔔 Reminder: ${pet.name} - ${reminder.description} om ${daysUntil} dag(ar)`);
 
         // await this.app.notifications.send({
         //   title: `Husdjurspåminnelse: ${pet.name}`,
@@ -475,7 +476,7 @@ class PetCareManager {
 
       // Mark overdue
       if (timeUntilDue < 0) {
-        console.log(`⚠️ Overdue: ${this.pets.get(reminder.petId).name} - ${reminder.description}`);
+        logger.info(`⚠️ Overdue: ${this.pets.get(reminder.petId).name} - ${reminder.description}`);
       }
     }
   }

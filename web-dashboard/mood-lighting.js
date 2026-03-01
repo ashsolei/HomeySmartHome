@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Mood Lighting System
@@ -403,7 +404,7 @@ class MoodLightingSystem {
       return { success: false, error: 'Scene not found' };
     }
 
-    console.log(`🎭 Activating scene: ${scene.name}`);
+    logger.info(`🎭 Activating scene: ${scene.name}`);
 
     // Apply scene settings to lights
     for (const [lightId, settings] of Object.entries(scene.lights)) {
@@ -471,7 +472,7 @@ class MoodLightingSystem {
       return { success: false, error: 'Mood not found' };
     }
 
-    console.log(`😊 Setting mood: ${mood.name}`);
+    logger.info(`😊 Setting mood: ${mood.name}`);
 
     this.currentMood = moodId;
 

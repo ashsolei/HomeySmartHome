@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Dynamic Energy Price Optimizer
@@ -48,7 +49,7 @@ class EnergyPriceOptimizer {
 
       return this.priceData;
     } catch (error) {
-      console.error('Price update error:', error);
+      logger.error('Price update error:', error);
       return this.getDefaultPrices();
     }
   }
@@ -381,7 +382,7 @@ class EnergyPriceOptimizer {
           });
         }
       } catch (error) {
-        console.error(`Strategy ${key} error:`, error);
+        logger.error(`Strategy ${key} error:`, error);
       }
     }
 

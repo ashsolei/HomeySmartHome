@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scene Builder - Smart Home Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        .header {
+            background: #16213e;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid #0f3460;
+        }
+        .header h1 { font-size: 1.4rem; font-weight: 600; }
+        .header a {
+            color: #53a8b6;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .header a:hover { text-decoration: underline; }
+        .container {
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .panel {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #0f3460;
+        }
+        .panel h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #53a8b6;
+        }
+        .scene-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+        .scene-card {
+            background: #1a1a2e;
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .scene-card .name { font-weight: 500; }
+        .scene-card .meta { font-size: 0.85rem; color: #888; }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+            color: #aaa;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid #0f3460;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+        }
+        .actions-list {
+            margin: 1rem 0;
+        }
+        .action-item {
+            background: #1a1a2e;
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .action-item button {
+            background: #e74c3c;
+            border: none;
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: #0f3460;
+            color: #e0e0e0;
+        }
+        .btn-primary:hover { background: #1a4a7a; }
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-success:hover { background: #2ecc71; }
+        .btn-row { display: flex; gap: 0.75rem; margin-top: 1rem; }
+        .empty-msg { color: #666; font-style: italic; }
+        .status-msg {
+            margin-top: 0.75rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .status-msg.success { display: block; background: #1e4d2b; color: #6fcf97; }
+        .status-msg.error { display: block; background: #4d1e1e; color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Scene Builder</h1>
+        <a href="/">Back to Dashboard</a>
+    </div>
+
+    <div class="container">
+        <div class="panel">
+            <h2>Existing Scenes</h2>
+            <div id="scene-list" class="scene-list">
+                <p class="empty-msg">Loading scenes...</p>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Create New Scene</h2>
+            <div class="form-group">
+                <label for="scene-name">Scene Name</label>
+                <input type="text" id="scene-name" placeholder="e.g. Movie Night" maxlength="128">
+            </div>
+
+            <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: #aaa;">Device Actions</h3>
+            <div id="actions-list" class="actions-list">
+                <p class="empty-msg" id="no-actions">No actions added yet</p>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; min-width: 120px;">
+                    <label for="action-device">Device</label>
+                    <input type="text" id="action-device" placeholder="e.g. Living Room Light">
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 120px;">
+                    <label for="action-capability">Capability</label>
+                    <select id="action-capability">
+                        <option value="onoff">On/Off</option>
+                        <option value="dim">Dim</option>
+                        <option value="target_temperature">Temperature</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 80px;">
+                    <label for="action-value">Value</label>
+                    <input type="text" id="action-value" placeholder="e.g. true, 0.8">
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-primary" id="add-action-btn">Add Action</button>
+                <button class="btn btn-success" id="save-scene-btn">Save Scene</button>
+            </div>
+
+            <div id="status-msg" class="status-msg"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin.replace(':3001', ':3000');
+        const actions = [];
+
+        async function loadScenes() {
+            const container = document.getElementById('scene-list');
+            try {
+                const res = await fetch(API_BASE + '/api/v1/scenes');
+                const data = await res.json();
+                const scenes = data.scenes || {};
+                const entries = Object.values(scenes);
+
+                if (entries.length === 0) {
+                    container.innerHTML = '<p class="empty-msg">No scenes created yet</p>';
+                    return;
+                }
+
+                container.innerHTML = entries.map(function(s) {
+                    var actionCount = (s.actions && s.actions.length) || 0;
+                    return '<div class="scene-card">' +
+                        '<div><span class="name">' + escapeHtml(s.name || s.id) + '</span>' +
+                        '<div class="meta">' + actionCount + ' action(s)</div></div>' +
+                        '</div>';
+                }).join('');
+            } catch (_err) {
+                container.innerHTML = '<p class="empty-msg">Could not load scenes from backend</p>';
+            }
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function renderActions() {
+            var list = document.getElementById('actions-list');
+            var noActions = document.getElementById('no-actions');
+
+            if (actions.length === 0) {
+                list.innerHTML = '<p class="empty-msg" id="no-actions">No actions added yet</p>';
+                return;
+            }
+
+            list.innerHTML = actions.map(function(a, i) {
+                return '<div class="action-item">' +
+                    '<span>' + escapeHtml(a.device) + ' &rarr; ' + escapeHtml(a.capability) + ' = ' + escapeHtml(String(a.value)) + '</span>' +
+                    '<button onclick="removeAction(' + i + ')">Remove</button>' +
+                    '</div>';
+            }).join('');
+        }
+
+        function removeAction(index) {
+            actions.splice(index, 1);
+            renderActions();
+        }
+
+        function showStatus(msg, type) {
+            var el = document.getElementById('status-msg');
+            el.textContent = msg;
+            el.className = 'status-msg ' + type;
+            setTimeout(function() { el.className = 'status-msg'; }, 4000);
+        }
+
+        document.getElementById('add-action-btn').addEventListener('click', function() {
+            var device = document.getElementById('action-device').value.trim();
+            var capability = document.getElementById('action-capability').value;
+            var value = document.getElementById('action-value').value.trim();
+
+            if (!device) { showStatus('Device name is required', 'error'); return; }
+            if (!value) { showStatus('Value is required', 'error'); return; }
+
+            var parsed = value;
+            if (value === 'true') parsed = true;
+            else if (value === 'false') parsed = false;
+            else if (!isNaN(Number(value))) parsed = Number(value);
+
+            actions.push({ device: device, capability: capability, value: parsed });
+            document.getElementById('action-device').value = '';
+            document.getElementById('action-value').value = '';
+            renderActions();
+        });
+
+        document.getElementById('save-scene-btn').addEventListener('click', async function() {
+            var name = document.getElementById('scene-name').value.trim();
+            if (!name) { showStatus('Scene name is required', 'error'); return; }
+            if (actions.length === 0) { showStatus('Add at least one action', 'error'); return; }
+
+            try {
+                var res = await fetch(API_BASE + '/api/v1/scenes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, actions: actions.slice() })
+                });
+
+                if (!res.ok) {
+                    var err = await res.json();
+                    showStatus(err.error || 'Failed to save', 'error');
+                    return;
+                }
+
+                showStatus('Scene "' + name + '" saved successfully!', 'success');
+                document.getElementById('scene-name').value = '';
+                actions.length = 0;
+                renderActions();
+                loadScenes();
+            } catch (_err) {
+                showStatus('Could not reach backend', 'error');
+            }
+        });
+
+        loadScenes();
+    </script>
+</body>
+</html>

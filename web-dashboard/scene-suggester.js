@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Smart Scene Suggester AI
@@ -540,7 +541,7 @@ class SceneSuggester {
         }
       };
     } catch (error) {
-      console.error('Scene implementation error:', error);
+      logger.error('Scene implementation error:', error);
       return {
         success: false,
         error: error.message
@@ -552,7 +553,7 @@ class SceneSuggester {
     // Simulate scene creation (integrate with Homey API)
     const sceneId = `scene_${Date.now()}`;
     
-    console.log(`Creating scene: ${suggestion.name}`);
+    logger.info(`Creating scene: ${suggestion.name}`);
 
     return {
       id: sceneId,

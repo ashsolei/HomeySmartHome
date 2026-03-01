@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Multi-User Profile Manager
@@ -201,7 +202,7 @@ class UserProfileManager {
       timestamp: Date.now()
     });
 
-    console.log(`Switched to user: ${profile.name} (${method})`);
+    logger.info(`Switched to user: ${profile.name} (${method})`);
 
     return {
       success: true,
@@ -236,7 +237,7 @@ class UserProfileManager {
     // Apply automation settings
     // await this.app.automation.updateSettings(profile.automationSettings);
 
-    console.log(`Applied ${settings.length} settings for ${profile.name}`);
+    logger.info(`Applied ${settings.length} settings for ${profile.name}`);
 
     return settings;
   }
@@ -466,7 +467,7 @@ class UserProfileManager {
       activeHours: []
     };
 
-    console.log(`Learning preferences for ${profile.name}...`);
+    logger.info(`Learning preferences for ${profile.name}...`);
 
     return {
       success: true,

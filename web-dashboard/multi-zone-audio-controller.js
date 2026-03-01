@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Multi-Zone Audio Controller
@@ -139,8 +140,8 @@ class MultiZoneAudioController {
     zone.track = track;
     zone.currentVolume = Math.min(volume || 40, zone.maxVolume);
 
-    console.log(`▶️ Playing in ${zone.name}: ${track.title} by ${track.artist}`);
-    console.log(`   Volume: ${zone.currentVolume}%`);
+    logger.info(`▶️ Playing in ${zone.name}: ${track.title} by ${track.artist}`);
+    logger.info(`   Volume: ${zone.currentVolume}%`);
 
     // Track playback
     this.playbackHistory.push({
@@ -162,7 +163,7 @@ class MultiZoneAudioController {
     }
 
     zone.playing = false;
-    console.log(`⏸️ Paused in ${zone.name}`);
+    logger.info(`⏸️ Paused in ${zone.name}`);
 
     return { success: true };
   }
@@ -176,7 +177,7 @@ class MultiZoneAudioController {
 
     zone.playing = false;
     zone.track = null;
-    console.log(`⏹️ Stopped in ${zone.name}`);
+    logger.info(`⏹️ Stopped in ${zone.name}`);
 
     return { success: true };
   }
@@ -191,7 +192,7 @@ class MultiZoneAudioController {
     const newVolume = Math.min(Math.max(volume, 0), zone.maxVolume);
     zone.currentVolume = newVolume;
 
-    console.log(`🔊 ${zone.name} volume: ${newVolume}%`);
+    logger.info(`🔊 ${zone.name} volume: ${newVolume}%`);
 
     return { success: true, volume: newVolume };
   }
@@ -226,7 +227,7 @@ class MultiZoneAudioController {
 
     zone.track = nextTrack;
 
-    console.log(`⏭️ Next track in ${zone.name}: ${nextTrack.title}`);
+    logger.info(`⏭️ Next track in ${zone.name}: ${nextTrack.title}`);
 
     return { success: true, track: nextTrack };
   }
@@ -251,7 +252,7 @@ class MultiZoneAudioController {
 
     zone.track = prevTrack;
 
-    console.log(`⏮️ Previous track in ${zone.name}: ${prevTrack.title}`);
+    logger.info(`⏮️ Previous track in ${zone.name}: ${prevTrack.title}`);
 
     return { success: true, track: prevTrack };
   }
@@ -278,13 +279,13 @@ class MultiZoneAudioController {
       slave.currentVolume = Math.min(master.currentVolume, slave.maxVolume);
     }
 
-    console.log(`🔗 Grouped zones: ${zones.map(z => z.name).join(', ')}`);
+    logger.info(`🔗 Grouped zones: ${zones.map(z => z.name).join(', ')}`);
 
     return { success: true, groupSize: zones.length };
   }
 
   async playEverywhere(sourceId, trackId, volume) {
-    console.log('🌐 Playing everywhere...');
+    logger.info('🌐 Playing everywhere...');
 
     for (const [zoneId, zone] of this.zones) {
       await this.play(zoneId, sourceId, trackId, Math.min(volume || 40, zone.maxVolume));
@@ -294,7 +295,7 @@ class MultiZoneAudioController {
   }
 
   async pauseAll() {
-    console.log('⏸️ Pausing all zones...');
+    logger.info('⏸️ Pausing all zones...');
 
     for (const [zoneId] of this.zones) {
       await this.pause(zoneId);
@@ -304,7 +305,7 @@ class MultiZoneAudioController {
   }
 
   async stopAll() {
-    console.log('⏹️ Stopping all zones...');
+    logger.info('⏹️ Stopping all zones...');
 
     for (const [zoneId] of this.zones) {
       await this.stop(zoneId);
@@ -434,7 +435,7 @@ class MultiZoneAudioController {
       created: Date.now()
     });
 
-    console.log(`📝 Created playlist: ${name} (${trackIds.length} tracks)`);
+    logger.info(`📝 Created playlist: ${name} (${trackIds.length} tracks)`);
 
     return { success: true, playlistId };
   }
@@ -498,7 +499,7 @@ class MultiZoneAudioController {
       return { success: false, error: 'Scene not found' };
     }
 
-    console.log(`🎵 Activating audio scene: ${scene.name}`);
+    logger.info(`🎵 Activating audio scene: ${scene.name}`);
 
     for (const zoneConfig of scene.zones) {
       const playlist = this.playlists.get(zoneConfig.playlist);
@@ -578,7 +579,7 @@ class MultiZoneAudioController {
       }
     }, 60 * 60 * 1000));  // Every hour
 
-    console.log('🎵 Multi-Zone Audio active');
+    logger.info('🎵 Multi-Zone Audio active');
   }
 
   // ============================================

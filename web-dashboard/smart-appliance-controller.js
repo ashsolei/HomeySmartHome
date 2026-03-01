@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Smart Appliance Controller
@@ -213,7 +214,7 @@ class SmartApplianceController {
       const optimization = await this.optimizeStartTime(applianceId);
       
       if (optimization.shouldDelay) {
-        console.log(`⏰ Delaying ${appliance.name} start for cheaper electricity`);
+        logger.info(`⏰ Delaying ${appliance.name} start for cheaper electricity`);
         return {
           success: true,
           delayed: true,
@@ -236,7 +237,7 @@ class SmartApplianceController {
     appliance.status = 'running';
     appliance.lastUsed = Date.now();
 
-    console.log(`▶️ Started ${appliance.name}`);
+    logger.info(`▶️ Started ${appliance.name}`);
 
     // Simulate completion
     if (appliance.duration) {
@@ -265,7 +266,7 @@ class SmartApplianceController {
 
     await this.completeAppliance(applianceId, true);
 
-    console.log(`⏹️ Stopped ${appliance.name}`);
+    logger.info(`⏹️ Stopped ${appliance.name}`);
 
     return { success: true };
   }
@@ -295,7 +296,7 @@ class SmartApplianceController {
     this.logUsage(appliance, session);
 
     if (!forceStopped) {
-      console.log(`✅ ${appliance.name} completed (${actualDuration.toFixed(0)} min, ${session.actualCost.toFixed(2)} SEK)`);
+      logger.info(`✅ ${appliance.name} completed (${actualDuration.toFixed(0)} min, ${session.actualCost.toFixed(2)} SEK)`);
     }
   }
 
@@ -346,7 +347,7 @@ class SmartApplianceController {
       runsCompleted: 0
     });
 
-    console.log(`📅 Schedule created: ${config.name}`);
+    logger.info(`📅 Schedule created: ${config.name}`);
 
     return { success: true, schedule: this.schedules.get(config.id) };
   }
@@ -444,8 +445,8 @@ class SmartApplianceController {
     }
 
     if (currentLoad > maxLoad) {
-      console.log(`⚠️ Load limit exceeded: ${(currentLoad / 1000).toFixed(1)} kW / ${maxLoad / 1000} kW`);
-      console.log(`  Running: ${runningAppliances.join(', ')}`);
+      logger.info(`⚠️ Load limit exceeded: ${(currentLoad / 1000).toFixed(1)} kW / ${maxLoad / 1000} kW`);
+      logger.info(`  Running: ${runningAppliances.join(', ')}`);
       
       // Find appliance to defer
       await this.deferLowPriorityAppliance();
@@ -469,7 +470,7 @@ class SmartApplianceController {
       flexibleRunning.sort((a, b) => b.power - a.power);
       const toDefer = flexibleRunning[0];
       
-      console.log(`  ⏸️ Deferring ${toDefer.name} to reduce load`);
+      logger.info(`  ⏸️ Deferring ${toDefer.name} to reduce load`);
       
       await this.stopAppliance(toDefer.id);
       
@@ -481,7 +482,7 @@ class SmartApplianceController {
   }
 
   async balanceLoad(targetLoad) {
-    console.log(`⚖️ Balancing load to ${targetLoad}W`);
+    logger.info(`⚖️ Balancing load to ${targetLoad}W`);
 
     const currentLoad = await this.getCurrentLoad();
     
@@ -507,8 +508,8 @@ class SmartApplianceController {
       deferred.push(appliance.name);
     }
 
-    console.log(`  ✓ Deferred: ${deferred.join(', ')}`);
-    console.log(`  ✓ Reduced by ${(reducedLoad / 1000).toFixed(1)} kW`);
+    logger.info(`  ✓ Deferred: ${deferred.join(', ')}`);
+    logger.info(`  ✓ Reduced by ${(reducedLoad / 1000).toFixed(1)} kW`);
 
     return {
       success: true,
@@ -534,7 +535,7 @@ class SmartApplianceController {
   // ============================================
 
   async checkMaintenance() {
-    console.log('🔧 Checking appliance maintenance...');
+    logger.info('🔧 Checking appliance maintenance...');
 
     for (const [id, appliance] of this.appliances) {
       const warnings = [];
@@ -561,7 +562,7 @@ class SmartApplianceController {
       }
 
       if (warnings.length > 0) {
-        console.log(`  🔧 ${appliance.name}: ${warnings.join(', ')}`);
+        logger.info(`  🔧 ${appliance.name}: ${warnings.join(', ')}`);
         
         this.maintenanceLog.push({
           timestamp: Date.now(),
@@ -623,7 +624,7 @@ class SmartApplianceController {
         const [scheduleHour, scheduleMinute] = schedule.time.split(':').map(Number);
         
         if (currentHour === scheduleHour && currentMinute === scheduleMinute) {
-          console.log(`📅 Running scheduled task: ${schedule.name}`);
+          logger.info(`📅 Running scheduled task: ${schedule.name}`);
           await this.startAppliance(schedule.applianceId);
           schedule.lastRun = Date.now();
           schedule.runsCompleted += 1;
@@ -637,7 +638,7 @@ class SmartApplianceController {
           const optimalHour = parseInt(optimization.optimalStartTime.split(':')[0]);
           
           if (currentHour === optimalHour && currentMinute < 5) {
-            console.log(`📅 Running optimized task: ${schedule.name}`);
+            logger.info(`📅 Running optimized task: ${schedule.name}`);
             await this.startAppliance(schedule.applianceId, { forceStart: true });
             schedule.lastRun = Date.now();
             schedule.runsCompleted += 1;

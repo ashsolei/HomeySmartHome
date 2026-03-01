@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Vehicle Fleet Manager
@@ -118,7 +119,7 @@ class VehicleFleetManager {
       co2Saved: 0
     });
 
-    console.log(`🚗 Added vehicle: ${data.make} ${data.model}`);
+    logger.info(`🚗 Added vehicle: ${data.make} ${data.model}`);
 
     return { success: true, vehicle: this.vehicles.get(id) };
   }
@@ -132,7 +133,7 @@ class VehicleFleetManager {
 
     Object.assign(vehicle, updates);
 
-    console.log(`📝 Updated ${vehicle.make} ${vehicle.model}: ${JSON.stringify(updates)}`);
+    logger.info(`📝 Updated ${vehicle.make} ${vehicle.model}: ${JSON.stringify(updates)}`);
 
     return { success: true, vehicle };
   }
@@ -163,7 +164,7 @@ class VehicleFleetManager {
     this.trips.push(trip);
     vehicle.status = 'driving';
 
-    console.log(`🚦 Started trip with ${vehicle.make} ${vehicle.model} to ${destination || 'unknown'}`);
+    logger.info(`🚦 Started trip with ${vehicle.make} ${vehicle.model} to ${destination || 'unknown'}`);
 
     return { success: true, trip };
   }
@@ -235,7 +236,7 @@ class VehicleFleetManager {
     vehicle.location = trip.endLocation;
     vehicle.status = 'parked';
 
-    console.log(`🏁 Completed trip: ${distance.toFixed(1)} km, ${(duration / 60000).toFixed(0)} min`);
+    logger.info(`🏁 Completed trip: ${distance.toFixed(1)} km, ${(duration / 60000).toFixed(0)} min`);
 
     return { success: true, trip };
   }
@@ -271,7 +272,7 @@ class VehicleFleetManager {
     this.chargingSessions.push(session);
     vehicle.status = 'charging';
 
-    console.log(`🔌 Started charging ${vehicle.make} ${vehicle.model} from ${vehicle.currentSoC}% to ${target}%`);
+    logger.info(`🔌 Started charging ${vehicle.make} ${vehicle.model} from ${vehicle.currentSoC}% to ${target}%`);
 
     // Simulate charging
     this.simulateCharging(session);
@@ -341,7 +342,7 @@ class VehicleFleetManager {
 
     vehicle.status = 'parked';
 
-    console.log(`✅ Charging complete: ${socGained.toFixed(1)}% added, ${session.energyAdded.toFixed(2)} kWh, ${session.cost.toFixed(2)} SEK`);
+    logger.info(`✅ Charging complete: ${socGained.toFixed(1)}% added, ${session.energyAdded.toFixed(2)} kWh, ${session.cost.toFixed(2)} SEK`);
 
     return { success: true, session };
   }
@@ -371,7 +372,7 @@ class VehicleFleetManager {
     this.maintenanceRecords.push(record);
     vehicle.totalMaintenanceCost += record.cost;
 
-    console.log(`🔧 Maintenance recorded for ${vehicle.make}: ${data.description} (${record.cost} SEK)`);
+    logger.info(`🔧 Maintenance recorded for ${vehicle.make}: ${data.description} (${record.cost} SEK)`);
 
     return { success: true, record };
   }
@@ -469,7 +470,7 @@ class VehicleFleetManager {
 
   async updateFuelPrice(fuelType, price) {
     this.fuelPrices.set(fuelType, price);
-    console.log(`⛽ Updated ${fuelType} price: ${price} SEK/liter`);
+    logger.info(`⛽ Updated ${fuelType} price: ${price} SEK/liter`);
     return { success: true };
   }
 
@@ -662,19 +663,19 @@ class VehicleFleetManager {
       // Low battery warning
       if (['electric', 'phev', 'e-bike'].includes(vehicle.type)) {
         if (vehicle.currentSoC < 20) {
-          console.log(`⚠️ ${vehicle.make} ${vehicle.model}: Låg batterinivå (${vehicle.currentSoC}%)`);
+          logger.info(`⚠️ ${vehicle.make} ${vehicle.model}: Låg batterinivå (${vehicle.currentSoC}%)`);
           
           // Suggest charging
           const optimization = await this.optimizeCharging(id);
           if (optimization.success) {
-            console.log(`  💡 ${optimization.recommendation.reason}`);
+            logger.info(`  💡 ${optimization.recommendation.reason}`);
           }
         }
       }
 
       // Low fuel warning
       if (vehicle.fuelLevel && vehicle.fuelLevel < 15) {
-        console.log(`⚠️ ${vehicle.make} ${vehicle.model}: Låg bränslenivå (${vehicle.fuelLevel}%)`);
+        logger.info(`⚠️ ${vehicle.make} ${vehicle.model}: Låg bränslenivå (${vehicle.fuelLevel}%)`);
       }
     }
   }
@@ -687,9 +688,9 @@ class VehicleFleetManager {
         const urgent = schedule.filter(s => s.urgency === 'high');
         
         if (urgent.length > 0) {
-          console.log(`🔧 ${vehicle.make} ${vehicle.model}: Underhåll krävs!`);
+          logger.info(`🔧 ${vehicle.make} ${vehicle.model}: Underhåll krävs!`);
           urgent.forEach(item => {
-            console.log(`  - ${item.description} (${item.dueIn})`);
+            logger.info(`  - ${item.description} (${item.dueIn})`);
           });
         }
       }

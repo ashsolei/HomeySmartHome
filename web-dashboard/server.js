@@ -223,8 +223,22 @@ class HomeyClient {
 
 const homeyClient = new HomeyClient(HOMEY_URL, HOMEY_TOKEN);
 
-// Demo data for when Homey is not connected
-const getDemoData = () => ({
+// Demo data for when Homey is not connected — cached singleton with TTL
+let _demoDataCache = null;
+let _demoDataRefreshed = 0;
+const DEMO_DATA_TTL = 60_000; // refresh every 60 seconds
+
+function getDemoData() {
+  const now = Date.now();
+  if (_demoDataCache && now - _demoDataRefreshed < DEMO_DATA_TTL) {
+    return _demoDataCache;
+  }
+  _demoDataCache = buildDemoData();
+  _demoDataRefreshed = now;
+  return _demoDataCache;
+}
+
+const buildDemoData = () => ({
   devices: {
     'light-1': { id: 'light-1', name: 'Vardagsrum Taklampa', class: 'light', zone: 'living-room', capabilities: ['onoff', 'dim'], capabilitiesObj: { onoff: { value: true }, dim: { value: 0.8 } } },
     'light-2': { id: 'light-2', name: 'Sovrum Lampa', class: 'light', zone: 'bedroom', capabilities: ['onoff', 'dim', 'light_hue'], capabilitiesObj: { onoff: { value: false }, dim: { value: 0.5 } } },
@@ -608,6 +622,18 @@ async function bootModules() {
   // Register module API routes and Socket.IO events
   moduleLoader.registerRoutes(app);
   moduleLoader.registerSocketEvents(io);
+
+  // FEAT-19: Scene Builder module (from modules/ subdirectory)
+  try {
+    const SceneBuilderModule = require('./modules/scene-builder');
+    const sceneBuilder = new SceneBuilderModule(appContext);
+    await sceneBuilder.initialize();
+    sceneBuilder.registerSocketEvents(io);
+    moduleLoader.modules.set('scene-builder', sceneBuilder);
+    moduleLoader.statuses.set('scene-builder', 'ready');
+  } catch (err) {
+    console.error('Scene Builder module failed:', err.message);
+  }
 
   return result;
 }

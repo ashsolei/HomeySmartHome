@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Integration Hub Manager
@@ -309,7 +310,7 @@ class IntegrationHub {
     }
 
     // Test connection (in production, make actual API call)
-    console.log('Connecting to IFTTT...');
+    logger.info('Connecting to IFTTT...');
     
     // Simulate demo triggers
     integration.triggers = [
@@ -328,7 +329,7 @@ class IntegrationHub {
       throw new Error('Google Home credentials required');
     }
 
-    console.log('Connecting to Google Home...');
+    logger.info('Connecting to Google Home...');
     
     // Simulate demo devices
     integration.devices = [
@@ -346,7 +347,7 @@ class IntegrationHub {
       throw new Error('Alexa credentials required');
     }
 
-    console.log('Connecting to Amazon Alexa...');
+    logger.info('Connecting to Amazon Alexa...');
     
     // Simulate demo devices
     integration.devices = [
@@ -358,7 +359,7 @@ class IntegrationHub {
   }
 
   async connectHomeKit(integration) {
-    console.log('Starting HomeKit bridge...');
+    logger.info('Starting HomeKit bridge...');
     
     // Simulate HomeKit bridge setup
     integration.devices = [
@@ -376,7 +377,7 @@ class IntegrationHub {
       throw new Error('SmartThings API token required');
     }
 
-    console.log('Connecting to SmartThings...');
+    logger.info('Connecting to SmartThings...');
     
     integration.devices = [];
     
@@ -390,7 +391,7 @@ class IntegrationHub {
       throw new Error('Hue bridge IP required');
     }
 
-    console.log('Connecting to Philips Hue bridge...');
+    logger.info('Connecting to Philips Hue bridge...');
     
     // Simulate Hue lights
     integration.lights = [
@@ -409,7 +410,7 @@ class IntegrationHub {
       throw new Error('Telegram bot token required');
     }
 
-    console.log('Connecting to Telegram...');
+    logger.info('Connecting to Telegram...');
     
     return true;
   }
@@ -421,7 +422,7 @@ class IntegrationHub {
       throw new Error('Home Assistant URL and token required');
     }
 
-    console.log('Connecting to Home Assistant...');
+    logger.info('Connecting to Home Assistant...');
     
     integration.devices = [];
     
@@ -468,21 +469,21 @@ class IntegrationHub {
           break;
         
         default:
-          console.log(`No sync implemented for ${integrationId}`);
+          logger.info(`No sync implemented for ${integrationId}`);
       }
 
       integration.lastSync = Date.now();
 
       return { success: true };
     } catch (error) {
-      console.error(`Sync error for ${integrationId}:`, error);
+      logger.error(`Sync error for ${integrationId}:`, error);
       return { success: false, error: error.message };
     }
   }
 
   async syncHueLights(integration) {
     // In production: Fetch actual light states from Hue API
-    console.log('Syncing Hue lights...');
+    logger.info('Syncing Hue lights...');
     
     // Update light states (demo)
     integration.lights.forEach(light => {
@@ -491,7 +492,7 @@ class IntegrationHub {
   }
 
   async syncDeviceStates(integration) {
-    console.log(`Syncing ${integration.name} devices...`);
+    logger.info(`Syncing ${integration.name} devices...`);
     
     // Update device states
     integration.devices.forEach(device => {
@@ -519,7 +520,7 @@ class IntegrationHub {
   }
 
   async forwardDeviceChange(integration, device, capability, value) {
-    console.log(`Forwarding device change to ${integration.name}:`, {
+    logger.info(`Forwarding device change to ${integration.name}:`, {
       device: device.name,
       capability,
       value
@@ -540,7 +541,7 @@ class IntegrationHub {
         break;
       
       default:
-        console.log(`No forwarding implemented for ${integration.id}`);
+        logger.info(`No forwarding implemented for ${integration.id}`);
     }
   }
 
@@ -559,7 +560,7 @@ class IntegrationHub {
       .replace('{event}', event)
       .replace('{key}', apiKey);
 
-    console.log(`Triggering IFTTT event: ${event}`, data);
+    logger.info(`Triggering IFTTT event: ${event}`, data);
 
     // In production: Make actual HTTP POST request
     // await fetch(url, {
@@ -580,7 +581,7 @@ class IntegrationHub {
   async updateHomeAssistant(integration, device, capability, value) {
     const { url: _url, token: _token } = integration.config;
     
-    console.log('Updating Home Assistant:', {
+    logger.info('Updating Home Assistant:', {
       device: device.name,
       capability,
       value
@@ -606,7 +607,7 @@ class IntegrationHub {
 
     const { botToken: _botToken, chatIds: _chatIds } = integration.config;
 
-    console.log('Sending Telegram message:', message);
+    logger.info('Sending Telegram message:', message);
 
     // In production: Send actual Telegram message
     // for (const chatId of chatIds) {
@@ -640,7 +641,7 @@ class IntegrationHub {
 
     const { webhookUrl: _webhookUrl } = integration.config;
 
-    console.log('Sending Slack message:', message);
+    logger.info('Sending Slack message:', message);
 
     // In production: Send to Slack webhook
     // await fetch(webhookUrl, {
@@ -695,7 +696,7 @@ class IntegrationHub {
       return { success: false, error: 'Webhook not found or inactive' };
     }
 
-    console.log(`Webhook received: ${webhookName}`, data);
+    logger.info(`Webhook received: ${webhookName}`, data);
 
     // Process webhook data
     // Trigger appropriate actions in Homey

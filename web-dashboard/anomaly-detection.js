@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Anomaly Detection AI
@@ -478,9 +479,9 @@ class AnomalyDetectionAI {
     this.anomalies.push(anomaly);
 
     // Log
-    console.log(`🚨 Anomaly detected: ${anomaly.title}`);
-    console.log(`   Severity: ${anomaly.severity}`);
-    console.log(`   ${anomaly.description}`);
+    logger.info(`🚨 Anomaly detected: ${anomaly.title}`);
+    logger.info(`   Severity: ${anomaly.severity}`);
+    logger.info(`   ${anomaly.description}`);
 
     // Trigger alerts based on severity
     if (anomaly.severity === 'high' || anomaly.severity === 'critical') {
@@ -524,7 +525,7 @@ class AnomalyDetectionAI {
 
   triggerAlert(anomaly) {
     // Send notification through notification system
-    console.log(`📢 ALERT: ${anomaly.title}`);
+    logger.info(`📢 ALERT: ${anomaly.title}`);
     
     // In production: integrate with notification system
     // this.app.notifications.send({
@@ -567,7 +568,7 @@ class AnomalyDetectionAI {
   }
 
   updateBaselines() {
-    console.log('Updating baselines based on recent data...');
+    logger.info('Updating baselines based on recent data...');
     
     // In production: Analyze historical data and update baselines
     // This would use machine learning to adapt to changing patterns

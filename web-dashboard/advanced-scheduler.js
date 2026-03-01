@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Advanced Scheduling System
@@ -187,7 +188,7 @@ class AdvancedScheduler {
 
     // Check conditions
     if (!await this.checkConditions(schedule)) {
-      console.log(`Schedule ${schedule.name}: Conditions not met`);
+      logger.info(`Schedule ${schedule.name}: Conditions not met`);
       
       // Calculate next run
       schedule.nextRun = this.calculateNextRun(schedule);
@@ -196,7 +197,7 @@ class AdvancedScheduler {
     }
 
     // Execute actions
-    console.log(`Executing schedule: ${schedule.name}`);
+    logger.info(`Executing schedule: ${schedule.name}`);
     
     const results = [];
     for (const action of schedule.actions) {
@@ -204,7 +205,7 @@ class AdvancedScheduler {
         const result = await this.executeAction(action);
         results.push({ action, result, success: true });
       } catch (error) {
-        console.error(`Action failed:`, error);
+        logger.error(`Action failed:`, error);
         results.push({ action, error: error.message, success: false });
       }
     }
@@ -228,7 +229,7 @@ class AdvancedScheduler {
   }
 
   async executeAction(action) {
-    console.log(`  → Action: ${action.type}`);
+    logger.info(`  → Action: ${action.type}`);
     
     switch (action.type) {
       case 'device_on':
@@ -252,7 +253,7 @@ class AdvancedScheduler {
         break;
       
       case 'notification':
-        console.log(`    Notification: ${action.message}`);
+        logger.info(`    Notification: ${action.message}`);
         break;
       
       default:

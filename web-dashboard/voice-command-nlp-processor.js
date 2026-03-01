@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Voice Command & NLP Processor
@@ -293,7 +294,7 @@ class VoiceCommandNLPProcessor {
   // ============================================
 
   async processVoiceCommand(voiceInput, userId = 'default') {
-    console.log(`🎤 Processing: "${voiceInput}"`);
+    logger.info(`🎤 Processing: "${voiceInput}"`);
 
     const normalized = this.normalizeInput(voiceInput);
     
@@ -331,7 +332,7 @@ class VoiceCommandNLPProcessor {
       response: result.response
     });
 
-    console.log(`  ✅ ${result.response} (Confidence: ${(match.confidence * 100).toFixed(0)}%)`);
+    logger.info(`  ✅ ${result.response} (Confidence: ${(match.confidence * 100).toFixed(0)}%)`);
 
     return result;
   }
@@ -436,7 +437,7 @@ class VoiceCommandNLPProcessor {
   // ============================================
 
   async executeCommand(command, entities, _userId) {
-    console.log(`  🔧 Executing: ${command.intent}/${command.action}`);
+    logger.info(`  🔧 Executing: ${command.intent}/${command.action}`);
 
     let response = command.response;
 
@@ -495,20 +496,20 @@ class VoiceCommandNLPProcessor {
     const room = entities.room || 'all';
     const brightness = entities.brightness || 100;
 
-    console.log(`    💡 Lights ${action} in ${room} (${brightness}%)`);
+    logger.info(`    💡 Lights ${action} in ${room} (${brightness}%)`);
   }
 
   async controlClimate(action, entities) {
     const degrees = entities.degrees || 21;
-    console.log(`    🌡️ Temperature ${action} to ${degrees}°C`);
+    logger.info(`    🌡️ Temperature ${action} to ${degrees}°C`);
   }
 
   async controlSecurity(action, _entities) {
-    console.log(`    🔒 Security ${action}`);
+    logger.info(`    🔒 Security ${action}`);
   }
 
   async activateScene(action, _entities) {
-    console.log(`    🎬 Scene ${action} activated`);
+    logger.info(`    🎬 Scene ${action} activated`);
   }
 
   async queryInformation(action) {
@@ -522,11 +523,11 @@ class VoiceCommandNLPProcessor {
   }
 
   async controlMedia(action, _entities) {
-    console.log(`    🎵 Media ${action}`);
+    logger.info(`    🎵 Media ${action}`);
   }
 
   async controlAppliance(action, _entities) {
-    console.log(`    ⚙️ Appliance ${action}`);
+    logger.info(`    ⚙️ Appliance ${action}`);
   }
 
   // ============================================
@@ -637,7 +638,7 @@ class VoiceCommandNLPProcessor {
 
     this.customPhrases.set(custom.id, custom);
 
-    console.log(`✅ Added custom phrase: "${phrase}" → ${commandId}`);
+    logger.info(`✅ Added custom phrase: "${phrase}" → ${commandId}`);
 
     return custom;
   }
@@ -652,7 +653,7 @@ class VoiceCommandNLPProcessor {
       timestamp: Date.now()
     });
 
-    console.log(`📍 Context updated: ${JSON.stringify(context)}`);
+    logger.info(`📍 Context updated: ${JSON.stringify(context)}`);
   }
 
   async getContextualResponse(command, entities) {
@@ -751,7 +752,7 @@ class VoiceCommandNLPProcessor {
   }
 
   handleUnknownCommand(input, userId) {
-    console.log(`  ❓ Unknown command: "${input}"`);
+    logger.info(`  ❓ Unknown command: "${input}"`);
 
     // Learn from unknown commands
     this.logUnknownCommand(input, userId);
@@ -765,7 +766,7 @@ class VoiceCommandNLPProcessor {
 
   logUnknownCommand(input, userId) {
     // Could be used for training/improvement
-    console.log(`  📝 Logging unknown: "${input}" from ${userId}`);
+    logger.info(`  📝 Logging unknown: "${input}" from ${userId}`);
   }
 
   // ============================================
@@ -773,7 +774,7 @@ class VoiceCommandNLPProcessor {
   // ============================================
 
   startProcessing() {
-    console.log('🎤 Voice Command & NLP Processor active');
+    logger.info('🎤 Voice Command & NLP Processor active');
 
     // Analyze command usage weekly
     this._intervals.push(setInterval(() => {
@@ -785,7 +786,7 @@ class VoiceCommandNLPProcessor {
   }
 
   async analyzeCommandUsage() {
-    console.log('📊 Analyzing command usage...');
+    logger.info('📊 Analyzing command usage...');
 
     const recentCommands = this.commandHistory.filter(c => 
       c.timestamp > Date.now() - 30 * 24 * 60 * 60 * 1000
@@ -812,8 +813,8 @@ class VoiceCommandNLPProcessor {
       }
     }
 
-    console.log('  Categories:', byCategory);
-    console.log('  Users:', byUser);
+    logger.info('  Categories:', byCategory);
+    logger.info('  Users:', byUser);
   }
 
   // ============================================

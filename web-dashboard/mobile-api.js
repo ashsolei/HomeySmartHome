@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Mobile API Endpoints
@@ -304,7 +305,7 @@ class MobileAPI {
       const { capability, value } = req.body;
 
       // Execute device control (integrate with Homey API)
-      console.log(`Controlling device ${deviceId}: ${capability} = ${value}`);
+      logger.info(`Controlling device ${deviceId}: ${capability} = ${value}`);
 
       res.json({
         success: true,
@@ -363,7 +364,7 @@ class MobileAPI {
     try {
       const sceneId = req.params.id;
       
-      console.log(`Activating scene: ${sceneId}`);
+      logger.info(`Activating scene: ${sceneId}`);
 
       res.json({
         success: true,
@@ -610,7 +611,7 @@ class MobileAPI {
       const automationId = req.params.id;
       const { enabled } = req.body;
 
-      console.log(`Toggling automation ${automationId}: ${enabled}`);
+      logger.info(`Toggling automation ${automationId}: ${enabled}`);
 
       res.json({
         success: true,
@@ -627,7 +628,7 @@ class MobileAPI {
     try {
       const automationId = req.params.id;
 
-      console.log(`Executing automation: ${automationId}`);
+      logger.info(`Executing automation: ${automationId}`);
 
       res.json({
         success: true,
@@ -842,7 +843,7 @@ class MobileAPI {
       const { command } = req.body;
 
       // Process voice command (integrate with voice control module)
-      console.log(`Processing voice command: ${command}`);
+      logger.info(`Processing voice command: ${command}`);
 
       res.json({
         success: true,
@@ -888,7 +889,7 @@ class MobileAPI {
     try {
       const settings = req.body;
 
-      console.log('Updating settings:', settings);
+      logger.info('Updating settings:', settings);
 
       res.json({
         success: true,

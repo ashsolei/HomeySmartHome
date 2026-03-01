@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Sustainability & Carbon Tracker
@@ -139,6 +141,7 @@ class SustainabilityCarbonTracker {
         },
         carbon: 0 // Will be calculated
       });
+      if (this.energyData.length > MAX_ENTRIES) this.energyData.shift();
 
       // Water data
       this.waterData.push({
@@ -147,6 +150,7 @@ class SustainabilityCarbonTracker {
         hotWater: 100 + Math.random() * 50,
         carbon: 0
       });
+      if (this.waterData.length > MAX_ENTRIES) this.waterData.shift();
 
       // Waste data
       this.wasteData.push({
@@ -156,6 +160,7 @@ class SustainabilityCarbonTracker {
         compost: 0.4 + Math.random() * 0.8,
         carbon: 0
       });
+      if (this.wasteData.length > MAX_ENTRIES) this.wasteData.shift();
 
       // Transport data
       this.transportData.push({
@@ -167,6 +172,7 @@ class SustainabilityCarbonTracker {
         ],
         carbon: 0
       });
+      if (this.transportData.length > MAX_ENTRIES) this.transportData.shift();
     }
 
     // Calculate carbon for all historical data
@@ -223,6 +229,7 @@ class SustainabilityCarbonTracker {
     entry.carbon += this.calculateHeatingCarbon(data.heating.kwh, data.heating.source);
 
     this.energyData.push(entry);
+    if (this.energyData.length > MAX_ENTRIES) this.energyData.shift();
 
     return entry;
   }
@@ -240,9 +247,10 @@ class SustainabilityCarbonTracker {
         carbon: this.calculateTransportCarbon(distance, vehicle)
       };
       this.transportData.push(entry);
+    if (this.transportData.length > MAX_ENTRIES) this.transportData.shift();
     }
 
-    console.log(`🚗 Trip: ${distance} km by ${vehicle} (${this.calculateTransportCarbon(distance, vehicle).toFixed(2)} kg CO2e)`);
+    logger.info(`🚗 Trip: ${distance} km by ${vehicle} (${this.calculateTransportCarbon(distance, vehicle).toFixed(2)} kg CO2e)`);
   }
 
   isToday(timestamp) {
@@ -450,8 +458,9 @@ class SustainabilityCarbonTracker {
         achievedDate: Date.now(),
         value: newValue
       });
+      if (this.achievements.length > MAX_ENTRIES) this.achievements.shift();
 
-      console.log(`🎉 Goal achieved: ${goal.name}!`);
+      logger.info(`🎉 Goal achieved: ${goal.name}!`);
     }
 
     return { success: true, goal };
@@ -585,17 +594,17 @@ class SustainabilityCarbonTracker {
   }
 
   async generateWeeklyReport() {
-    console.log('📊 Generating weekly sustainability report...');
+    logger.info('📊 Generating weekly sustainability report...');
 
     const footprint = await this.calculateFootprint('daily');
     const renewable = await this.getRenewableEnergyStats(7);
     const recommendations = await this.generateRecommendations();
 
-    console.log('\n=== SUSTAINABILITY REPORT ===');
-    console.log(`Total CO2: ${footprint.total} kg/day`);
-    console.log(`Renewable energy: ${renewable.selfSufficiency}%`);
-    console.log(`Recommendations: ${recommendations.length}`);
-    console.log('===========================\n');
+    logger.info('\n=== SUSTAINABILITY REPORT ===');
+    logger.info(`Total CO2: ${footprint.total} kg/day`);
+    logger.info(`Renewable energy: ${renewable.selfSufficiency}%`);
+    logger.info(`Recommendations: ${recommendations.length}`);
+    logger.info('===========================\n');
 
     return {
       footprint,
@@ -605,7 +614,7 @@ class SustainabilityCarbonTracker {
   }
 
   async updateMonthlyGoals() {
-    console.log('🎯 Updating monthly sustainability goals...');
+    logger.info('🎯 Updating monthly sustainability goals...');
 
     // Update carbon reduction goal
     const yearlyProjection = await this.getYearlyProjection();

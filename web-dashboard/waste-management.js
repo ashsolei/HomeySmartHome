@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Waste Management Tracker
@@ -225,9 +226,9 @@ class WasteManagementTracker {
 
       // Alert if nearly full
       if (bin.currentLevel >= 80 && bin.currentLevel < 90) {
-        console.log(`⚠️ ${bin.name} nästan full (${Math.round(bin.currentLevel)}%)`);
+        logger.info(`⚠️ ${bin.name} nästan full (${Math.round(bin.currentLevel)}%)`);
       } else if (bin.currentLevel >= 90) {
-        console.log(`🚨 ${bin.name} full (${Math.round(bin.currentLevel)}%) - töm snarast!`);
+        logger.info(`🚨 ${bin.name} full (${Math.round(bin.currentLevel)}%) - töm snarast!`);
       }
     }
   }
@@ -247,7 +248,7 @@ class WasteManagementTracker {
       
       if (tomorrowSchedule) {
         const bins = tomorrowSchedule.bins.map(binId => this.bins.get(binId).name);
-        console.log(`🔔 Påminnelse: Ställ ut ${bins.join(', ')} ikväll för hämtning imorgon (${tomorrowSchedule.dayName})`);
+        logger.info(`🔔 Påminnelse: Ställ ut ${bins.join(', ')} ikväll för hämtning imorgon (${tomorrowSchedule.dayName})`);
         
         // await this.app.notifications.send({
         //   title: 'Sophämtning imorgon',
@@ -263,7 +264,7 @@ class WasteManagementTracker {
       
       if (todaySchedule) {
         const bins = todaySchedule.bins.map(binId => this.bins.get(binId).name);
-        console.log(`🚛 Sophämtning idag kl ${todaySchedule.time}: ${bins.join(', ')}`);
+        logger.info(`🚛 Sophämtning idag kl ${todaySchedule.time}: ${bins.join(', ')}`);
       }
     }
   }
@@ -298,7 +299,7 @@ class WasteManagementTracker {
     bin.currentLevel = Math.min(100, bin.currentLevel + (amount / bin.capacity) * 100);
     bin.totalWaste += amount;
 
-    console.log(`🗑️ Logged waste: ${amount}kg ${bin.name}`);
+    logger.info(`🗑️ Logged waste: ${amount}kg ${bin.name}`);
 
     return { success: true, entry: wasteEntry };
   }
@@ -312,7 +313,7 @@ class WasteManagementTracker {
 
     const wasteAmount = (bin.currentLevel / 100) * bin.capacity * 0.2; // Rough kg estimate
 
-    console.log(`🚛 Emptying ${bin.name} (${Math.round(bin.currentLevel)}%)`);
+    logger.info(`🚛 Emptying ${bin.name} (${Math.round(bin.currentLevel)}%)`);
 
     bin.currentLevel = 0;
     bin.lastEmptied = Date.now();
@@ -365,7 +366,7 @@ class WasteManagementTracker {
     this.stats.recycledWaste = recycledWaste;
     this.stats.compostedWaste = compostedWaste;
 
-    console.log(`📊 Waste stats: ${Math.round(this.stats.recyclingRate)}% recycling rate, ${totalWaste.toFixed(1)}kg total`);
+    logger.info(`📊 Waste stats: ${Math.round(this.stats.recyclingRate)}% recycling rate, ${totalWaste.toFixed(1)}kg total`);
   }
 
   // ============================================

@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Energy Budget Manager
@@ -348,7 +349,7 @@ class EnergyBudgetManager {
       this.alerts = this.alerts.slice(-100);
     }
 
-    console.log(`🚨 Budget Alert: ${message}`);
+    logger.info(`🚨 Budget Alert: ${message}`);
 
     return alert;
   }

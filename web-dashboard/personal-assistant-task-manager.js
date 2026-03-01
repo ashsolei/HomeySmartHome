@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Personal Assistant & Task Manager
@@ -165,7 +166,7 @@ class PersonalAssistantTaskManager {
 
     this.tasks.set(taskId, task);
 
-    console.log(`✅ Added task: ${task.title} (assigned to ${task.assignedTo})`);
+    logger.info(`✅ Added task: ${task.title} (assigned to ${task.assignedTo})`);
 
     return { success: true, taskId };
   }
@@ -180,7 +181,7 @@ class PersonalAssistantTaskManager {
     task.status = 'completed';
     task.completedAt = Date.now();
 
-    console.log(`✅ Completed task: ${task.title}`);
+    logger.info(`✅ Completed task: ${task.title}`);
 
     // Handle recurring tasks
     if (task.recurring) {
@@ -221,7 +222,7 @@ class PersonalAssistantTaskManager {
 
     this.tasks.set(newTaskId, newTask);
 
-    console.log(`🔁 Created recurring task: ${newTask.title} (due ${new Date(nextDueDate).toLocaleDateString('sv-SE')})`);
+    logger.info(`🔁 Created recurring task: ${newTask.title} (due ${new Date(nextDueDate).toLocaleDateString('sv-SE')})`);
   }
 
   async updateTaskPriority(taskId, priority) {
@@ -233,7 +234,7 @@ class PersonalAssistantTaskManager {
 
     task.priority = priority;
 
-    console.log(`📌 Updated task priority: ${task.title} → ${priority}`);
+    logger.info(`📌 Updated task priority: ${task.title} → ${priority}`);
 
     return { success: true };
   }
@@ -248,7 +249,7 @@ class PersonalAssistantTaskManager {
     const oldAssignee = task.assignedTo;
     task.assignedTo = newAssignee;
 
-    console.log(`👤 Reassigned task: ${task.title} (${oldAssignee} → ${newAssignee})`);
+    logger.info(`👤 Reassigned task: ${task.title} (${oldAssignee} → ${newAssignee})`);
 
     return { success: true };
   }
@@ -335,7 +336,7 @@ class PersonalAssistantTaskManager {
 
     this.calendar.set(eventId, event);
 
-    console.log(`📅 Added event: ${event.title} (${new Date(event.startTime).toLocaleString('sv-SE')})`);
+    logger.info(`📅 Added event: ${event.title} (${new Date(event.startTime).toLocaleString('sv-SE')})`);
 
     // Schedule reminder
     await this.scheduleReminder(event);
@@ -436,7 +437,7 @@ class PersonalAssistantTaskManager {
       purchased: false
     });
 
-    console.log(`🛒 Added to ${list.name}: ${itemName} (${quantity} ${unit})`);
+    logger.info(`🛒 Added to ${list.name}: ${itemName} (${quantity} ${unit})`);
 
     return { success: true, itemId };
   }
@@ -456,7 +457,7 @@ class PersonalAssistantTaskManager {
 
     item.purchased = true;
 
-    console.log(`✅ Marked as purchased: ${item.name}`);
+    logger.info(`✅ Marked as purchased: ${item.name}`);
 
     return { success: true };
   }
@@ -477,7 +478,7 @@ class PersonalAssistantTaskManager {
     const item = list.items[index];
     list.items.splice(index, 1);
 
-    console.log(`🗑️ Removed from ${list.name}: ${item.name}`);
+    logger.info(`🗑️ Removed from ${list.name}: ${item.name}`);
 
     return { success: true };
   }
@@ -565,7 +566,7 @@ class PersonalAssistantTaskManager {
       this.checkOverdueTasks();
     }, 24 * 60 * 60 * 1000));
 
-    console.log('🤖 Personal Assistant active');
+    logger.info('🤖 Personal Assistant active');
   }
 
   async checkReminders() {
@@ -578,13 +579,13 @@ class PersonalAssistantTaskManager {
         const event = this.calendar.get(reminder.eventId);
         
         if (event) {
-          console.log(`⏰ Reminder: ${event.title} starts in ${event.reminder} minutes`);
+          logger.info(`⏰ Reminder: ${event.title} starts in ${event.reminder} minutes`);
           
           // Notify attendees
           for (const attendeeId of event.attendees) {
             const member = this.familyMembers.get(attendeeId);
             if (member) {
-              console.log(`  📢 Notifying ${member.name}`);
+              logger.info(`  📢 Notifying ${member.name}`);
             }
           }
         }
@@ -596,12 +597,12 @@ class PersonalAssistantTaskManager {
     const overdueTasks = this.getOverdueTasks();
 
     if (overdueTasks.length > 0) {
-      console.log(`⚠️ ${overdueTasks.length} overdue tasks`);
+      logger.info(`⚠️ ${overdueTasks.length} overdue tasks`);
 
       for (const task of overdueTasks) {
         const member = this.familyMembers.get(task.assignedTo);
         if (member) {
-          console.log(`  📌 ${member.name}: ${task.title}`);
+          logger.info(`  📌 ${member.name}: ${task.title}`);
         }
       }
     }

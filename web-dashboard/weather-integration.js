@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Weather Integration Service
@@ -50,7 +51,7 @@ class WeatherIntegration {
 
       return { current, forecast };
     } catch (error) {
-      console.error('Weather update error:', error);
+      logger.error('Weather update error:', error);
       return this.getDefaultWeather();
     }
   }

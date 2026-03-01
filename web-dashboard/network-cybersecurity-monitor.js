@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Network & Cybersecurity Monitor
@@ -122,7 +124,7 @@ class NetworkCybersecurityMonitor {
   }
 
   async scanNetwork() {
-    console.log('🔍 Scanning network...');
+    logger.info('🔍 Scanning network...');
 
     let found = 0;
     let new_devices = 0;
@@ -138,7 +140,7 @@ class NetworkCybersecurityMonitor {
       }
     }
 
-    console.log(`   Found ${found} devices (${new_devices} new)`);
+    logger.info(`   Found ${found} devices (${new_devices} new)`);
 
     return { found, new_devices };
   }
@@ -151,7 +153,7 @@ class NetworkCybersecurityMonitor {
     }
 
     device.trustLevel = 'trusted';
-    console.log(`✅ Device trusted: ${device.name}`);
+    logger.info(`✅ Device trusted: ${device.name}`);
 
     return { success: true };
   }
@@ -166,7 +168,7 @@ class NetworkCybersecurityMonitor {
     device.trustLevel = 'blocked';
     device.status = 'blocked';
 
-    console.log(`🚫 Device blocked: ${device.name} (${device.ip})`);
+    logger.info(`🚫 Device blocked: ${device.name} (${device.ip})`);
 
     return { success: true };
   }
@@ -236,7 +238,7 @@ class NetworkCybersecurityMonitor {
       enabled: true
     });
 
-    console.log(`🛡️ Firewall rule added: ${rule.name}`);
+    logger.info(`🛡️ Firewall rule added: ${rule.name}`);
 
     return { success: true, ruleId };
   }
@@ -249,7 +251,7 @@ class NetworkCybersecurityMonitor {
     }
 
     rule.enabled = true;
-    console.log(`✅ Firewall rule enabled: ${rule.name}`);
+    logger.info(`✅ Firewall rule enabled: ${rule.name}`);
 
     return { success: true };
   }
@@ -262,7 +264,7 @@ class NetworkCybersecurityMonitor {
     }
 
     rule.enabled = false;
-    console.log(`⏸️ Firewall rule disabled: ${rule.name}`);
+    logger.info(`⏸️ Firewall rule disabled: ${rule.name}`);
 
     return { success: true };
   }
@@ -272,7 +274,7 @@ class NetworkCybersecurityMonitor {
   // ============================================
 
   async detectThreats() {
-    console.log('🔎 Scanning for threats...');
+    logger.info('🔎 Scanning for threats...');
 
     const threats = [];
 
@@ -301,14 +303,15 @@ class NetworkCybersecurityMonitor {
     }
 
     if (threats.length > 0) {
-      console.log(`⚠️ ${threats.length} threats detected`);
+      logger.info(`⚠️ ${threats.length} threats detected`);
       
       for (const threat of threats) {
         this.threats.push(threat);
+    if (this.threats.length > MAX_ENTRIES) this.threats.shift();
         await this.createSecurityAlert('threat', threat);
       }
     } else {
-      console.log('✅ No threats detected');
+      logger.info('✅ No threats detected');
     }
 
     return threats;
@@ -381,7 +384,7 @@ class NetworkCybersecurityMonitor {
   // ============================================
 
   async scanVulnerabilities() {
-    console.log('🔍 Scanning for vulnerabilities...');
+    logger.info('🔍 Scanning for vulnerabilities...');
 
     this.vulnerabilities = [];
 
@@ -432,13 +435,14 @@ class NetworkCybersecurityMonitor {
             ...vuln,
             timestamp: Date.now()
           });
+          if (this.vulnerabilities.length > MAX_ENTRIES) this.vulnerabilities.shift();
 
-          console.log(`   ⚠️ ${device.name}: ${vuln.type} (${vuln.severity})`);
+          logger.info(`   ⚠️ ${device.name}: ${vuln.type} (${vuln.severity})`);
         }
       }
     }
 
-    console.log(`   Found ${this.vulnerabilities.length} vulnerabilities`);
+    logger.info(`   Found ${this.vulnerabilities.length} vulnerabilities`);
 
     return this.vulnerabilities;
   }
@@ -458,8 +462,9 @@ class NetworkCybersecurityMonitor {
     };
 
     this.securityAlerts.push(alert);
+    if (this.securityAlerts.length > MAX_ENTRIES) this.securityAlerts.shift();
 
-    console.log(`🚨 Security alert: ${type} (${alert.severity})`);
+    logger.info(`🚨 Security alert: ${type} (${alert.severity})`);
 
     // Take automatic action for critical alerts
     if (alert.severity === 'critical') {
@@ -470,26 +475,26 @@ class NetworkCybersecurityMonitor {
   }
 
   async respondToThreat(alert) {
-    console.log(`🛡️ Responding to threat: ${alert.type}`);
+    logger.info(`🛡️ Responding to threat: ${alert.type}`);
 
     switch (alert.type) {
       case 'new_device':
         if (alert.data.trustLevel === 'untrusted') {
-          console.log('   Isolating untrusted device');
+          logger.info('   Isolating untrusted device');
           await this.blockDevice(alert.data.id);
         }
         break;
 
       case 'threat':
         if (alert.data.type === 'malware_communication') {
-          console.log('   Blocking malicious IP');
-          console.log('   Quarantining device');
+          logger.info('   Blocking malicious IP');
+          logger.info('   Quarantining device');
         }
         break;
 
       case 'brute_force':
-        console.log('   Enabling rate limiting');
-        console.log('   Blocking source IP');
+        logger.info('   Enabling rate limiting');
+        logger.info('   Blocking source IP');
         break;
     }
 
@@ -504,7 +509,7 @@ class NetworkCybersecurityMonitor {
     }
 
     alert.acknowledged = true;
-    console.log(`✅ Alert acknowledged: ${alertId}`);
+    logger.info(`✅ Alert acknowledged: ${alertId}`);
 
     return { success: true };
   }
@@ -527,6 +532,7 @@ class NetworkCybersecurityMonitor {
     };
 
     this.networkTraffic.push(traffic);
+    if (this.networkTraffic.length > MAX_ENTRIES) this.networkTraffic.shift();
 
     // Check for unusual patterns
     if (traffic.totalUpload > 50) {  // MB
@@ -570,18 +576,18 @@ class NetworkCybersecurityMonitor {
       return { success: false, error: 'Device not found' };
     }
 
-    console.log(`👨‍👩‍👧‍👦 Parental control enabled for ${device.name}`);
+    logger.info(`👨‍👩‍👧‍👦 Parental control enabled for ${device.name}`);
 
     switch (profile) {
       case 'child':
-        console.log('   Blocking adult content');
-        console.log('   Setting time limits: 21:00-07:00');
-        console.log('   Monitoring activity');
+        logger.info('   Blocking adult content');
+        logger.info('   Setting time limits: 21:00-07:00');
+        logger.info('   Monitoring activity');
         break;
 
       case 'teen':
-        console.log('   Filtering inappropriate content');
-        console.log('   Setting time limits: 23:00-06:00');
+        logger.info('   Filtering inappropriate content');
+        logger.info('   Setting time limits: 23:00-06:00');
         break;
     }
 
@@ -613,7 +619,7 @@ class NetworkCybersecurityMonitor {
       this.monitorTraffic();
     }, 5 * 60 * 1000));
 
-    console.log('🔒 Network Security Monitor active');
+    logger.info('🔒 Network Security Monitor active');
   }
 
   // ============================================

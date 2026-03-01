@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./logger');
 
 /**
  * Smart Meal Planner & Recipe Manager
@@ -265,7 +266,7 @@ class SmartMealPlannerRecipeManager {
   // ============================================
 
   async generateWeeklyPlan() {
-    console.log('📅 Generating weekly meal plan...');
+    logger.info('📅 Generating weekly meal plan...');
 
     const weekStart = Date.now();
     const plan = {
@@ -304,7 +305,7 @@ class SmartMealPlannerRecipeManager {
 
         usedRecipes.add(selected.id);
 
-        console.log(`  ${days[day]}: ${selected.name}`);
+        logger.info(`  ${days[day]}: ${selected.name}`);
       }
     }
 
@@ -317,7 +318,7 @@ class SmartMealPlannerRecipeManager {
   }
 
   async generateShoppingList(planId) {
-    console.log('🛒 Generating shopping list...');
+    logger.info('🛒 Generating shopping list...');
 
     const plan = this.mealPlans.get(planId);
     
@@ -371,7 +372,7 @@ class SmartMealPlannerRecipeManager {
           purchased: false
         });
 
-        console.log(`  ${needed.name}: ${Math.ceil(amountToBuy)} ${needed.unit}`);
+        logger.info(`  ${needed.name}: ${Math.ceil(amountToBuy)} ${needed.unit}`);
       }
     }
 
@@ -434,7 +435,7 @@ class SmartMealPlannerRecipeManager {
       });
     }
 
-    console.log(`✅ Added to inventory: ${name} (${amount} ${unit})`);
+    logger.info(`✅ Added to inventory: ${name} (${amount} ${unit})`);
   }
 
   async checkExpiringItems() {
@@ -599,7 +600,7 @@ class SmartMealPlannerRecipeManager {
       goal.currentFiber += recipe.nutrition.fiber * multiplier;
     }
 
-    console.log(`📊 Tracked: ${recipe.name} (${Math.round(recipe.nutrition.calories * multiplier)} kcal)`);
+    logger.info(`📊 Tracked: ${recipe.name} (${Math.round(recipe.nutrition.calories * multiplier)} kcal)`);
 
     return { success: true };
   }
@@ -641,7 +642,7 @@ class SmartMealPlannerRecipeManager {
     this._intervals.push(setInterval(() => {
       this.checkExpiringItems().then(items => {
         if (items.length > 0) {
-          console.log(`⚠️ ${items.length} items expiring soon`);
+          logger.info(`⚠️ ${items.length} items expiring soon`);
         }
       });
     }, 24 * 60 * 60 * 1000));
@@ -654,7 +655,7 @@ class SmartMealPlannerRecipeManager {
       }
     }, 24 * 60 * 60 * 1000));
 
-    console.log('🍽️ Meal Planner active');
+    logger.info('🍽️ Meal Planner active');
   }
 
   // ============================================

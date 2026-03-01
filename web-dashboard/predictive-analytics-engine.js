@@ -1,4 +1,6 @@
 'use strict';
+const logger = require('./logger');
+const MAX_ENTRIES = 1000;
 
 /**
  * Predictive Analytics Engine
@@ -152,7 +154,7 @@ class PredictiveAnalyticsEngine {
   // ============================================
 
   async findCorrelations() {
-    console.log('🔍 Analyzing correlations...');
+    logger.info('🔍 Analyzing correlations...');
 
     const correlations = [];
     const streamIds = Array.from(this.dataStreams.keys());
@@ -164,7 +166,7 @@ class PredictiveAnalyticsEngine {
         
         if (Math.abs(correlation.coefficient) > 0.5) { // Strong correlation
           correlations.push(correlation);
-          console.log(`  ${correlation.stream1} ↔️ ${correlation.stream2}: ${correlation.coefficient.toFixed(2)}`);
+          logger.info(`  ${correlation.stream1} ↔️ ${correlation.stream2}: ${correlation.coefficient.toFixed(2)}`);
         }
       }
     }
@@ -272,8 +274,9 @@ class PredictiveAnalyticsEngine {
       };
 
       this.anomalies.push(anomaly);
+    if (this.anomalies.length > MAX_ENTRIES) this.anomalies.shift();
 
-      console.log(`⚠️ Anomaly detected: ${stream.name} = ${value} (Z-score: ${zScore.toFixed(2)})`);
+      logger.info(`⚠️ Anomaly detected: ${stream.name} = ${value} (Z-score: ${zScore.toFixed(2)})`);
 
       // Create alert
       await this.createAlert({
@@ -312,7 +315,7 @@ class PredictiveAnalyticsEngine {
   // ============================================
 
   async analyzeTrends() {
-    console.log('📈 Analyzing trends...');
+    logger.info('📈 Analyzing trends...');
 
     const trends = [];
 
@@ -323,7 +326,7 @@ class PredictiveAnalyticsEngine {
         trends.push(trend);
         
         if (Math.abs(trend.changePercent) > 10) {
-          console.log(`  ${stream.name}: ${trend.direction} ${Math.abs(trend.changePercent).toFixed(1)}%`);
+          logger.info(`  ${stream.name}: ${trend.direction} ${Math.abs(trend.changePercent).toFixed(1)}%`);
         }
       }
     }
@@ -381,7 +384,7 @@ class PredictiveAnalyticsEngine {
   // ============================================
 
   async predictFuture(streamId, hours = 24) {
-    console.log(`🔮 Predicting ${streamId} for next ${hours} hours...`);
+    logger.info(`🔮 Predicting ${streamId} for next ${hours} hours...`);
 
     const stream = this.dataStreams.get(streamId);
     
@@ -422,6 +425,7 @@ class PredictiveAnalyticsEngine {
       timeframe: hours,
       predictions
     });
+    if (this.predictions.length > MAX_ENTRIES) this.predictions.shift();
 
     return predictions;
   }
@@ -475,7 +479,7 @@ class PredictiveAnalyticsEngine {
   // ============================================
 
   async generateOptimizationSuggestions() {
-    console.log('💡 Generating optimization suggestions...');
+    logger.info('💡 Generating optimization suggestions...');
 
     const suggestions = [];
 
@@ -574,6 +578,7 @@ class PredictiveAnalyticsEngine {
     };
 
     this.alerts.push(newAlert);
+    if (this.alerts.length > MAX_ENTRIES) this.alerts.shift();
 
     // Keep only last 100 alerts
     if (this.alerts.length > 100) {

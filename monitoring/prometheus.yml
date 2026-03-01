@@ -39,6 +39,16 @@ scrape_configs:
     metrics_path: '/metrics'
     scrape_interval: 10s
 
+  # Node Exporter (host-level metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # cAdvisor (container-level metrics)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
   # Redis monitoring (if redis_exporter is added)
   # - job_name: 'redis'
   #   static_configs:
