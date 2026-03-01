@@ -1,7 +1,7 @@
 'use strict';
 
 const { describe, it, run } = require('./helpers/runner');
-const { assert, assertEqual, assertType } = require('./helpers/assert');
+const { assert, assertEqual, assertType: _assertType } = require('./helpers/assert');
 const { createMockHomey } = require('./helpers/mockHomey');
 
 const _origSetTimeout = global.setTimeout;

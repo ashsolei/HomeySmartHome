@@ -1,7 +1,7 @@
 'use strict';
 
 const { describe, it, run } = require('./helpers/runner');
-const { assert, assertEqual, assertType, assertRejects } = require('./helpers/assert');
+const { assert, assertEqual, assertType, assertRejects: _assertRejects } = require('./helpers/assert');
 const { createMockHomey } = require('./helpers/mockHomey');
 
 /* ── timer-leak prevention ─────────────────────────────────────────── */
